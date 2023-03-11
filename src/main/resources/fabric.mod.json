@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "id": "easyvillagertrade",
+  "version": "${version}",
+  "name": "EasyVillagerTrade",
+  "description": "",
+  "authors": [],
+  "contact": {},
+  "license": "MIT",
+  "icon": "assets/EasyVillagerTrade/icon.png",
+  "environment": "client",
+  "entrypoints": {
+    "main": [
+      "de.gamedude.easyvillagertrade.EasyVillagerTrade"
+    ]
+  },
+  "mixins": [
+    "EasyVillagerTrade.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.14.17",
+    "fabric": "*",
+    "minecraft": "1.19.2"
+  }
+}
