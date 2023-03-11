@@ -22,5 +22,5 @@ Just take some lecterns in your off-hand and an axe in your main hand.
 ---
 
 Note that while using this mod there will be a loss of lecterns. \
-This construction will collect and spits out all items that were dropped too far away from the player
+This construction will collect and spit out all items that were dropped too far away from the player
 ![](/img/c.png) 
