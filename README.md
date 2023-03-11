@@ -1,8 +1,10 @@
 # **EasyVillagerTrade**
 
-Tired of trading all day with a librarian?\
-**EasyVillagerTrade** is a client-side fabric mod for minecraft which helps you to trade your desired book. \
+
+Tired of trading all day with a librarian?  
+**EasyVillagerTrade** is a client-side fabric mod for minecraft which helps you to trade your desired book.  
 Just take some lecterns in your off-hand and an axe in your main hand.
+
 ---
 ### Command
 1. Start by selecting the villager and his lectern, using ``/evt select``\
