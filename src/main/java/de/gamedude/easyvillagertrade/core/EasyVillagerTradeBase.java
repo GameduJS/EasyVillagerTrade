@@ -10,6 +10,7 @@ import net.minecraft.client.sound.PositionedSoundInstance;
 import net.minecraft.client.sound.SoundInstance;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.network.packet.c2s.play.HandSwingC2SPacket;
 import net.minecraft.sound.SoundCategory;
@@ -72,6 +73,12 @@ public class EasyVillagerTradeBase {
         ClientPlayerEntity player = MinecraftClient.getInstance().player;
         BlockPos lecternPos = selectionInterface.getLecternPos();
 
+        if(player.getOffHandStack().equals(ItemStack.EMPTY)) {
+            player.sendMessage(Text.of("§8| §7The query has been stopped due to the lack of lecterns."));
+            setState(TradingState.INACTIVE);
+            return;
+        }
+
         // Place block
         BlockHitResult hitResult = new BlockHitResult(new Vec3d(lecternPos.getX(), lecternPos.getY(), lecternPos.getZ()), Direction.UP, lecternPos, false);
         MinecraftClient.getInstance().interactionManager.interactBlock(player, Hand.OFF_HAND, hitResult);
@@ -86,6 +93,12 @@ public class EasyVillagerTradeBase {
 
         if (world == null || player == null)
             return;
+        ItemStack axe = player.getMainHandStack();
+        if(axe.getMaxDamage() - axe.getDamage() < axe.getMaxDamage() - 2) {
+            player.sendMessage(Text.of("§8| §7The query has been stopped due to the lack of durability of the axe"));
+            setState(TradingState.INACTIVE);
+            return;
+        }
         if (world.getBlockState(getSelectionInterface().getLecternPos()).getBlock() == Blocks.LECTERN) {
             MinecraftClient.getInstance().interactionManager.updateBlockBreakingProgress(getSelectionInterface().getLecternPos(), Direction.UP);
             player.swingHand(Hand.MAIN_HAND, true);
