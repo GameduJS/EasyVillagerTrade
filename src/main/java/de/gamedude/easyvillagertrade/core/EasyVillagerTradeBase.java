@@ -94,7 +94,7 @@ public class EasyVillagerTradeBase {
         if (world == null || player == null)
             return;
         ItemStack axe = player.getMainHandStack();
-        if(axe.getMaxDamage() - axe.getDamage() < axe.getMaxDamage() - 2) {
+        if(axe.getMaxDamage() - axe.getDamage() < 20) {
             player.sendMessage(Text.of("§8| §7The query has been stopped due to the lack of durability of the axe"));
             setState(TradingState.INACTIVE);
             return;
