@@ -1,20 +1,17 @@
 package de.gamedude.easyvillagertrade.core;
 
-import de.gamedude.easyvillagertrade.EasyVillagerTrade;
 import de.gamedude.easyvillagertrade.utils.TradeRequest;
 import de.gamedude.easyvillagertrade.utils.TradingState;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.sound.PositionedSoundInstance;
-import net.minecraft.client.sound.SoundInstance;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.network.packet.c2s.play.HandSwingC2SPacket;
 import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
@@ -24,24 +21,28 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.random.LocalRandom;
-import net.minecraft.util.registry.Registry;
 import net.minecraft.village.TradeOffer;
 import net.minecraft.village.TradeOfferList;
 import net.minecraft.world.World;
 
 import java.util.Map;
-import java.util.concurrent.ThreadLocalRandom;
 
 public class EasyVillagerTradeBase {
     private TradingState state;
 
     private final TradeRequestContainer tradeRequestContainer;
     private final SelectionInterface selectionInterface;
+    private final TradeRequestInputHandler tradeRequestInputHandler;
 
     public EasyVillagerTradeBase() {
         this.tradeRequestContainer = new TradeRequestContainer();
         this.selectionInterface = new SelectionInterface();
+        this.tradeRequestInputHandler = new TradeRequestInputHandler();
         state = TradingState.INACTIVE;
+    }
+
+    public TradeRequestInputHandler getTradeRequestInputHandler() {
+        return tradeRequestInputHandler;
     }
 
     public SelectionInterface getSelectionInterface() {
@@ -133,7 +134,7 @@ public class EasyVillagerTradeBase {
     }
 
     public void handleInteractionWithVillager() {
-        ActionResult actionResult = MinecraftClient.getInstance().interactionManager.interactEntity(MinecraftClient.getInstance().player, selectionInterface.getVillager(), Hand.MAIN_HAND);
+        MinecraftClient.getInstance().interactionManager.interactEntity(MinecraftClient.getInstance().player, selectionInterface.getVillager(), Hand.MAIN_HAND);
     }
 
 }

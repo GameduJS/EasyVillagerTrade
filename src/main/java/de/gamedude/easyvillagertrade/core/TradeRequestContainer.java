@@ -3,23 +3,27 @@ package de.gamedude.easyvillagertrade.core;
 import de.gamedude.easyvillagertrade.utils.TradeRequest;
 import net.minecraft.enchantment.Enchantment;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 public class TradeRequestContainer {
 
     private final Set<TradeRequest> tradeRequestSet;
 
     public TradeRequestContainer() {
-        this.tradeRequestSet = new HashSet<>();
+        this.tradeRequestSet = new LinkedHashSet<>();
     }
 
     public void addTradeRequest(TradeRequest tradeRequest) {
-        this.tradeRequestSet.add(tradeRequest);
+        if(tradeRequest != null)
+            this.tradeRequestSet.add(tradeRequest);
     }
 
     public void removeTradeRequestByEnchantment(Enchantment enchantment) {
         this.tradeRequestSet.removeIf(request -> request.enchantment().getTranslationKey().equals(enchantment.getTranslationKey()));
+    }
+
+    public void removeTradeRequest(TradeRequest request) {
+        this.tradeRequestSet.remove(request);
     }
 
     public Set<TradeRequest> getTradeRequests() {

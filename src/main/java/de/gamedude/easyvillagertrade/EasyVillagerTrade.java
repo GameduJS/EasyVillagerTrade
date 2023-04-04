@@ -2,6 +2,7 @@ package de.gamedude.easyvillagertrade;
 
 import de.gamedude.easyvillagertrade.commands.EasyVillagerTradeCommand;
 import de.gamedude.easyvillagertrade.core.EasyVillagerTradeBase;
+import de.gamedude.easyvillagertrade.screen.TradeSelectScreen;
 import de.gamedude.easyvillagertrade.utils.TradingState;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -11,16 +12,19 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.fabric.api.event.player.UseEntityCallback;
 import net.minecraft.block.Blocks;
+import net.minecraft.client.option.KeyBinding;
 import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
+import org.lwjgl.glfw.GLFW;
 
 @Environment(EnvType.CLIENT)
 public class EasyVillagerTrade implements ModInitializer {
 
     private static EasyVillagerTradeBase modBase;
+    KeyBinding keyBinding = new KeyBinding("pocus", GLFW.GLFW_KEY_F6, "category.click");
     @Override
     public void onInitialize() {
 
@@ -51,6 +55,11 @@ public class EasyVillagerTrade implements ModInitializer {
         });
 
         ClientTickEvents.START_CLIENT_TICK.register(client -> modBase.handle());
+        ClientTickEvents.END_CLIENT_TICK.register(client -> {
+            while(keyBinding.wasPressed()) {
+                client.setScreen(new TradeSelectScreen());
+            }
+        });
     }
 
     public static EasyVillagerTradeBase getModBase() {

@@ -11,10 +11,7 @@ import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.command.argument.EnchantmentArgumentType;
 import net.minecraft.enchantment.Enchantment;
-import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.Registry;
 
 import static net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.*;
 
@@ -32,7 +29,7 @@ public class EasyVillagerTradeCommand implements ClientCommandRegistrationCallba
         dispatcher.register(literal(command_base)
                 .then(literal("select").executes(this::executeSelection))
                 .then(literal("search")
-                        .then(literal("add").then(argument("maxPrice", IntegerArgumentType.integer()).then(argument("enchantment", EnchantmentArgumentType.enchantment()).executes(ctx -> executeAddTradeRequest(ctx, true)).then(argument("level", IntegerArgumentType.integer()).executes(ctx -> executeAddTradeRequest(ctx, false))))))
+                        .then(literal("add").then(argument("maxPrice", IntegerArgumentType.integer()).then(argument("enchantment", EnchantmentArgumentType.enchantment()).executes(this::executeAddTradeRequest).then(argument("level", IntegerArgumentType.integer()).executes(this::executeAddTradeRequest)))))
 
                         .then(literal("remove").then(argument("enchantment", EnchantmentArgumentType.enchantment()).executes(this::executeRemoveTradeRequest)))
                         .then(literal("list").executes(this::executeListTradeRequest)))
@@ -48,22 +45,15 @@ public class EasyVillagerTradeCommand implements ClientCommandRegistrationCallba
     }
 
 
-    public int executeAddTradeRequest(CommandContext<FabricClientCommandSource> context, boolean beMaxLevel) {
+    public int executeAddTradeRequest(CommandContext<FabricClientCommandSource> context) {
         Enchantment enchantment = context.getArgument("enchantment", Enchantment.class);
-        Registry<Enchantment> enchantmentRegistry = Registry.ENCHANTMENT;
-        int finalLevel = enchantmentRegistry.get(new Identifier(enchantment.getTranslationKey().split("\\.")[2])).getMaxLevel();
         int maxPrice = context.getArgument("maxPrice", Integer.class);
+        int level = getArgumentOrElse(context, "level", Integer.class, enchantment.getMaxLevel());
 
-        if (!beMaxLevel) {
-            int requestedLevel = context.getArgument("level", Integer.class);
-            if (requestedLevel <= 0)
-                requestedLevel = 1;
-            if (requestedLevel < finalLevel)
-                finalLevel = requestedLevel;
-        }
+        TradeRequest tradeRequest = modBase.getTradeRequestInputHandler().handleCommandInput(enchantment, level, maxPrice);
+        modBase.getTradeRequestContainer().addTradeRequest(tradeRequest);
 
-        modBase.getTradeRequestContainer().addTradeRequest(new TradeRequest(enchantment, finalLevel, maxPrice));
-        context.getSource().sendFeedback(Text.of("§8| §7Added search query for §e" + enchantment.getName(finalLevel).getString() + "§7 for a maximum of§a " + maxPrice + " Emeralds"));
+        context.getSource().sendFeedback(Text.of("§8| §7Added search query for §e" + tradeRequest.enchantment().getName(tradeRequest.level()).getString() + "§7 for a maximum of§a " + tradeRequest.maxPrice() + " Emeralds"));
         return 1;
     }
 
@@ -93,5 +83,15 @@ public class EasyVillagerTradeCommand implements ClientCommandRegistrationCallba
         context.getSource().sendFeedback(Text.of("§8| §7Executing all search queries"));
         modBase.handleInteractionWithVillager();
         return 1;
+    }
+
+    private <T> T getArgumentOrElse(CommandContext<FabricClientCommandSource> context, String argument, Class<T> argumentClass, T orElse) {
+        T t;
+        try {
+            t = context.getArgument(argument, argumentClass);
+        } catch ( IllegalArgumentException e ) {
+            return orElse;
+        }
+        return t;
     }
 }
