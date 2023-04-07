@@ -32,6 +32,6 @@ You can simply press ```F6``` to open the custom screen where you can easily add
 - [X] Add GUI (mostly done)
 ---
 
-Note that while using this mod there will be a loss of lecterns. \
+Note that while using this mod there will be a loss of lecterns due to the random speed that an item has when the block is mined \
 This construction will collect and spit out all items that were dropped too far away from the player
 ![](/img/c.png) 
