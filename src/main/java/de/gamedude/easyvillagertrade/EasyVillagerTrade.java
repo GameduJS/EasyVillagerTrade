@@ -9,6 +9,7 @@ import net.fabricmc.api.Environment;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.fabric.api.event.player.UseEntityCallback;
 import net.minecraft.block.Blocks;
@@ -24,14 +25,19 @@ import org.lwjgl.glfw.GLFW;
 public class EasyVillagerTrade implements ModInitializer {
 
     private static EasyVillagerTradeBase modBase;
-    KeyBinding keyBinding = new KeyBinding("pocus", GLFW.GLFW_KEY_F6, "category.click");
+    KeyBinding keyBinding = new KeyBinding("key.custom.openscreen", GLFW.GLFW_KEY_F6, "EasyVillagerTrade");
+
     @Override
     public void onInitialize() {
 
         modBase = new EasyVillagerTradeBase();
-
         ClientCommandRegistrationCallback.EVENT.register(new EasyVillagerTradeCommand(modBase));
+        registerCallbacks();
 
+        KeyBindingHelper.registerKeyBinding(keyBinding);
+    }
+
+    public void registerCallbacks() {
         UseEntityCallback.EVENT.register((player, world, hand, entity, hitResult) -> {
             if (hand == Hand.OFF_HAND || hitResult == null || !world.isClient())
                 return ActionResult.PASS;
@@ -55,6 +61,7 @@ public class EasyVillagerTrade implements ModInitializer {
         });
 
         ClientTickEvents.START_CLIENT_TICK.register(client -> modBase.handle());
+
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             while(keyBinding.wasPressed()) {
                 client.setScreen(new TradeSelectScreen());

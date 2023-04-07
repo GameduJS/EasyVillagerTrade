@@ -15,13 +15,9 @@ import net.minecraft.text.Text;
 import net.minecraft.util.math.ColorHelper;
 import net.minecraft.util.registry.Registry;
 
+import java.util.Arrays;
 import java.util.Iterator;
 
-/*
-TODO:
-- Add pages to the TradeRequestListWidget
-- Adjustable hotkey for the screen
- */
 public class TradeSelectScreen extends Screen {
 
     private final EasyVillagerTradeBase modBase = EasyVillagerTrade.getModBase();
@@ -65,10 +61,11 @@ public class TradeSelectScreen extends Screen {
         this.addDrawableChild(priceTextFieldWidget);
         this.addDrawableChild(new ButtonWidget(x + 10 - 1 /*Weird offset*/, px + 15 + 20 + 5, 50, 20, Text.of("Add"), button -> {
             TradeRequest request = modBase.getTradeRequestInputHandler().handleGUIInput(enchantmentTextFieldWidget.getText(), levelTextFieldWidget.getText(), priceTextFieldWidget.getText());
-            if(request != null) {
-                if(!modBase.getTradeRequestContainer().getTradeRequests().contains(request)) {
+            if (request != null) {
+                if (!modBase.getTradeRequestContainer().getTradeRequests().contains(request)) {
                     tradeRequestListWidget.addEntry(new TradeRequestListWidget.TradeRequestEntry(request));
                     modBase.getTradeRequestContainer().addTradeRequest(request);
+                    clearTextFieldWidgets(enchantmentTextFieldWidget, levelTextFieldWidget, priceTextFieldWidget);
                 }
             } else {
                 enchantmentTextFieldWidget.setEditableColor(ColorHelper.Argb.getArgb(255, 255, 0, 0));
@@ -76,16 +73,17 @@ public class TradeSelectScreen extends Screen {
         }));
         this.addDrawableChild(new ButtonWidget(x + 70, px + 40, 50, 20, Text.of("Remove"), button -> {
             Enchantment enchantment = modBase.getTradeRequestInputHandler().getEnchantment(enchantmentTextFieldWidget.getText());
-            if(enchantment == null) {
+            if (enchantment == null) {
                 enchantmentTextFieldWidget.setEditableColor(ColorHelper.Argb.getArgb(255, 255, 0, 0));
                 return;
             }
-            for (Iterator<TradeRequestListWidget.TradeRequestEntry> it = tradeRequestListWidget.children().iterator(); it.hasNext(); ) {
-                TradeRequestListWidget.TradeRequestEntry entry = it.next();
-                if(entry.tradeRequest.enchantment().getTranslationKey().equals(enchantment.getTranslationKey())) {
-                    modBase.getTradeRequestContainer().removeTradeRequest(entry.tradeRequest);
-                    it.remove();
-                }
+            for (Iterator<TradeRequestListWidget.Entry> it = tradeRequestListWidget.children().iterator(); it.hasNext(); ) {
+                if (it.next() instanceof TradeRequestListWidget.TradeRequestEntry entry)
+                    if (entry.tradeRequest.enchantment().getTranslationKey().equals(enchantment.getTranslationKey())) {
+                        modBase.getTradeRequestContainer().removeTradeRequest(entry.tradeRequest);
+                        it.remove();
+                        clearTextFieldWidgets(enchantmentTextFieldWidget, levelTextFieldWidget, priceTextFieldWidget);
+                    }
             }
         }));
         this.addDrawableChild(tradeRequestListWidget);
@@ -109,6 +107,10 @@ public class TradeSelectScreen extends Screen {
         int px = (int) (this.width / 50f);
         int x = this.width - px - widgetWidth;
         DrawableHelper.fill(matrices, x, px, this.width - px, this.height - px, ColorHelper.Argb.getArgb(150, 7, 7, 7));
+    }
+
+    public void clearTextFieldWidgets(TextFieldWidget... textFieldWidgets){
+        Arrays.stream(textFieldWidgets).forEach(textFieldWidget -> textFieldWidget.setText(""));
     }
 
 }
