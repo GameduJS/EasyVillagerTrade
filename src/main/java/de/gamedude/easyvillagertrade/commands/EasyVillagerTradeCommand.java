@@ -4,6 +4,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import de.gamedude.easyvillagertrade.core.EasyVillagerTradeBase;
+import de.gamedude.easyvillagertrade.utils.ScriptArgumentType;
 import de.gamedude.easyvillagertrade.utils.TradeRequest;
 import de.gamedude.easyvillagertrade.utils.TradingState;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
@@ -37,13 +38,36 @@ public class EasyVillagerTradeCommand implements ClientCommandRegistrationCallba
                 .then(literal("stop").executes(ctx -> {
                     modBase.setState(TradingState.INACTIVE);
                     return 1;
-                }))
+                })).then(literal("script")
+                        .then(literal("reload").executes(this::reloadScripts))
+                        .then(literal("setactive").then(argument("scriptname", ScriptArgumentType.scriptArgumentType()).executes(this::setActiveScript)))
+                        .then(literal("enable").then(argument("times", IntegerArgumentType.integer()).executes(this::activateScript))))
                 .executes(ctx -> {
                     ctx.getSource().sendFeedback(Text.of("Please use /evt <select/search/execute/stop>"));
                     return 1;
                 }));
     }
 
+    public int reloadScripts(CommandContext<FabricClientCommandSource> context) {
+        modBase.getScriptCache().reloadCache();
+        context.getSource().sendFeedback(Text.of("§8| §7Reloaded all scripts"));
+        return 1;
+    }
+
+    public int setActiveScript(CommandContext<FabricClientCommandSource> context) {
+        String scriptName = context.getArgument("scriptname", String.class);
+        modBase.getScriptCache().setActiveScript(scriptName);
+        context.getSource().sendFeedback(Text.of("§8| §7Set §a" + scriptName + " §7as active script!"));
+        return 1;
+    }
+
+    public int activateScript(CommandContext<FabricClientCommandSource> context) {
+        // abfrage
+        int repetitionCount = context.getArgument("times", Integer.class);
+        modBase.getScriptCache().getActiveScript().setRepetitionCount(repetitionCount);
+        modBase.getScriptCache().getActiveScript().setActive(true);
+        return 1;
+    }
 
     public int executeAddTradeRequest(CommandContext<FabricClientCommandSource> context) {
         Enchantment enchantment = context.getArgument("enchantment", Enchantment.class);
@@ -80,8 +104,8 @@ public class EasyVillagerTradeCommand implements ClientCommandRegistrationCallba
 
     public int executeVillagerTrade(CommandContext<FabricClientCommandSource> context) {
         this.modBase.setState(TradingState.CHECK_OFFERS);
-        context.getSource().sendFeedback(Text.of("§8| §7Executing all search queries"));
         modBase.handleInteractionWithVillager();
+        context.getSource().sendFeedback(Text.of("§8| §7Executing all search queries"));
         return 1;
     }
 

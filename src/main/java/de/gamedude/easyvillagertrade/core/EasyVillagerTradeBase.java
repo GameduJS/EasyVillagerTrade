@@ -1,5 +1,7 @@
 package de.gamedude.easyvillagertrade.core;
 
+import de.gamedude.easyvillagertrade.scripting.core.ScriptCache;
+import de.gamedude.easyvillagertrade.scripting.core.ScriptProcessor;
 import de.gamedude.easyvillagertrade.utils.TradeRequest;
 import de.gamedude.easyvillagertrade.utils.TradingState;
 import net.minecraft.block.Blocks;
@@ -14,7 +16,6 @@ import net.minecraft.network.packet.c2s.play.HandSwingC2SPacket;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
-import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
@@ -33,11 +34,13 @@ public class EasyVillagerTradeBase {
     private final TradeRequestContainer tradeRequestContainer;
     private final SelectionInterface selectionInterface;
     private final TradeRequestInputHandler tradeRequestInputHandler;
+    private final ScriptCache scriptCache;
 
     public EasyVillagerTradeBase() {
         this.tradeRequestContainer = new TradeRequestContainer();
-        this.selectionInterface = new SelectionInterface();
+        this.selectionInterface = new SelectionInterface(this);
         this.tradeRequestInputHandler = new TradeRequestInputHandler();
+        this.scriptCache = new ScriptCache(new ScriptProcessor());
         state = TradingState.INACTIVE;
     }
 
@@ -53,6 +56,10 @@ public class EasyVillagerTradeBase {
         return this.tradeRequestContainer;
     }
 
+    public ScriptCache getScriptCache() {
+        return scriptCache;
+    }
+
     public void setState(TradingState state) {
         this.state = state;
     }
@@ -62,6 +69,10 @@ public class EasyVillagerTradeBase {
     }
 
     public void handle() {
+        if(getScriptCache().isScriptActive() && getScriptCache().getActiveScript().isTriggered()) {
+            getScriptCache().getActiveScript().triggerScript();
+        }
+
         if (state == TradingState.INACTIVE)
             return;
         switch (state) {
@@ -128,6 +139,12 @@ public class EasyVillagerTradeBase {
             setState(TradingState.INACTIVE);
             MinecraftClient.getInstance().getSoundManager().play(new PositionedSoundInstance(SoundEvents.BLOCK_AMETHYST_CLUSTER_BREAK, SoundCategory.MASTER, 2f, 1f, new LocalRandom(0), MinecraftClient.getInstance().player.getBlockPos()));
             tradeRequestContainer.removeTradeRequestByEnchantment(bookEnchantment);
+
+            if(getScriptCache().isScriptActive()) {
+                getScriptCache().getActiveScript().setTriggered(true);
+                System.out.println("hello!! test triggered");
+            }
+
         } else {
             setState(TradingState.BREAK_WORKSTATION);
         }
