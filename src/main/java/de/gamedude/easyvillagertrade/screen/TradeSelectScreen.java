@@ -45,7 +45,7 @@ public class TradeSelectScreen extends Screen {
 
         TextFieldWidget enchantmentTextFieldWidget = new TextFieldWidget(textRenderer, x + 10, px + 15, enchantmentWidth, 20, Text.of("Enchantment"));
         enchantmentTextFieldWidget.setChangedListener(input -> {
-            if (Registry.ENCHANTMENT.stream().map(Enchantment::getTranslationKey).map(Text::translatable).map(Text::getString).map(String::toLowerCase).anyMatch(input.toLowerCase()::equals))
+            if (Registry.ENCHANTMENT.stream().map(Enchantment::getTranslationKey).map(Text::translatable).map(Text::getString).anyMatch(input::equalsIgnoreCase))
                 enchantmentTextFieldWidget.setEditableColor(ColorHelper.Argb.getArgb(255, 255, 255, 0));
             else
                 enchantmentTextFieldWidget.setEditableColor(0xE0E0E0);
@@ -59,7 +59,7 @@ public class TradeSelectScreen extends Screen {
         this.addDrawableChild(enchantmentTextFieldWidget);
         this.addDrawableChild(levelTextFieldWidget);
         this.addDrawableChild(priceTextFieldWidget);
-        this.addDrawableChild(new ButtonWidget(x + 10 - 1 /*Weird offset*/, px + 15 + 20 + 5, 50, 20, Text.of("Add"), button -> {
+        this.addDrawableChild(new ButtonWidget(x + 9, px + 15 + 20 + 5, 50, 20, Text.of("Add"), button -> {
             TradeRequest request = modBase.getTradeRequestInputHandler().handleGUIInput(enchantmentTextFieldWidget.getText(), levelTextFieldWidget.getText(), priceTextFieldWidget.getText());
             if (request != null) {
                 if (!modBase.getTradeRequestContainer().getTradeRequests().contains(request)) {
@@ -71,14 +71,15 @@ public class TradeSelectScreen extends Screen {
                 enchantmentTextFieldWidget.setEditableColor(ColorHelper.Argb.getArgb(255, 255, 0, 0));
             }
         }));
+
         this.addDrawableChild(new ButtonWidget(x + 70, px + 40, 50, 20, Text.of("Remove"), button -> {
             Enchantment enchantment = modBase.getTradeRequestInputHandler().getEnchantment(enchantmentTextFieldWidget.getText());
             if (enchantment == null) {
                 enchantmentTextFieldWidget.setEditableColor(ColorHelper.Argb.getArgb(255, 255, 0, 0));
                 return;
             }
-            for (Iterator<TradeRequestListWidget.Entry> it = tradeRequestListWidget.children().iterator(); it.hasNext(); ) {
-                if (it.next() instanceof TradeRequestListWidget.TradeRequestEntry entry)
+            for (Iterator<TradeRequestListWidget.TradeRequestEntry> it = tradeRequestListWidget.children().iterator(); it.hasNext(); ) {
+                TradeRequestListWidget.TradeRequestEntry entry = it.next();
                     if (entry.tradeRequest.enchantment().getTranslationKey().equals(enchantment.getTranslationKey())) {
                         modBase.getTradeRequestContainer().removeTradeRequest(entry.tradeRequest);
                         it.remove();

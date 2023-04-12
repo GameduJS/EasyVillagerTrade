@@ -2,94 +2,119 @@ package de.gamedude.easyvillagertrade.screen.widget;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import de.gamedude.easyvillagertrade.utils.TradeRequest;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.DrawableHelper;
-import net.minecraft.client.gui.widget.AlwaysSelectedEntryListWidget;
+import net.minecraft.client.gui.*;
+import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.ColorHelper;
+import net.minecraft.util.math.MathHelper;
 
-public class TradeRequestListWidget extends AlwaysSelectedEntryListWidget<TradeRequestListWidget.Entry> {
+import java.util.ArrayList;
+import java.util.List;
+
+public class TradeRequestListWidget extends AbstractParentElement implements Drawable, Selectable {
 
     private static final int ENTRY_HEIGHT = 32;
     private static int ENTRIES_PER_PAGE;
 
+    private double scrollAmount;
+    private final int x;
+    private final int y;
+    private final int width;
+    private final int height;
+
+    private final List<TradeRequestEntry> children;
+
     public TradeRequestListWidget(int x, int y, int width, int height) {
-        super(MinecraftClient.getInstance(), width, height, x, y, ENTRY_HEIGHT + 5);
-        setRenderBackground(false);
-        setRenderHorizontalShadows(false);
-        setRenderSelection(false);
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+
+        this.children = new ArrayList<>();
+    }
+
+    public int getEntryCount() {
+        return children.size();
+    }
+
+    public TradeRequestEntry getEntry(int index) {
+        return this.children.get(index);
     }
 
     @Override
     public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
-        int x = this.top;
-        int y = this.bottom;
-        int width = this.width;
-        int height = this.height;
-
         ENTRIES_PER_PAGE = (int) Math.ceil((height - y + 5) / (ENTRY_HEIGHT + 5f) - 1);
-        if (ENTRIES_PER_PAGE == 0) // Unable to render any entry
+        if (ENTRIES_PER_PAGE == 0)
             return;
 
         this.renderBackground(matrices);
 
         for (int index = 0; index < Math.min(getEntryCount(), ENTRIES_PER_PAGE); ++index) {
-            ((TradeRequestEntry) getEntry(index + getOffset())).renderEntry(matrices, index, x, y + 1, width);
+            getEntry(index + getOffset()).render(matrices, index, x, y + 1, width);
         }
     }
 
     private int getOffset() {
         int maxScroll = getMaxScroll();
-        int currentScroll = (int) Math.abs(getScrollAmount());
+        int currentScroll = (int) Math.abs(this.scrollAmount);
         return Math.min((maxScroll > 0) ? (int) Math.ceil(maxScroll / (ENTRY_HEIGHT + 5f)) : 0, (int) Math.ceil(currentScroll / (ENTRY_HEIGHT + 5f)));
     }
 
-    @Override
     protected int getMaxPosition() {
         return getEntryCount() * (ENTRY_HEIGHT + 5) - 5;
     }
 
-    @Override
     public int getMaxScroll() {
         return getMaxPosition() - (ENTRIES_PER_PAGE * (ENTRY_HEIGHT + 5));
     }
 
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
-        this.setScrollAmount(getScrollAmount() - (amount * (ENTRY_HEIGHT + 5)));
-        return true;
-    }
-
-
-    @Override // bypass normal EntryListWidget logic
-    public boolean isMouseOver(double mouseX, double mouseY) {
-        // top <= mouse <= (top + width) & bottom <= mouseY <= height
-        return top <= mouseX && mouseX <= (top + width) && bottom <= mouseY && mouseY <= height;
+    public List<TradeRequestEntry> children() {
+        return children;
     }
 
     @Override
-    protected void renderBackground(MatrixStack matrices) {
-        int x = this.top;
-        int y = this.bottom;
-        int width = this.width;
-        int height = this.height;
+    public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
+        this.setScrollAmount(scrollAmount - (amount * (ENTRY_HEIGHT + 5)));
+        return true;
+    }
 
+    public void setScrollAmount(double amount) {
+        this.scrollAmount = MathHelper.clamp(amount, 0.0, this.getMaxScroll());
+    }
+
+
+    @Override
+    public boolean isMouseOver(double mouseX, double mouseY) {
+        return x <= mouseX && mouseX <= (x + width) && y <= mouseY && mouseY <= height;
+    }
+
+    protected void renderBackground(MatrixStack matrices) {
         fill(matrices, x - 1, y, x + width + 1, y + 1, -1); // horizontal
         fill(matrices, x - 2, height, x + width + 2, height + 1, -1);
         fill(matrices, x - 2, y, x - 1, height, -1); // vertical
         fill(matrices, x + width + 1, y, x + width + 2, height, -1);
     }
 
-    public int addEntry(Entry entry) {
-        return super.addEntry(entry);
+    public void addEntry(TradeRequestEntry entry) {
+        children.add(entry);
     }
 
-    public static class TradeRequestEntry extends Entry {
+    @Override
+    public void appendNarrations(NarrationMessageBuilder builder) {
+
+    }
+
+    @Override
+    public SelectionType getType() {
+        return SelectionType.NONE;
+    }
+
+    public static class TradeRequestEntry implements Element {
 
         private static final Identifier EMERALD_TEXTURE = new Identifier("textures/item/emerald.png");
         private static final Identifier ENCHANTED_BOOK_TEXTURE = new Identifier("textures/item/enchanted_book.png");
@@ -100,7 +125,7 @@ public class TradeRequestListWidget extends AlwaysSelectedEntryListWidget<TradeR
             this.tradeRequest = request;
         }
 
-        public void renderEntry(MatrixStack matrices, int index, int x, int y, int entryWidth) {
+        private void render(MatrixStack matrices, int index, int x, int y, int entryWidth) {
             int y1 = y + (index * ENTRY_HEIGHT) + (5 * index);
             int x2 = x + entryWidth;
             int y2 = y + ENTRY_HEIGHT * (index + 1) + (5 * index);
@@ -117,18 +142,5 @@ public class TradeRequestListWidget extends AlwaysSelectedEntryListWidget<TradeR
             textRenderer.draw(matrices, Text.of("§e" + tradeRequest.maxPrice()), x + 20, y1 + 20, 0);
         }
 
-        @Override
-        public void render(MatrixStack matrices, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
-            renderEntry(matrices, index, x, y, entryWidth);
-        }
-    }
-
-
-    @Environment(value = EnvType.CLIENT)
-    public static abstract class Entry extends AlwaysSelectedEntryListWidget.Entry<Entry> {
-        @Override
-        public Text getNarration() {
-            return Text.empty();
-        }
     }
 }
