@@ -111,8 +111,10 @@ public class EasyVillagerTradeBase {
     public void checkVillagerOffers(TradeOfferList tradeOffers) {
         TradeOffer bookOffer = null;
         for (TradeOffer offers : tradeOffers)
-            if (offers.getSellItem().getItem() == Items.ENCHANTED_BOOK)
+            if (offers.getSellItem().getItem() == Items.ENCHANTED_BOOK) {
                 bookOffer = offers;
+                break;
+            }
         if (bookOffer == null) {
             setState(TradingState.BREAK_WORKSTATION);
             return;

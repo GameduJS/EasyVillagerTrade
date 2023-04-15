@@ -15,6 +15,7 @@ import net.minecraft.network.packet.s2c.play.EntityStatusS2CPacket;
 import net.minecraft.network.packet.s2c.play.OpenScreenS2CPacket;
 import net.minecraft.network.packet.s2c.play.SetTradeOffersS2CPacket;
 import net.minecraft.screen.ScreenHandlerType;
+import net.minecraft.text.Text;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -41,19 +42,14 @@ public abstract class NetworkPacketMixin {
                 return;
             modBase.setState(TradingState.CHECK_OFFERS);
             modBase.handleInteractionWithVillager();
-        }
-        // Receive offers
-        if (packet instanceof SetTradeOffersS2CPacket setTradeOffers) {
+        } else if (packet instanceof SetTradeOffersS2CPacket setTradeOffers) {
             if (modBase.getState() != TradingState.CHECK_OFFERS)
                 return;
             modBase.checkVillagerOffers(setTradeOffers.getOffers());
-        }
-
-        if (packet instanceof OpenScreenS2CPacket screenPacket && screenPacket.getScreenHandlerType() == ScreenHandlerType.MERCHANT) {
-            // next tick -> SetTradeOffersS2CPacket -> check offers
+        } else if (packet instanceof OpenScreenS2CPacket screenPacket && screenPacket.getScreenHandlerType() == ScreenHandlerType.MERCHANT) {
             if (modBase.getState() != TradingState.CHECK_OFFERS)
                 return;
-            MinecraftClient.getInstance().getNetworkHandler().sendPacket(new CloseHandledScreenC2SPacket(screenPacket.getSyncId()));
+            MinecraftClient.getInstance().executeSync(() -> MinecraftClient.getInstance().getNetworkHandler().sendPacket(new CloseHandledScreenC2SPacket(screenPacket.getSyncId() + 1)));
             ci.cancel();
         }
     }
