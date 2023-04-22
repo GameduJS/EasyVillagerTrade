@@ -7,7 +7,7 @@
   "authors": [],
   "contact": {},
   "license": "MIT",
-  "icon": "assets/EasyVillagerTrade/icon.png",
+  "icon": "assets/icon.png",
   "environment": "client",
   "entrypoints": {
     "main": [

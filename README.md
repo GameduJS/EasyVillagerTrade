@@ -1,37 +1,20 @@
-# **EasyVillagerTrade**
+<img width="32" src="https://github.com/GameduJS/EasyVillagerTrade/blob/master/src/main/resources/assets/icon.png?raw=true" align="right" vspace="24">
+<h1>EasyVillagerTrade</h1>
 
+<h3>A Fabric mod designed to enhance your experience with the trade of librarians</h3>
 
-Tired of trading all day with a librarian?  
-**EasyVillagerTrade** is a client-side fabric mod for minecraft which helps you to trade your desired book.  
-Just take some lecterns in your off-hand and an axe in your main hand.
+## What is EasyVillagerTrade?
+EasyVillagerTrade, or EVT for short, is a client-side mod that allows semi-automatic trading for enchanted books with librarians.
 
----
-### Command
-1. Start by selecting the villager and his lectern, using ``/evt select``\
-    then right-click the villager and the lectern
-2. Select your desired books using ``/evt search add <maxPrice> <enchantment> (<level>)``
-3. Use ``/evt execute`` to start the search
+### Usage
+Firstly take any axe into your main hand and some lecterns into your offhand.
 
-<br/>
+- Use ``/evt search add <maxPrice> <enchantment> [<level>]`` to add any enchantment books to the queue
+- Press ``F6`` (default key) to open a screen, there you also add any books.
+- Use ``/evt select`` and select any villager and his workstation
 
-**You may also use:**
-1. ``/evt search <remove/list>`` to remove any entry or list them all
-2. ``/evt stop`` to stop the search
+Finally, execute ``/evt execute`` and sit back
 
-<br/>
+Here is an example on how to use this mod
+[![Watch the video](https://github.com/GameduJS/EasyVillagerTrade/blob/master/github/thumbnail.png?raw=true)](https://www.youtube.com/watch?v=5lGl98KcCGc)
 
-#### Custom Screen:
-Are you to lazy to always type the commands? \
-You can simply press ```F6``` to open the custom screen where you can easily add / remove your wishes
-
-
----
-### Upcoming features
-- [X] Interrupt search when durability is low
-* [ ] Allow user to write tiny scripts that are executed (e.g. player walks 2 blocks to the right after a trade was successful)
-- [X] Add GUI (mostly done)
----
-
-Note that while using this mod there will be a loss of lecterns due to the random speed that an item has when the block is mined \
-This construction will collect and spit out all items that were dropped too far away from the player
-![](/img/c.png) 
