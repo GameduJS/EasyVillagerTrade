@@ -29,7 +29,7 @@ public class TradeRequestInputHandler {
     }
 
     public Enchantment getEnchantment(String enchantmentInput) {
-        return ENCHANTMENT_REGISTRY.stream().filter(enchantment -> Text.translatable(enchantment.getTranslationKey()).getString().equalsIgnoreCase(enchantmentInput)).findFirst().orElse(null);
+        return ENCHANTMENT_REGISTRY.stream().filter(enchantment -> Text.translatable(enchantment.getTranslationKey()).getString().equalsIgnoreCase(enchantmentInput.trim())).findFirst().orElse(null);
     }
 
     private int mapPrice(int maxPriceInput) {

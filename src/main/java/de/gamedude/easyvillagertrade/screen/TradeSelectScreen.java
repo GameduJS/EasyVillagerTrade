@@ -2,6 +2,7 @@ package de.gamedude.easyvillagertrade.screen;
 
 import de.gamedude.easyvillagertrade.EasyVillagerTrade;
 import de.gamedude.easyvillagertrade.core.EasyVillagerTradeBase;
+import de.gamedude.easyvillagertrade.screen.widget.EnchantmentInputWidget;
 import de.gamedude.easyvillagertrade.screen.widget.TradeRequestListWidget;
 import de.gamedude.easyvillagertrade.utils.TradeRequest;
 import net.minecraft.client.MinecraftClient;
@@ -13,7 +14,6 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.ColorHelper;
-import net.minecraft.util.registry.Registry;
 
 import java.util.Arrays;
 import java.util.Iterator;
@@ -43,39 +43,34 @@ public class TradeSelectScreen extends Screen {
         int px = (int) (this.width / 50f);
         int x = this.width - widgetWidth - px;
 
-        TextFieldWidget enchantmentTextFieldWidget = new TextFieldWidget(textRenderer, x + 10, px + 15, enchantmentWidth, 20, Text.of("Enchantment"));
-        enchantmentTextFieldWidget.setChangedListener(input -> {
-            if (Registry.ENCHANTMENT.stream().map(Enchantment::getTranslationKey).map(Text::translatable).map(Text::getString).anyMatch(input::equalsIgnoreCase))
-                enchantmentTextFieldWidget.setEditableColor(ColorHelper.Argb.getArgb(255, 255, 255, 0));
-            else
-                enchantmentTextFieldWidget.setEditableColor(0xE0E0E0);
-        });
+        EnchantmentInputWidget enchantmentInputWidget = new EnchantmentInputWidget(x + 10, px + 15, enchantmentWidth, 20);
+
         TextFieldWidget levelTextFieldWidget = new TextFieldWidget(textRenderer, x + 20 + enchantmentWidth, px + 15, levelWidth, 20, Text.of("Level"));
         TextFieldWidget priceTextFieldWidget = new TextFieldWidget(textRenderer, x + 30 + enchantmentWidth + levelWidth, px + 15, priceWidth, 20, Text.of("Price"));
 
         TradeRequestListWidget tradeRequestListWidget = new TradeRequestListWidget(x + 10, px + 80, width - x - px - 20, this.height - px - 50);
         modBase.getTradeRequestContainer().getTradeRequests().forEach(tradeRequest -> tradeRequestListWidget.addEntry(new TradeRequestListWidget.TradeRequestEntry(tradeRequest)));
 
-        this.addDrawableChild(enchantmentTextFieldWidget);
+        this.addDrawableChild(enchantmentInputWidget);
         this.addDrawableChild(levelTextFieldWidget);
         this.addDrawableChild(priceTextFieldWidget);
         this.addDrawableChild(new ButtonWidget(x + 9, px + 15 + 20 + 5, 50, 20, Text.of("Add"), button -> {
-            TradeRequest request = modBase.getTradeRequestInputHandler().handleGUIInput(enchantmentTextFieldWidget.getText(), levelTextFieldWidget.getText(), priceTextFieldWidget.getText());
+            TradeRequest request = modBase.getTradeRequestInputHandler().handleGUIInput(enchantmentInputWidget.getText(), levelTextFieldWidget.getText(), priceTextFieldWidget.getText());
             if (request != null) {
                 if (!modBase.getTradeRequestContainer().getTradeRequests().contains(request)) {
                     tradeRequestListWidget.addEntry(new TradeRequestListWidget.TradeRequestEntry(request));
                     modBase.getTradeRequestContainer().addTradeRequest(request);
-                    clearTextFieldWidgets(enchantmentTextFieldWidget, levelTextFieldWidget, priceTextFieldWidget);
+                    clearTextFieldWidgets(enchantmentInputWidget, levelTextFieldWidget, priceTextFieldWidget);
                 }
             } else {
-                enchantmentTextFieldWidget.setEditableColor(ColorHelper.Argb.getArgb(255, 255, 0, 0));
+                enchantmentInputWidget.setEditableColor(ColorHelper.Argb.getArgb(255, 255, 0, 0));
             }
         }));
 
         this.addDrawableChild(new ButtonWidget(x + 70, px + 40, 50, 20, Text.of("Remove"), button -> {
-            Enchantment enchantment = modBase.getTradeRequestInputHandler().getEnchantment(enchantmentTextFieldWidget.getText());
+            Enchantment enchantment = modBase.getTradeRequestInputHandler().getEnchantment(enchantmentInputWidget.getText());
             if (enchantment == null) {
-                enchantmentTextFieldWidget.setEditableColor(ColorHelper.Argb.getArgb(255, 255, 0, 0));
+                enchantmentInputWidget.setEditableColor(ColorHelper.Argb.getArgb(255, 255, 0, 0));
                 return;
             }
             for (Iterator<TradeRequestListWidget.TradeRequestEntry> it = tradeRequestListWidget.children().iterator(); it.hasNext(); ) {
@@ -83,7 +78,7 @@ public class TradeSelectScreen extends Screen {
                     if (entry.tradeRequest.enchantment().getTranslationKey().equals(enchantment.getTranslationKey())) {
                         modBase.getTradeRequestContainer().removeTradeRequest(entry.tradeRequest);
                         it.remove();
-                        clearTextFieldWidgets(enchantmentTextFieldWidget, levelTextFieldWidget, priceTextFieldWidget);
+                        clearTextFieldWidgets(enchantmentInputWidget, levelTextFieldWidget, priceTextFieldWidget);
                     }
             }
         }));
