@@ -15,7 +15,6 @@ import net.minecraft.network.packet.s2c.play.EntityStatusS2CPacket;
 import net.minecraft.network.packet.s2c.play.OpenScreenS2CPacket;
 import net.minecraft.network.packet.s2c.play.SetTradeOffersS2CPacket;
 import net.minecraft.screen.ScreenHandlerType;
-import net.minecraft.text.Text;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -32,7 +31,7 @@ public abstract class NetworkPacketMixin {
     private void channelRead(ChannelHandlerContext context, Packet<?> packet, CallbackInfo ci) {
         if(packet instanceof EntityStatusS2CPacket statusPacket) {
             World world = MinecraftClient.getInstance().world;
-            if(world == null) // Error occurs when villagers are initialized
+            if(world == null)
                 return;
             if(modBase.getState() != TradingState.WAIT_PROFESSION)
                 return;

@@ -6,5 +6,9 @@ public enum TradingState {
     BREAK_WORKSTATION(),
     PLACE_WORKSTATION(),
     INACTIVE(),
-    MODE_SELECTION()
+    MODE_SELECTION(),
+
+    SELECT_TRADE(),
+    APPLY_TRADE(),
+    PICKUP_TRADE()
 }

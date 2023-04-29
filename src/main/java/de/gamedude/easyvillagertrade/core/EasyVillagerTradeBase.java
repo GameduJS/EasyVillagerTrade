@@ -14,7 +14,6 @@ import net.minecraft.network.packet.c2s.play.HandSwingC2SPacket;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
-import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
@@ -33,12 +32,18 @@ public class EasyVillagerTradeBase {
     private final TradeRequestContainer tradeRequestContainer;
     private final SelectionInterface selectionInterface;
     private final TradeRequestInputHandler tradeRequestInputHandler;
+    private final TradeInterface tradeInterface;
+
+    private final MinecraftClient minecraftClient;
 
     public EasyVillagerTradeBase() {
+        this.minecraftClient = MinecraftClient.getInstance();
         this.tradeRequestContainer = new TradeRequestContainer();
         this.selectionInterface = new SelectionInterface();
         this.tradeRequestInputHandler = new TradeRequestInputHandler();
-        state = TradingState.INACTIVE;
+        this.tradeInterface = new TradeInterface(this);
+
+        this.state = TradingState.INACTIVE;
     }
 
     public TradeRequestInputHandler getTradeRequestInputHandler() {
@@ -67,41 +72,44 @@ public class EasyVillagerTradeBase {
         switch (state) {
             case BREAK_WORKSTATION -> handleBreak();
             case PLACE_WORKSTATION -> handlePlacement();
+            case SELECT_TRADE -> tradeInterface.selectTrade();
+            case APPLY_TRADE -> tradeInterface.applyTrade();
+            case PICKUP_TRADE -> tradeInterface.pickupBook();
         }
     }
 
     private void handlePlacement() {
-        ClientPlayerEntity player = MinecraftClient.getInstance().player;
+        ClientPlayerEntity player = minecraftClient.player;
         BlockPos lecternPos = selectionInterface.getLecternPos();
 
         if(player.getOffHandStack().equals(ItemStack.EMPTY)) {
-            player.sendMessage(Text.of("§8| §7The query has been stopped due to the lack of lecterns."));
+            player.sendMessage(Text.of("§8|§c The query was interrupted because there were no lecterns present!"));
             setState(TradingState.INACTIVE);
             return;
         }
 
         // Place block
         BlockHitResult hitResult = new BlockHitResult(new Vec3d(lecternPos.getX(), lecternPos.getY(), lecternPos.getZ()), Direction.UP, lecternPos, false);
-        MinecraftClient.getInstance().interactionManager.interactBlock(player, Hand.OFF_HAND, hitResult);
-        MinecraftClient.getInstance().getNetworkHandler().sendPacket(new HandSwingC2SPacket(Hand.OFF_HAND));
+        minecraftClient.interactionManager.interactBlock(player, Hand.OFF_HAND, hitResult);
+        minecraftClient.getNetworkHandler().sendPacket(new HandSwingC2SPacket(Hand.OFF_HAND));
 
         setState(TradingState.WAIT_PROFESSION);
     }
 
     private void handleBreak() {
-        World world = MinecraftClient.getInstance().world;
-        ClientPlayerEntity player = MinecraftClient.getInstance().player;
+        World world = minecraftClient.world;
+        ClientPlayerEntity player = minecraftClient.player;
 
         if (world == null || player == null)
             return;
         ItemStack axe = player.getMainHandStack();
         if(axe.getMaxDamage() - axe.getDamage() < 20) {
-            player.sendMessage(Text.of("§8| §7The query has been stopped due to the lack of durability of the axe"));
+            player.sendMessage(Text.of("§8|§c Due to the low durability of the axe, the query was interrupted!"));
             setState(TradingState.INACTIVE);
             return;
         }
         if (world.getBlockState(getSelectionInterface().getLecternPos()).getBlock() == Blocks.LECTERN) {
-            MinecraftClient.getInstance().interactionManager.updateBlockBreakingProgress(getSelectionInterface().getLecternPos(), Direction.UP);
+            minecraftClient.interactionManager.updateBlockBreakingProgress(getSelectionInterface().getLecternPos(), Direction.UP);
             player.swingHand(Hand.MAIN_HAND, true);
             player.networkHandler.sendPacket(new HandSwingC2SPacket(Hand.MAIN_HAND));
         } else
@@ -126,17 +134,19 @@ public class EasyVillagerTradeBase {
         TradeRequest offer = new TradeRequest(bookEnchantment, level, bookOffer.getAdjustedFirstBuyItem().getCount());
 
         if (tradeRequestContainer.matchesAny(offer)) {
-            MinecraftClient.getInstance().player.sendMessage(Text.of("§8| §7The enchantment §e" + bookEnchantment.getName(level).getString() + "§7 has been found for §a" + offer.maxPrice() + " Emeralds"));
-            setState(TradingState.INACTIVE);
-            MinecraftClient.getInstance().getSoundManager().play(new PositionedSoundInstance(SoundEvents.BLOCK_AMETHYST_CLUSTER_BREAK, SoundCategory.MASTER, 2f, 1f, new LocalRandom(0), MinecraftClient.getInstance().player.getBlockPos()));
+            minecraftClient.player.sendMessage(Text.of("§8| §7The enchantment §e" + bookEnchantment.getName(level).getString() + "§7 has been found for §a" + offer.maxPrice() + " Emeralds"));
+            minecraftClient.getSoundManager().play(new PositionedSoundInstance(SoundEvents.BLOCK_AMETHYST_CLUSTER_BREAK, SoundCategory.MASTER, 2f, 1f, new LocalRandom(0), MinecraftClient.getInstance().player.getBlockPos()));
+
             tradeRequestContainer.removeTradeRequestByEnchantment(bookEnchantment);
+            tradeInterface.setTradeSlotID(tradeOffers.indexOf(bookOffer));
+            setState(TradingState.SELECT_TRADE);
         } else {
             setState(TradingState.BREAK_WORKSTATION);
         }
     }
 
     public void handleInteractionWithVillager() {
-        MinecraftClient.getInstance().interactionManager.interactEntity(MinecraftClient.getInstance().player, selectionInterface.getVillager(), Hand.MAIN_HAND);
+        minecraftClient.interactionManager.interactEntity(MinecraftClient.getInstance().player, selectionInterface.getVillager(), Hand.MAIN_HAND);
     }
 
 }
