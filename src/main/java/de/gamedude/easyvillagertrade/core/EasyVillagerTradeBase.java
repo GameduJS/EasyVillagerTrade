@@ -83,7 +83,7 @@ public class EasyVillagerTradeBase {
         BlockPos lecternPos = selectionInterface.getLecternPos();
 
         if(player.getOffHandStack().equals(ItemStack.EMPTY)) {
-            player.sendMessage(Text.of("§8|§c The query was interrupted because there were no lecterns present!"));
+            player.sendMessage(Text.translatable("evt.logic.lectern_non"));
             setState(TradingState.INACTIVE);
             return;
         }
@@ -104,7 +104,7 @@ public class EasyVillagerTradeBase {
             return;
         ItemStack axe = player.getMainHandStack();
         if(axe.getMaxDamage() - axe.getDamage() < 20) {
-            player.sendMessage(Text.of("§8|§c Due to the low durability of the axe, the query was interrupted!"));
+            player.sendMessage(Text.translatable("evt.logic.axe_durability"));
             setState(TradingState.INACTIVE);
             return;
         }
@@ -134,7 +134,7 @@ public class EasyVillagerTradeBase {
         TradeRequest offer = new TradeRequest(bookEnchantment, level, bookOffer.getAdjustedFirstBuyItem().getCount());
 
         if (tradeRequestContainer.matchesAny(offer)) {
-            minecraftClient.player.sendMessage(Text.of("§8| §7The enchantment §e" + bookEnchantment.getName(level).getString() + "§7 has been found for §a" + offer.maxPrice() + " Emeralds"));
+            minecraftClient.player.sendMessage(Text.translatable("evt.logic.trade_found", "§e" + bookEnchantment.getName(level).getString(), "§a" + offer.maxPrice()));
             minecraftClient.getSoundManager().play(new PositionedSoundInstance(SoundEvents.BLOCK_AMETHYST_CLUSTER_BREAK, SoundCategory.MASTER, 2f, 1f, new LocalRandom(0), MinecraftClient.getInstance().player.getBlockPos()));
 
             tradeRequestContainer.removeTradeRequestByEnchantment(bookEnchantment);

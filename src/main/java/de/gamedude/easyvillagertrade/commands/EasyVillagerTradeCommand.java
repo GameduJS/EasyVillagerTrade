@@ -6,12 +6,16 @@ import com.mojang.brigadier.context.CommandContext;
 import de.gamedude.easyvillagertrade.core.EasyVillagerTradeBase;
 import de.gamedude.easyvillagertrade.utils.TradeRequest;
 import de.gamedude.easyvillagertrade.utils.TradingState;
+import joptsimple.internal.Strings;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.command.argument.EnchantmentArgumentType;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.text.Text;
+import org.apache.commons.lang3.StringUtils;
+
+import java.util.Arrays;
 
 import static net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.*;
 
@@ -39,7 +43,7 @@ public class EasyVillagerTradeCommand implements ClientCommandRegistrationCallba
                     return 1;
                 }))
                 .executes(ctx -> {
-                    ctx.getSource().sendFeedback(Text.of("Please use /evt <select/search/execute/stop>"));
+                    ctx.getSource().sendFeedback(Text.translatable("evt.command.basic_usage"));
                     return 1;
                 }));
     }
@@ -53,7 +57,7 @@ public class EasyVillagerTradeCommand implements ClientCommandRegistrationCallba
         TradeRequest tradeRequest = modBase.getTradeRequestInputHandler().handleCommandInput(enchantment, level, maxPrice);
         modBase.getTradeRequestContainer().addTradeRequest(tradeRequest);
 
-        context.getSource().sendFeedback(Text.of("§8| §7Added search query for §e" + tradeRequest.enchantment().getName(tradeRequest.level()).getString() + "§7 for a maximum of§a " + tradeRequest.maxPrice() + " Emeralds"));
+        context.getSource().sendFeedback(Text.translatable("evt.command.add", "§e" + tradeRequest.enchantment().getName(tradeRequest.level()).getString(), "§a" + tradeRequest.maxPrice()));
         return 1;
     }
 
@@ -61,26 +65,30 @@ public class EasyVillagerTradeCommand implements ClientCommandRegistrationCallba
         Enchantment enchantment = context.getArgument("enchantment", Enchantment.class);
         modBase.getTradeRequestContainer().removeTradeRequestByEnchantment(enchantment);
 
-        context.getSource().sendFeedback(Text.of("§8| §7Removed any search queries for §e" + enchantment.getTranslationKey().split("\\.")[2] + "§7 enchantment"));
+        boolean multipleLevels = enchantment.getMaxLevel() == 1;
+        String[] parts = enchantment.getName(1).getString().split(" ");
+        String name = Strings.join((multipleLevels) ? parts : Arrays.copyOf(parts, parts.length - 1), " ");
+
+        context.getSource().sendFeedback(Text.translatable("evt.command.remove", "§e" + StringUtils.capitalize(name)));
         return 1;
     }
 
     public int executeListTradeRequest(CommandContext<FabricClientCommandSource> context) {
-        context.getSource().sendFeedback(Text.of("§8| §7List of all search queries: "));
+        context.getSource().sendFeedback(Text.translatable("evt.command.list.head"));
         modBase.getTradeRequestContainer().getTradeRequests().forEach(offer ->
-                context.getSource().sendFeedback(Text.of("§7- §e" + offer.enchantment().getName(offer.level()).getString() + "§7 for a maximum of §a" + offer.maxPrice() + " Emeralds")));
+                context.getSource().sendFeedback(Text.translatable("evt.command.list.body", "§e" + offer.enchantment().getName(offer.level()).getString(), "§a" + offer.maxPrice())));
         return 1;
     }
 
     public int executeSelection(CommandContext<FabricClientCommandSource> context) {
         this.modBase.setState(TradingState.MODE_SELECTION);
-        context.getSource().sendFeedback(Text.of("§8| §7Select the villager & lectern that should be handled"));
+        context.getSource().sendFeedback(Text.translatable("evt.command.selecting"));
         return 1;
     }
 
     public int executeVillagerTrade(CommandContext<FabricClientCommandSource> context) {
         this.modBase.setState(TradingState.CHECK_OFFERS);
-        context.getSource().sendFeedback(Text.of("§8| §7Executing all search queries"));
+        context.getSource().sendFeedback(Text.translatable("evt.command.execute"));
         modBase.handleInteractionWithVillager();
         return 1;
     }

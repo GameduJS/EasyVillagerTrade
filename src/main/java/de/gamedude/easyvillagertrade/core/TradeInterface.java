@@ -50,7 +50,7 @@ public class TradeInterface {
         else if (freeSlot != -999)
             freeSlot -= 6;
         else
-            player.sendMessage(Text.of("§8| §c§lThe book has been removed from your inventory due to lack of space."));
+            player.sendMessage(Text.translatable("evt.logic.book_drop"));
 
         minecraftClient.interactionManager.clickSlot(currentScreenHandler.syncId, freeSlot, 0, SlotActionType.PICKUP, minecraftClient.player);
         modBase.setState(TradingState.INACTIVE);
