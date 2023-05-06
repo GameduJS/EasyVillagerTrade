@@ -4,16 +4,30 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import de.gamedude.easyvillagertrade.core.EasyVillagerTradeBase;
+import de.gamedude.easyvillagertrade.scripting.core.script.Script;
+import de.gamedude.easyvillagertrade.scripting.core.script.actions.WalkAction;
+import de.gamedude.easyvillagertrade.scripting.core.script.actions.base.Action;
 import de.gamedude.easyvillagertrade.utils.ScriptArgumentType;
 import de.gamedude.easyvillagertrade.utils.TradeRequest;
 import de.gamedude.easyvillagertrade.utils.TradingState;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.minecraft.block.Block;
 import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.command.argument.EnchantmentArgumentType;
 import net.minecraft.enchantment.Enchantment;
+import net.minecraft.entity.MovementType;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.text.Text;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.Vec3f;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import static java.lang.Math.*;
+import static java.lang.Math.toRadians;
 import static net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.*;
 
 public class EasyVillagerTradeCommand implements ClientCommandRegistrationCallback {
@@ -41,12 +55,36 @@ public class EasyVillagerTradeCommand implements ClientCommandRegistrationCallba
                 })).then(literal("script")
                         .then(literal("reload").executes(this::reloadScripts))
                         .then(literal("setactive").then(argument("scriptname", ScriptArgumentType.scriptArgumentType()).executes(this::setActiveScript)))
-                        .then(literal("enable").then(argument("times", IntegerArgumentType.integer()).executes(this::activateScript))))
+                        .then(literal("enable").then(argument("times", IntegerArgumentType.integer()).executes(this::activateScript)))
+                        .then(literal("test").executes(this::test)))
                 .executes(ctx -> {
                     ctx.getSource().sendFeedback(Text.of("Please use /evt <select/search/execute/stop>"));
                     return 1;
                 }));
     }
+
+    public int test(CommandContext<FabricClientCommandSource> context) {
+        var i = new ArrayList<Action>(){{
+            new WalkAction("LEFT", "3");
+        }};
+        modBase.getScriptCache().activeScript = new Script(i);
+        modBase.getScriptCache().getActiveScript().setRepetitionCount(2);
+        modBase.getScriptCache().getActiveScript().setActive(true);
+        modBase.getScriptCache().getActiveScript().setTriggered(true);
+
+        PlayerEntity player = context.getSource().getPlayer();
+
+        int distance = 3;
+        float yaw = player.getYaw();
+        this.destination = player.getPos();
+
+        destination = destination.add(sin(toRadians(yaw)) * distance, 0, cos(toRadians(yaw)) * distance); // RIGHT, LEFT
+        destination = destination.add(cos(toRadians(yaw)) * distance, 0, sin(toRadians(yaw)) * distance); // FORWARD, BACKWARD
+
+        return 1;
+    }
+
+    Vec3d destination = null;
 
     public int reloadScripts(CommandContext<FabricClientCommandSource> context) {
         modBase.getScriptCache().reloadCache();

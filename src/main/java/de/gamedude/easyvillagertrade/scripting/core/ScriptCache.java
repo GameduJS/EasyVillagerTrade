@@ -9,7 +9,7 @@ public class ScriptCache {
 
     private final ScriptProcessor scriptProcessor;
     private final Map<String, Script> scriptMap;
-    private Script activeScript;
+    public Script activeScript;
 
     public ScriptCache(ScriptProcessor scriptProcessor) {
         this.scriptProcessor = scriptProcessor;

@@ -16,16 +16,17 @@ import net.fabricmc.fabric.api.command.v2.ArgumentTypeRegistry;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.fabric.api.event.player.UseEntityCallback;
 import net.minecraft.block.Blocks;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.option.KeyBinding;
-import net.minecraft.command.argument.ArgumentTypes;
 import net.minecraft.command.argument.serialize.ConstantArgumentSerializer;
-import net.minecraft.command.argument.serialize.StringArgumentSerializer;
 import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 import org.lwjgl.glfw.GLFW;
 
 @Environment(EnvType.CLIENT)
@@ -76,6 +77,20 @@ public class EasyVillagerTrade implements ModInitializer {
             while(keyBinding.wasPressed()) {
                 client.setScreen(new TradeSelectScreen());
             }
+        });
+
+        Vec3d vec3d = new Vec3d(600, 0, 0);
+        ClientTickEvents.START_WORLD_TICK.register(world -> {
+            ClientPlayerEntity player = MinecraftClient.getInstance().player;
+            var speed = 0.13;
+
+
+            /*if(player.getPos().distanceTo(vec3d) > 0.1) {
+                System.out.println(player.getMovementSpeed());
+                Vec3d dir = vec3d.subtract(player.getPos()).normalize().multiply(speed);
+                player.move(MovementType.SELF, dir);
+                player.tickMovement();
+            }*/
         });
     }
 
