@@ -9,6 +9,7 @@ import de.gamedude.easyvillagertrade.utils.TradingState;
 import joptsimple.internal.Strings;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.command.argument.EnchantmentArgumentType;
 import net.minecraft.enchantment.Enchantment;
@@ -31,7 +32,7 @@ public class EasyVillagerTradeCommand implements ClientCommandRegistrationCallba
     public void register(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandRegistryAccess registryAccess) {
         String command_base = "evt";
         dispatcher.register(literal(command_base)
-                .then(literal("select").executes(this::executeSelection))
+                .then(literal("select").then(literal("close").executes(this::executeSelectionClosest)).executes(this::executeSelection))
                 .then(literal("search")
                         .then(literal("add").then(argument("maxPrice", IntegerArgumentType.integer()).then(argument("enchantment", EnchantmentArgumentType.enchantment()).executes(this::executeAddTradeRequest).then(argument("level", IntegerArgumentType.integer()).executes(this::executeAddTradeRequest)))))
 
@@ -83,6 +84,17 @@ public class EasyVillagerTradeCommand implements ClientCommandRegistrationCallba
     public int executeSelection(CommandContext<FabricClientCommandSource> context) {
         this.modBase.setState(TradingState.MODE_SELECTION);
         context.getSource().sendFeedback(Text.translatable("evt.command.selecting"));
+        return 1;
+    }
+
+    public int executeSelectionClosest(CommandContext<FabricClientCommandSource> context) {
+        ClientPlayerEntity player = context.getSource().getPlayer();
+        int x = this.modBase.getSelectionInterface().selectClosestToPlayer(player);
+        switch (x) {
+            case 1 -> player.sendMessage(Text.translatable("evt.logic.select.fail_lectern"));
+            case 2 -> player.sendMessage(Text.translatable("evt.logic.select.fail_villager"));
+            case 0 -> player.sendMessage(Text.translatable("evt.logic.select.success"));
+        }
         return 1;
     }
 

@@ -39,7 +39,7 @@ public class EasyVillagerTradeBase {
     public EasyVillagerTradeBase() {
         this.minecraftClient = MinecraftClient.getInstance();
         this.tradeRequestContainer = new TradeRequestContainer();
-        this.selectionInterface = new SelectionInterface();
+        this.selectionInterface = new SelectionInterface(this);
         this.tradeRequestInputHandler = new TradeRequestInputHandler();
         this.tradeInterface = new TradeInterface(this);
 
