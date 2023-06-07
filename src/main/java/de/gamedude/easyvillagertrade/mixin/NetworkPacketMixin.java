@@ -9,7 +9,7 @@ import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.network.ClientConnection;
-import net.minecraft.network.Packet;
+import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.c2s.play.CloseHandledScreenC2SPacket;
 import net.minecraft.network.packet.s2c.play.EntityStatusS2CPacket;
 import net.minecraft.network.packet.s2c.play.OpenScreenS2CPacket;
@@ -27,7 +27,7 @@ public abstract class NetworkPacketMixin {
 
     private final EasyVillagerTradeBase modBase = EasyVillagerTrade.getModBase();
 
-    @Inject(method = "channelRead0(Lio/netty/channel/ChannelHandlerContext;Lnet/minecraft/network/Packet;)V", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "channelRead0(Lio/netty/channel/ChannelHandlerContext;Lnet/minecraft/network/packet/Packet;)V", at = @At("HEAD"), cancellable = true)
     private void channelRead(ChannelHandlerContext context, Packet<?> packet, CallbackInfo ci) {
         if(packet instanceof EntityStatusS2CPacket statusPacket) {
             World world = MinecraftClient.getInstance().world;
@@ -47,6 +47,8 @@ public abstract class NetworkPacketMixin {
             modBase.checkVillagerOffers(setTradeOffers.getOffers());
         } else if (packet instanceof OpenScreenS2CPacket screenPacket && screenPacket.getScreenHandlerType() == ScreenHandlerType.MERCHANT) {
             if (modBase.getState() != TradingState.CHECK_OFFERS)
+                return;
+            if(MinecraftClient.getInstance().getNetworkHandler() == null)
                 return;
             MinecraftClient.getInstance().executeSync(() -> MinecraftClient.getInstance().getNetworkHandler().sendPacket(new CloseHandledScreenC2SPacket(screenPacket.getSyncId() + 1)));
             ci.cancel();

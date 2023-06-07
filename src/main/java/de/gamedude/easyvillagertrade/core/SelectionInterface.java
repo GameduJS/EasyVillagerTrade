@@ -29,14 +29,14 @@ public class SelectionInterface {
     public void setLecternPos(BlockPos blockPos) { this.lecternPos = blockPos; }
 
     public int selectClosestToPlayer(ClientPlayerEntity player) {
-        Optional<BlockPos> closestBlockOptional = BlockPos.findClosest(player.getBlockPos(), 3, 0, blockPos -> player.world.getBlockState(blockPos).getBlock() instanceof LecternBlock);
+        Optional<BlockPos> closestBlockOptional = BlockPos.findClosest(player.getBlockPos(), 3, 0, blockPos -> player.getWorld().getBlockState(blockPos).getBlock() instanceof LecternBlock);
         if(closestBlockOptional.isEmpty()) {
             modBase.setState(TradingState.INACTIVE);
             return 1;
         }
         this.lecternPos = closestBlockOptional.get();
 
-        this.villager = getClosestEntity(player.world, this.lecternPos);
+        this.villager = getClosestEntity(player.getWorld(), this.lecternPos);
         if(this.villager == null) {
             modBase.setState(TradingState.INACTIVE);
             return 2;

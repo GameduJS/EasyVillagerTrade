@@ -25,7 +25,7 @@ import org.lwjgl.glfw.GLFW;
 public class EasyVillagerTrade implements ModInitializer {
 
     private static EasyVillagerTradeBase modBase;
-    KeyBinding keyBinding = new KeyBinding("key.custom.openscreen", GLFW.GLFW_KEY_F6, "EasyVillagerTrade");
+    private final KeyBinding keyBinding = new KeyBinding("key.custom.openscreen", GLFW.GLFW_KEY_F6, "EasyVillagerTrade");
 
     @Override
     public void onInitialize() {

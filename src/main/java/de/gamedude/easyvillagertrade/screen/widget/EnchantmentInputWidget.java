@@ -2,11 +2,14 @@ package de.gamedude.easyvillagertrade.screen.widget;
 
 import joptsimple.internal.Strings;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.navigation.GuiNavigation;
+import net.minecraft.client.gui.navigation.GuiNavigationPath;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.enchantment.Enchantment;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.ColorHelper;
-import net.minecraft.util.registry.Registry;
 import org.apache.commons.lang3.StringUtils;
 import org.lwjgl.glfw.GLFW;
 
@@ -15,7 +18,7 @@ import java.util.function.Consumer;
 
 public class EnchantmentInputWidget extends TextFieldWidget {
 
-    private static final Registry<Enchantment> ENCHANTMENT_REGISTRY = Registry.ENCHANTMENT;
+    private static final Registry<Enchantment> ENCHANTMENT_REGISTRY = Registries.ENCHANTMENT;
     private String suggestion;
 
     public EnchantmentInputWidget(int x, int y, int width, int height) {
@@ -32,7 +35,7 @@ public class EnchantmentInputWidget extends TextFieldWidget {
             else
                 this.setEditableColor(0xE0E0E0);
 
-            suggestion = getPossibleEnchantmentNameOrElse(text).toLowerCase().replaceFirst("" + text.toLowerCase().replace("+", ""), "");
+            suggestion = getPossibleEnchantmentNameOrElse(text).toLowerCase().replaceFirst(text.toLowerCase().replace("+", ""), "");
             setSuggestion(suggestion);
         };
     }
@@ -64,11 +67,10 @@ public class EnchantmentInputWidget extends TextFieldWidget {
     }
 
     @Override
-    public boolean changeFocus(boolean lookForwards) {
-        if(lookForwards) {
+    public GuiNavigationPath getNavigationPath(GuiNavigation navigation) {
+        if (navigation instanceof GuiNavigation.Tab)
             setEnchantmentText();
-        }
-        return super.changeFocus(lookForwards);
+        return super.getNavigationPath(navigation);
     }
 
     private void setEnchantmentText() {

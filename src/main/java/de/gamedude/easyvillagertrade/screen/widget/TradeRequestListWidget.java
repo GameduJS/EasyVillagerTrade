@@ -1,6 +1,5 @@
 package de.gamedude.easyvillagertrade.screen.widget;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import de.gamedude.easyvillagertrade.EasyVillagerTrade;
 import de.gamedude.easyvillagertrade.core.EasyVillagerTradeBase;
 import de.gamedude.easyvillagertrade.utils.TradeRequest;
@@ -8,8 +7,6 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.*;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.ColorHelper;
 import net.minecraft.util.math.MathHelper;
@@ -51,15 +48,15 @@ public class TradeRequestListWidget extends AbstractParentElement implements Dra
     }
 
     @Override
-    public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         ENTRIES_PER_PAGE = (int) Math.ceil((height - y + 5) / (ENTRY_HEIGHT + 5f) - 1);
         if (ENTRIES_PER_PAGE == 0)
             return;
 
-        this.renderBackground(matrices);
+        this.renderBackground(context);
 
         for (int index = 0; index < Math.min(getEntryCount(), ENTRIES_PER_PAGE); ++index) {
-            getEntry(index + getOffset()).render(matrices, index, x, y + 1, width);
+            getEntry(index + getOffset()).render(context, index, x, y + 1, width);
         }
     }
 
@@ -97,11 +94,11 @@ public class TradeRequestListWidget extends AbstractParentElement implements Dra
         return x <= mouseX && mouseX <= (x + width) && y <= mouseY && mouseY <= height;
     }
 
-    private void renderBackground(MatrixStack matrices) {
-        fill(matrices, x - 1, y, x + width + 1, y + 1, -1); // horizontal
-        fill(matrices, x - 2, height, x + width + 2, height + 1, -1);
-        fill(matrices, x - 2, y, x - 1, height, -1); // vertical
-        fill(matrices, x + width + 1, y, x + width + 2, height, -1);
+    private void renderBackground(DrawContext context) {
+        context.fill(x - 1, y, x + width + 1, y + 1, -1); // horizontal
+        context.fill(x - 2, height, x + width + 2, height + 1, -1);
+        context.fill(x - 2, y, x - 1, height, -1); // vertical
+        context.fill(x + width + 1, y, x + width + 2, height, -1);
     }
 
     public void addEntry(TradeRequestEntry entry) {
@@ -138,22 +135,19 @@ public class TradeRequestListWidget extends AbstractParentElement implements Dra
             this.removeConsumer = removeConsumer;
         }
 
-        private void render(MatrixStack matrices, int index, int x, int y, int entryWidth) {
+        private void render(DrawContext context, int index, int x, int y, int entryWidth) {
             this.x = x;
             this.y1 = y + (index * ENTRY_HEIGHT) + (5 * index);
             this.x2 = x + entryWidth;
             this.y2 = y + ENTRY_HEIGHT * (index + 1) + (5 * index);
 
-            DrawableHelper.fill(matrices, x, y1, x2, y2, ColorHelper.Argb.getArgb(240, 7, 7, 7));
+            context.fill(x, y1, x2, y2, ColorHelper.Argb.getArgb(240, 7, 7, 7));
 
-            RenderSystem.setShaderTexture(0, ENCHANTED_BOOK_TEXTURE);
-            DrawableHelper.drawTexture(matrices, x, y1, 0.0f, 0.0f, 16, 16, 16, 16);
+            context.drawTexture(ENCHANTED_BOOK_TEXTURE, x, y1, 0.0f, 0.0f, 16, 16, 16, 16);
+            context.drawTexture(EMERALD_TEXTURE, x, y1 + 16, 24, 0f, 0f, 16, 16, 16, 16);
 
-            RenderSystem.setShaderTexture(0, EMERALD_TEXTURE);
-            DrawableHelper.drawTexture(matrices, x, y1 + 16, 24, 0f, 0f, 16, 16, 16, 16);
-
-            textRenderer.draw(matrices, tradeRequest.enchantment().getName(tradeRequest.level()), x + 20, y1 + 4, 0);
-            textRenderer.draw(matrices, Text.of("§e" + tradeRequest.maxPrice()), x + 20, y1 + 20, 0);
+            context.drawText(textRenderer, tradeRequest.enchantment().getName(tradeRequest.level()), x + 20, y1 + 4, -1, false);
+            context.drawText(textRenderer, "§e" + tradeRequest.maxPrice(), x + 20, y1 + 20, -1, false);
         }
 
         @Override
@@ -168,6 +162,16 @@ public class TradeRequestListWidget extends AbstractParentElement implements Dra
         @Override
         public boolean isMouseOver(double mouseX, double mouseY) {
             return x <= mouseX && mouseX <= x2 && y1 <= mouseY && mouseY <= y2;
+        }
+
+        @Override
+        public void setFocused(boolean focused) {
+
+        }
+
+        @Override
+        public boolean isFocused() {
+            return false;
         }
     }
 }
