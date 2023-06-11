@@ -15,6 +15,7 @@
   "evt.logic.select.fail_lectern": "§8| §cUnable to find any lecterns close to you.",
   "evt.logic.select.fail_villager": "§8| §cNo appropriate villager near the lectern was found.",
   "evt.logic.select.success": "§8| §aThe closest villager and lectern were selected.",
+  "evt.logic.pos_not_set": "§8| §cYou haven't selected the lectern yet!",
 
   "key.custom.openscreen": "Open screen"
 }

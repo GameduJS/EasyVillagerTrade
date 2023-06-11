@@ -99,6 +99,7 @@ public class EasyVillagerTradeBase {
     private void handleBreak() {
         World world = minecraftClient.world;
         ClientPlayerEntity player = minecraftClient.player;
+        BlockPos blockPos = getSelectionInterface().getLecternPos();
 
         if (world == null || player == null)
             return;
@@ -108,6 +109,13 @@ public class EasyVillagerTradeBase {
             setState(TradingState.INACTIVE);
             return;
         }
+
+        if(blockPos == null) {
+            player.sendMessage(Text.translatable("evt.logic.pos_not_set"));
+            setState(TradingState.INACTIVE);
+            return;
+        }
+
         if (world.getBlockState(getSelectionInterface().getLecternPos()).getBlock() == Blocks.LECTERN) {
             minecraftClient.interactionManager.updateBlockBreakingProgress(getSelectionInterface().getLecternPos(), Direction.UP);
             player.swingHand(Hand.MAIN_HAND, true);
