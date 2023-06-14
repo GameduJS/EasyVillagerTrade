@@ -16,5 +16,6 @@ Firstly take any axe into your main hand and some lecterns into your offhand.
 Finally, execute ``/evt execute`` and sit back
 
 Here is an example on how to use this mod.
-[![Watch the video](https://github.com/GameduJS/EasyVillagerTrade/blob/master/github/thumbnail.png?raw=true)](https://www.youtube.com/watch?v=7Rz74_FEDwc)
+[YouTube Video](https://www.youtube.com/watch?v=7Rz74_FEDwc)
 
+https://github.com/GameduJS/EasyVillagerTrade/assets/64703035/b4b045e4-b284-478b-b5aa-5f989e26cf28
