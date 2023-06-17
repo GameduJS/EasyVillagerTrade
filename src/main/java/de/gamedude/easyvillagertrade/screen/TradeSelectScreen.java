@@ -6,10 +6,11 @@ import de.gamedude.easyvillagertrade.screen.widget.EnchantmentInputWidget;
 import de.gamedude.easyvillagertrade.screen.widget.TradeRequestListWidget;
 import de.gamedude.easyvillagertrade.utils.TradeRequest;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
+import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.ColorHelper;
@@ -85,23 +86,23 @@ public class TradeSelectScreen extends Screen {
     }
 
     @Override
-    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        this.renderBackground(context);
-        super.render(context, mouseX, mouseY, delta);
+    public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+        this.renderBackground(matrices);
+        super.render(matrices, mouseX, mouseY, delta);
 
         int px = (int) (this.width / 50f);
         int x = this.width - px - widgetWidth;
 
-        context.drawText(textRenderer, "Enchantment", x + 10, px + 6, 0xE0E0E0, false);
-        context.drawText(textRenderer, "Level", x + 20 + enchantmentWidth, px + 6, 0xE0E0E0, false);
-        context.drawText(textRenderer, "Price", x + 30 + enchantmentWidth + levelWidth, px + 6, 0xE0E0E0, false);
+        textRenderer.draw(matrices, "Enchantment", x + 10, px + 6, 0xE0E0E0);
+        textRenderer.draw(matrices, "Level", x + 20 + enchantmentWidth, px + 6, 0xE0E0E0);
+        textRenderer.draw(matrices, "Price", x + 30 + enchantmentWidth + levelWidth, px + 6, 0xE0E0E0);
     }
 
     @Override
-    public void renderBackground(DrawContext context) {
+    public void renderBackground(MatrixStack matrices) {
         int px = (int) (this.width / 50f);
         int x = this.width - px - widgetWidth;
-        context.fill(x, px, this.width - px, this.height - px, ColorHelper.Argb.getArgb(150, 7, 7, 7));
+        DrawableHelper.fill(matrices, x, px, this.width - px, this.height - px, ColorHelper.Argb.getArgb(150, 7, 7, 7));
     }
 
     public void clearTextFieldWidgets(TextFieldWidget... textFieldWidgets){
