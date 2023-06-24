@@ -20,7 +20,10 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.command.argument.serialize.ConstantArgumentSerializer;
+import net.minecraft.entity.EntityPose;
+import net.minecraft.entity.MovementType;
 import net.minecraft.entity.passive.VillagerEntity;
+import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
@@ -73,9 +76,15 @@ public class EasyVillagerTrade implements ModInitializer {
 
         ClientTickEvents.START_CLIENT_TICK.register(client -> modBase.handle());
 
-        ClientTickEvents.END_CLIENT_TICK.register(client -> {
+        ClientTickEvents.START_WORLD_TICK.register(world -> {
+            ClientPlayerEntity entity = MinecraftClient.getInstance().player;
+            if(entity.getX() >= -40) {
+                entity.travel(new Vec3d(0, 0, 1.1));
+                System.out.println("[DEBUG] EasyVillagerTrade.registerCallbacks: " + entity.getMovementSpeed());
+            }
+            
+
             while(keyBinding.wasPressed()) {
-                client.setScreen(new TradeSelectScreen());
             }
         });
 
