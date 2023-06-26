@@ -1,0 +1,22 @@
+
+{
+  "evt.command.execute": "§8| §7Führe Suchanfrage aus",
+  "evt.command.selecting": "§8| §7Wähle den Dorfbewohner und sein Lesepult jeweils durch Rechtsklick aus.",
+  "evt.command.add": "§8| §7Suchanfrage für %d §7 für ein Maximum von %d §aSmaragden hinzugefügt",
+  "evt.command.remove": "§8| §7Alle Suchanfragen für %d §7 wurden entfernt.",
+  "evt.command.list.head": "§8| §7Liste aller Suchanfragen: ",
+  "evt.command.list.body": "§7- %d §7für ein Maximum von %d §aSmaragden",
+  "evt.command.basic_usage": "§8| §7Verwendung: /evt <select/search/execute/stop>",
+
+  "evt.logic.axe_durability": "§8|§c Die Suchanfrage wurde abgebrochen, da deine Axt zu wenig Haltbarkeit hat.",
+  "evt.logic.trade_found": "§8| §7Die Verzauberung %d §7wurde für %d §aSmaragde gefunden.",
+  "evt.logic.lectern_non": "§8| §cDie Suchanfrage wurde aufgrund des Fehlens von Lesepulten unterbrochen.",
+  "evt.logic.book_drop": "§8| §c§lDas Buch wurde aufgrund fehlenden Platzes aus deinem Inventar geworfen.",
+
+  "evt.logic.select.fail_lectern": "§8| §cEs konnten keine Lesepulte in deiner Nähe gefunden werden.",
+  "evt.logic.select.fail_villager": "§8| §cEs wurde kein passender Dorfbewohner in der Nähe des Lesepults gefunden.",
+  "evt.logic.select.success": "§8| §aDer nächstgelegene Dorfbewohner und sein Lesepult wurden ausgewählt.",
+  "evt.logic.pos_not_set": "§8| §cDu hast kein Lesepult ausgewählt!",
+
+  "key.custom.openscreen": "Menu öffnen"
+}
