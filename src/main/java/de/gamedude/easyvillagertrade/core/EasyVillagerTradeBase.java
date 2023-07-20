@@ -22,6 +22,7 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.random.LocalRandom;
 import net.minecraft.village.TradeOffer;
 import net.minecraft.village.TradeOfferList;
+import net.minecraft.village.VillagerProfession;
 import net.minecraft.world.World;
 
 import java.util.Map;
@@ -75,6 +76,10 @@ public class EasyVillagerTradeBase {
             case SELECT_TRADE -> tradeInterface.selectTrade();
             case APPLY_TRADE -> tradeInterface.applyTrade();
             case PICKUP_TRADE -> tradeInterface.pickupBook();
+            case WAIT_JOB_LOSS -> {
+                if(selectionInterface.getVillager().getVillagerData().getProfession() == VillagerProfession.NONE)
+                    setState(TradingState.PLACE_WORKSTATION);
+            }
         }
     }
 
@@ -120,8 +125,9 @@ public class EasyVillagerTradeBase {
             minecraftClient.interactionManager.updateBlockBreakingProgress(getSelectionInterface().getLecternPos(), Direction.UP);
             player.swingHand(Hand.MAIN_HAND, true);
             player.networkHandler.sendPacket(new HandSwingC2SPacket(Hand.MAIN_HAND));
-        } else
-            state = TradingState.PLACE_WORKSTATION;
+        } else {
+            state = TradingState.WAIT_JOB_LOSS;
+        }
     }
 
     public void checkVillagerOffers(TradeOfferList tradeOffers) {
