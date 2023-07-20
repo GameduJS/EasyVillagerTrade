@@ -1,7 +1,8 @@
 package de.gamedude.easyvillagertrade.core;
 
 import de.gamedude.easyvillagertrade.scripting.core.ScriptCache;
-import de.gamedude.easyvillagertrade.scripting.core.ScriptProcessor;
+import de.gamedude.easyvillagertrade.scripting.core.ScriptFactory;
+import de.gamedude.easyvillagertrade.scripting.core.script.Script;
 import de.gamedude.easyvillagertrade.utils.TradeRequest;
 import de.gamedude.easyvillagertrade.utils.TradingState;
 import net.minecraft.block.Blocks;
@@ -27,21 +28,26 @@ import net.minecraft.village.TradeOfferList;
 import net.minecraft.world.World;
 
 import java.util.Map;
+import java.util.function.Consumer;
 
 public class EasyVillagerTradeBase {
-    private TradingState state;
+    private TradingState state = TradingState.INACTIVE;
 
-    private final TradeRequestContainer tradeRequestContainer;
-    private final SelectionInterface selectionInterface;
-    private final TradeRequestInputHandler tradeRequestInputHandler;
-    private final ScriptCache scriptCache;
+    private TradeRequestContainer tradeRequestContainer;
+    private SelectionInterface selectionInterface;
+    private TradeRequestInputHandler tradeRequestInputHandler;
+    private ScriptCache scriptCache;
 
-    public EasyVillagerTradeBase() {
+    private boolean isRegistered = false;
+
+    public EasyVillagerTradeBase() { }
+
+    public void register() {
         this.tradeRequestContainer = new TradeRequestContainer();
         this.selectionInterface = new SelectionInterface(this);
         this.tradeRequestInputHandler = new TradeRequestInputHandler();
-        this.scriptCache = new ScriptCache(new ScriptProcessor());
-        state = TradingState.INACTIVE;
+        this.scriptCache = new ScriptCache(new ScriptFactory());
+        this.isRegistered = true;
     }
 
     public TradeRequestInputHandler getTradeRequestInputHandler() {
@@ -68,10 +74,10 @@ public class EasyVillagerTradeBase {
         return state;
     }
 
+    private final Consumer<Script> scriptConsumer = Script::tickScript;
+
     public void handle() {
-        if(getScriptCache().isScriptActive() && getScriptCache().getActiveScript().isTriggered()) {
-            getScriptCache().getActiveScript().triggerScript();
-        }
+        this.scriptCache.getActiveScript(scriptConsumer);
 
         if (state == TradingState.INACTIVE)
             return;
@@ -140,10 +146,11 @@ public class EasyVillagerTradeBase {
             MinecraftClient.getInstance().getSoundManager().play(new PositionedSoundInstance(SoundEvents.BLOCK_AMETHYST_CLUSTER_BREAK, SoundCategory.MASTER, 2f, 1f, new LocalRandom(0), MinecraftClient.getInstance().player.getBlockPos()));
             tradeRequestContainer.removeTradeRequestByEnchantment(bookEnchantment);
 
-            if(getScriptCache().isScriptActive()) {
-                getScriptCache().getActiveScript().setTriggered(true);
+            this.scriptCache.getActiveScript(script -> {
+                if(!script.setTriggered(true))
+                    this.scriptCache.setActiveScript(null);
                 System.out.println("hello!! test triggered");
-            }
+            });
 
         } else {
             setState(TradingState.BREAK_WORKSTATION);
@@ -154,4 +161,7 @@ public class EasyVillagerTradeBase {
         MinecraftClient.getInstance().interactionManager.interactEntity(MinecraftClient.getInstance().player, selectionInterface.getVillager(), Hand.MAIN_HAND);
     }
 
+    public boolean isActive() {
+        return isRegistered;
+    }
 }

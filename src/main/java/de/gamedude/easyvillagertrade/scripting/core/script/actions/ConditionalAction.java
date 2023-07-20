@@ -54,7 +54,7 @@ public class ConditionalAction extends Action {
 
     @Override
     public void reset() {
-        finished = false;
+        super.reset();
         conditionalActionMap.values().forEach(actionList -> actionList.forEach(Action::reset));
     }
 }

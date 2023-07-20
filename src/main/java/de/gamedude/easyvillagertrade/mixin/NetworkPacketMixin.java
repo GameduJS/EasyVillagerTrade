@@ -29,11 +29,14 @@ public abstract class NetworkPacketMixin {
 
     @Inject(method = "channelRead0(Lio/netty/channel/ChannelHandlerContext;Lnet/minecraft/network/Packet;)V", at = @At("HEAD"), cancellable = true)
     private void channelRead(ChannelHandlerContext context, Packet<?> packet, CallbackInfo ci) {
+        if(modBase.isActive())
+            return;
+
         if(packet instanceof EntityStatusS2CPacket statusPacket) {
             World world = MinecraftClient.getInstance().world;
-            if(world == null) // Error occurs when villagers are initialized
-                return;
             if(modBase.getState() != TradingState.WAIT_PROFESSION)
+                return;
+            if(world == null) // Error occurs when villagers are initialized
                 return;
             if(!(statusPacket.getEntity(world) instanceof VillagerEntity villager))
                 return;

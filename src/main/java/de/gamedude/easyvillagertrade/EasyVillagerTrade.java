@@ -17,38 +17,31 @@ import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.fabric.api.event.player.UseEntityCallback;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.command.argument.serialize.ConstantArgumentSerializer;
-import net.minecraft.entity.EntityPose;
-import net.minecraft.entity.MovementType;
 import net.minecraft.entity.passive.VillagerEntity;
-import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
 import org.lwjgl.glfw.GLFW;
 
 @Environment(EnvType.CLIENT)
 public class EasyVillagerTrade implements ModInitializer {
 
     private static EasyVillagerTradeBase modBase;
-    KeyBinding keyBinding = new KeyBinding("key.custom.openscreen", GLFW.GLFW_KEY_F6, "EasyVillagerTrade");
+    private static final KeyBinding keyBinding = new KeyBinding("key.custom.openscreen", GLFW.GLFW_KEY_F6, "EasyVillagerTrade");
 
     @Override
     public void onInitialize() {
-        KeyBindingHelper.registerKeyBinding(keyBinding);
         ArgumentTypeRegistry.registerArgumentType(new Identifier("easyvillagertrade", "scriptname"), ScriptArgumentType.class, ConstantArgumentSerializer.of(ScriptArgumentType::scriptArgumentType));
+        KeyBindingHelper.registerKeyBinding(keyBinding);
+        modBase = new EasyVillagerTradeBase();
+        ClientLifecycleEvents.CLIENT_STARTED.register(client -> modBase.register());
 
-        ClientLifecycleEvents.CLIENT_STARTED.register(client -> {
-            modBase = new EasyVillagerTradeBase();
-            ClientCommandRegistrationCallback.EVENT.register(new EasyVillagerTradeCommand(modBase));
-            registerCallbacks();
-        });
-
+        ClientCommandRegistrationCallback.EVENT.register(new EasyVillagerTradeCommand(modBase));
+        registerCallbacks();
     }
 
     public void registerCallbacks() {
@@ -77,30 +70,18 @@ public class EasyVillagerTrade implements ModInitializer {
         ClientTickEvents.START_CLIENT_TICK.register(client -> modBase.handle());
 
         ClientTickEvents.START_WORLD_TICK.register(world -> {
-            ClientPlayerEntity entity = MinecraftClient.getInstance().player;
+            /*ClientPlayerEntity entity = MinecraftClient.getInstance().player;
             if(entity.getX() >= -40) {
                 entity.travel(new Vec3d(0, 0, 1.1));
                 System.out.println("[DEBUG] EasyVillagerTrade.registerCallbacks: " + entity.getMovementSpeed());
-            }
-            
-
-            while(keyBinding.wasPressed()) {
-            }
-        });
-
-        Vec3d vec3d = new Vec3d(600, 0, 0);
-        ClientTickEvents.START_WORLD_TICK.register(world -> {
-            ClientPlayerEntity player = MinecraftClient.getInstance().player;
-            var speed = 0.13;
-
-
-            /*if(player.getPos().distanceTo(vec3d) > 0.1) {
-                System.out.println(player.getMovementSpeed());
-                Vec3d dir = vec3d.subtract(player.getPos()).normalize().multiply(speed);
-                player.move(MovementType.SELF, dir);
-                player.tickMovement();
             }*/
+
+
+            while (keyBinding.wasPressed()) {
+                MinecraftClient.getInstance().setScreen(new TradeSelectScreen());
+            }
         });
+
     }
 
     public static EasyVillagerTradeBase getModBase() {

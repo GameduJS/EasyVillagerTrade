@@ -17,13 +17,10 @@ public class TurnAction extends Action {
     @Override
     public void performAction() {
         ClientPlayerEntity player = MinecraftClient.getInstance().player;
+        if(player == null)
+            return;
         player.setYaw(this.yaw);
         player.setPitch(this.pitch);
         finished = true;
-    }
-
-    @Override
-    public void reset() {
-        finished = false;
     }
 }

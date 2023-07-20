@@ -1,25 +1,26 @@
 package de.gamedude.easyvillagertrade.scripting.core.script.actions;
 
 import de.gamedude.easyvillagertrade.scripting.core.script.actions.base.Action;
+import de.gamedude.easyvillagertrade.scripting.movement.InputType;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.client.option.GameOptions;
-import net.minecraft.client.option.KeyBinding;
-import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
+import net.minecraft.util.BlockRotation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 
 import static java.lang.Math.*;
 
 public class WalkAction extends Action {
 
-    private final KeyBinding directionKeyBinding;
+    private final Direction direction;
     private double distance;
-    private BlockPos destination;
+    private Vec3d oldPlayerPos = Vec3d.ZERO;
 
+    private boolean isRotated;
 
     public WalkAction(String direction, String distanceString) {
-        this.directionKeyBinding = getDirectionKeyBinding(direction, MinecraftClient.getInstance().options);
+        this.direction = getDirectionKeyBinding(direction);
         this.distance = this.parseNumberOrThrow(distanceString, () -> new IllegalArgumentException("'" + distanceString + "' is not an integer!")).doubleValue() + 0.1;
     }
 
@@ -27,50 +28,22 @@ public class WalkAction extends Action {
     public void performAction() {
         ClientPlayerEntity player = MinecraftClient.getInstance().player;
 
-        if (destination == null) {
-            float yaw = player.getYaw();
-            this.destination = player.getBlockPos();
-            destination = destination.add(sin(toRadians(yaw)) * distance, 0, cos(toRadians(yaw)) * distance); // RIGHT, LEFT
-            destination = destination.add(cos(toRadians(yaw)) * distance, 0, sin(toRadians(yaw)) * distance); // FORWARD, BACKWARD
+        if (!isRotated) {
+            isRotated = true;
+            player.setYaw(direction.asRotation());
+            this.oldPlayerPos = player.getPos();
         }
 
-        /*directionKeyBinding.setPressed(true);
-        blocks -= BLOCKS_PER_TICK;
+        inputHandler.forceInput(InputType.FORWARD, true);
 
-        finished = blocks < 0;
-        if(finished)
-            directionKeyBinding.setPressed(false);*/
-
-        double dx = destination.getX() - player.getX();
-        double dz = destination.getZ() - player.getZ();
-
-        if (dx * dx + dz * dz < 0.05) {
-            finished = true;
-            return;
-        }
-
-        PlayerMoveC2SPacket.PositionAndOnGround packet = new PlayerMoveC2SPacket.PositionAndOnGround(0, 0, 0, true);
-        MinecraftClient.getInstance().getNetworkHandler().sendPacket(packet);
+        finished = (oldPlayerPos.squaredDistanceTo(player.getPos()) >= (distance*distance - player.getMovementSpeed()));
     }
 
-    @Override
-    public void reset() {
-        this.finished = false;
-    }
-
-    private KeyBinding getDirectionKeyBinding(String input, GameOptions gameOptions) {
-        return switch (input) {
-            case "LEFT":
-                yield gameOptions.leftKey;
-            case "RIGHT":
-                yield gameOptions.rightKey;
-            case "FORWARD":
-                yield gameOptions.forwardKey;
-            case "BACKWARD":
-                yield gameOptions.backKey;
-            default:
-                throw new IllegalArgumentException("No such direction as " + input);
-        };
+    private Direction getDirectionKeyBinding(String input) {
+        Direction tempDirection;
+        if ((tempDirection = Direction.byName(input)) == null)
+            throw new IllegalArgumentException("'" + input + "' is not a valid direction");
+        return tempDirection;
     }
 
     /**

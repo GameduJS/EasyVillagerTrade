@@ -12,9 +12,4 @@ public class ExecuteAction extends Action {
         EasyVillagerTrade.getModBase().handleInteractionWithVillager();
         finished = true;
     }
-
-    @Override
-    public void reset() {
-        finished = false;
-    }
 }

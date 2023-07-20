@@ -4,24 +4,21 @@ import de.gamedude.easyvillagertrade.scripting.core.script.Script;
 import de.gamedude.easyvillagertrade.scripting.core.script.actions.*;
 import de.gamedude.easyvillagertrade.scripting.core.script.actions.base.Action;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.util.math.Matrix4f;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
-import java.util.function.Predicate;
 
 /**
  *
  */
-public class ScriptProcessor {
+public class ScriptFactory {
 
     private static final Path SCRIPT_PATH = Path.of(MinecraftClient.getInstance().runDirectory.getPath(), "/config/evt");
 
-    public ScriptProcessor() {
+    public ScriptFactory() {
         this.setupPath();
     }
 
@@ -29,9 +26,7 @@ public class ScriptProcessor {
         if (!Files.exists(SCRIPT_PATH)) {
             try {
                 Files.createDirectories(SCRIPT_PATH);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            } catch (IOException e) { e.printStackTrace(); }
         }
     }
 
@@ -41,15 +36,14 @@ public class ScriptProcessor {
     public Map<String, Script> loadScripts() {
         Map<String, Script> scriptMap = new HashMap<>();
         File[] files = SCRIPT_PATH.toFile().listFiles(pathname -> pathname.getName().endsWith(".txt"));
-        if(files == null) return scriptMap;
+        if(files == null)
+            return scriptMap;
 
-        for (File scriptFile : files) {
-            String scriptName = scriptFile.getName().replace(".txt", "");
-            List<String> fileContent = readFile(scriptFile.getPath());
-            Script script = generateScript(fileContent);
-
-            scriptMap.put(scriptName, script);
-        }
+        Arrays.stream(files).forEach(file -> {
+            String scriptName = file.getName().replace(".txt", "");
+            List<String> fileContent = readFile(file.getPath());
+            scriptMap.put(scriptName, generateScript(fileContent));
+        });
         return scriptMap;
     }
 
@@ -92,37 +86,30 @@ public class ScriptProcessor {
             actionList.add(processCommand(line));
         }
 
-        return new Script(actionList);
+        return Script.ofAction(actionList);
     }
 
     private Action processCommand(String line) {
-        Action action = null;
+        String cmd = line.trim().split(" ")[0];
         String[] arguments = Arrays.copyOfRange(line.trim().split(" "), 1, line.split(" ").length);
 
-        if(line.startsWith("WALK")) {
-            String direction = arguments[0];
-            String blocks = arguments[1];
-           action = new WalkAction(direction, blocks);
-        } else if(line.startsWith("EXECUTE")) {
-            action = new ExecuteAction();
-        } else if(line.startsWith("SETTURN")) {
-            String yaw = arguments[0];
-            String pitch = arguments[1];
-            action = new TurnAction(yaw, pitch);
-        } else if(line.startsWith("SELECT")) {
-            action = new SelectAction();
-        }
+        Action action = switch (cmd) {
+            case "WALK": yield new WalkAction(arguments[0], arguments[1]);
+            case "EXECUTE": yield new ExecuteAction();
+            case "SETTURN": yield new TurnAction(arguments[0], arguments[1]);
+            case "SELECT": yield new SelectAction();
+            default: yield null;
+        };
+
 
         return action;
     }
 
     private List<String> readFile(String path) {
-        List<String> lines = List.of();
+        List<String> lines = new ArrayList<>();
         try {
-            lines = Files.readAllLines(Path.of(path));
-        } catch (IOException exception) {
-            exception.printStackTrace();
-        }
+            lines.addAll(Files.readAllLines(Path.of(path)));
+        } catch (IOException exception) { exception.printStackTrace(); }
         return lines;
     }
 }

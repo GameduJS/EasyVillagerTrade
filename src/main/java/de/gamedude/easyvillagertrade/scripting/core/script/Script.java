@@ -5,22 +5,26 @@ import de.gamedude.easyvillagertrade.utils.TradeRequest;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.village.TradeOfferList;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
 public class Script {
 
-    private boolean triggered;
-    private boolean active;
+    public static Script ofAction(List<Action> actionList) {
+        return new Script(actionList);
+    }
 
     private final List<Action> actionList;
-    private int repetitionCount;
-    private Action currentAction;
+    private boolean triggered;
 
+    private int repetitionCount;
+
+    private Action currentAction;
     private Iterator<Action> queue;
     private int index = 0;
 
-    public Script(List<Action> actionList) {
+    private Script(List<Action> actionList) {
         this.actionList = actionList;
     }
 
@@ -34,22 +38,13 @@ public class Script {
         this.index = 0;
     }
 
-
-    public boolean isTriggered() {
-        return triggered && active;
-    }
-
-    public void setActive(boolean active) {
-        this.active = active;
-    }
-
-    public void setTriggered(boolean triggered) {
-        if (!active)
-            return;
+    public boolean setTriggered(boolean triggered) {
         if (index < repetitionCount) {
             this.triggered = triggered;
             index++;
+            return true;
         }
+        return false;
     }
 
     /**
@@ -58,25 +53,28 @@ public class Script {
      * <p>{@link de.gamedude.easyvillagertrade.core.EasyVillagerTradeBase#checkVillagerOffers(TradeOfferList)}
      * <p>{@link de.gamedude.easyvillagertrade.core.TradeRequestContainer#matchesAny(TradeRequest)}
      */
-    public void triggerScript() {
-        if (!active)
-            return;
+    public void tickScript() {
         if (!triggered)
             return;
         if (queue == null) {
             actionIterator();
+            System.out.println("[DEBUG] Script.tickScript: " + queue.hasNext());
         }
 
         if (currentAction == null || currentAction.isFinished()) {
-            if (queue.hasNext())
+            if (queue.hasNext()) {
                 currentAction = queue.next();
-            else
+                System.out.println("[DEBUG] Script.tickScript: " + "Disabled Script #1");
+            } else {
                 disableScript();
-
+                System.out.println("[DEBUG] Script.tickScript: " + "Disabled Script #2");
+            }
         } else {
             currentAction.performAction();
-            if (currentAction.isFinished())
+            if (currentAction.isFinished()) {
                 disableScript();
+                System.out.println("[DEBUG] Script.tickScript: " + "OFIFIFIF");
+            }
         }
     }
 
