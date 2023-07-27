@@ -36,7 +36,7 @@ public class WalkAction extends Action {
 
         inputHandler.forceInput(InputType.FORWARD, true);
 
-        finished = (oldPlayerPos.squaredDistanceTo(player.getPos()) >= (distance*distance - player.getMovementSpeed()));
+        finished = (oldPlayerPos.squaredDistanceTo(player.getPos()) >= distance*distance);
     }
 
     private Direction getDirectionKeyBinding(String input) {

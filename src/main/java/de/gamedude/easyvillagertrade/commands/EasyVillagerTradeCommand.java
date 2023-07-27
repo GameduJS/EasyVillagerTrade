@@ -58,9 +58,10 @@ public class EasyVillagerTradeCommand implements ClientCommandRegistrationCallba
     }
 
     public int test(CommandContext<FabricClientCommandSource> context) {
-        var i = new ArrayList<Action>(){{
-            new WalkAction("west", "3");
-        }};
+        var i = new ArrayList<Action>();
+        i.add( new WalkAction("west", "3"));
+        i.add(new WalkAction("north", "2"));
+
         modBase.getScriptCache().activeScriptTest(Script.ofAction(i));
         modBase.getScriptCache().getActiveScript(script -> {
             script.setRepetitionCount(2);
@@ -68,8 +69,6 @@ public class EasyVillagerTradeCommand implements ClientCommandRegistrationCallba
         });
         return 1;
     }
-
-    Vec3d destination = null;
 
     public int reloadScripts(CommandContext<FabricClientCommandSource> context) {
         modBase.getScriptCache().reloadCache();

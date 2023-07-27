@@ -29,7 +29,6 @@ public class Script {
     }
 
     private void actionIterator() {
-        actionList.forEach(Action::reset);
         queue = actionList.iterator();
     }
 
@@ -64,7 +63,7 @@ public class Script {
         if (currentAction == null || currentAction.isFinished()) {
             if (queue.hasNext()) {
                 currentAction = queue.next();
-                System.out.println("[DEBUG] Script.tickScript: " + "Disabled Script #1");
+                System.out.println("[DEBUG] Script.tickScript: " + "Queueing Script #1");
             } else {
                 disableScript();
                 System.out.println("[DEBUG] Script.tickScript: " + "Disabled Script #2");
