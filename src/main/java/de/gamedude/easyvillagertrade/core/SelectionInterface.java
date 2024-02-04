@@ -1,9 +1,11 @@
 package de.gamedude.easyvillagertrade.core;
 
+import de.gamedude.easyvillagertrade.config.Config;
 import de.gamedude.easyvillagertrade.utils.TradingState;
 import net.minecraft.block.LecternBlock;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.passive.VillagerEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.village.VillagerProfession;
@@ -11,38 +13,41 @@ import net.minecraft.world.World;
 
 import java.util.Optional;
 
-public class SelectionInterface {
+public class SelectionInterface implements ConfigDependent{
 
-    private final EasyVillagerTradeBase modBase;
-
-    public SelectionInterface(EasyVillagerTradeBase modBase) {
-        this.modBase = modBase;
-    }
-
+    private final TradeWorkflowHandler modBase;
     private VillagerEntity villager;
     private BlockPos lecternPos;
 
-    public VillagerEntity getVillager() { return villager; }
-    public void setVillager(VillagerEntity villager) { this.villager = villager; }
+    public SelectionInterface(TradeWorkflowHandler modBase) {
+        this.modBase = modBase;
+    }
 
-    public BlockPos getLecternPos() { return lecternPos; }
-    public void setLecternPos(BlockPos blockPos) { this.lecternPos = blockPos; }
+    public VillagerEntity getVillager() {
+        return villager;
+    }
 
-    public int selectClosestToPlayer(ClientPlayerEntity player) {
+    public void setVillager(VillagerEntity villager) {
+        this.villager = villager;
+    }
+
+    public BlockPos getLecternPos() {
+        return lecternPos;
+    }
+
+    public void setLecternPos(BlockPos blockPos) {
+        this.lecternPos = blockPos;
+    }
+
+    public int selectClosestToPlayer(PlayerEntity player) {
         Optional<BlockPos> closestBlockOptional = BlockPos.findClosest(player.getBlockPos(), 3, 0, blockPos -> player.getWorld().getBlockState(blockPos).getBlock() instanceof LecternBlock);
-        if(closestBlockOptional.isEmpty()) {
-            modBase.setState(TradingState.INACTIVE);
-            return 1;
-        }
-        this.lecternPos = closestBlockOptional.get();
-
-        this.villager = getClosestEntity(player.getWorld(), this.lecternPos);
-        if(this.villager == null) {
-            modBase.setState(TradingState.INACTIVE);
-            return 2;
-        }
         modBase.setState(TradingState.INACTIVE);
-        return 0;
+        if(closestBlockOptional.isEmpty())
+            return 1;
+        this.lecternPos = closestBlockOptional.get();
+        this.villager = getClosestEntity(player.getWorld(), this.lecternPos);
+
+        return (villager == null) ? 2 : 0;
     }
 
     private VillagerEntity getClosestEntity(World world, BlockPos blockPos) {
@@ -57,5 +62,14 @@ public class SelectionInterface {
             }
         }
         return entity;
+    }
+
+    @Override
+    public void loadConfig(Config config) {
+    }
+
+    @Override
+    public void reloadConfig(Config config) {
+
     }
 }

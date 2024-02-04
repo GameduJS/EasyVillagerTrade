@@ -1,5 +1,6 @@
 package de.gamedude.easyvillagertrade.core;
 
+import de.gamedude.easyvillagertrade.config.Config;
 import de.gamedude.easyvillagertrade.utils.TradeRequest;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.registry.Registries;
@@ -7,7 +8,7 @@ import net.minecraft.registry.Registry;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.MathHelper;
 
-public class TradeRequestInputHandler {
+public class TradeRequestInputHandler implements ConfigDependent{
 
     private static final Registry<Enchantment> ENCHANTMENT_REGISTRY = Registries.ENCHANTMENT;
 
@@ -50,4 +51,13 @@ public class TradeRequestInputHandler {
         return true;
     }
 
+    @Override
+    public void loadConfig(Config config) {
+
+    }
+
+    @Override
+    public void reloadConfig(Config config) {
+
+    }
 }

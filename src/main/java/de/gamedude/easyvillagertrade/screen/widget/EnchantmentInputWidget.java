@@ -19,7 +19,7 @@ import java.util.function.Consumer;
 public class EnchantmentInputWidget extends TextFieldWidget {
 
     private static final Registry<Enchantment> ENCHANTMENT_REGISTRY = Registries.ENCHANTMENT;
-    private String suggestion;
+    private String suggestion = "";
 
     public EnchantmentInputWidget(int x, int y, int width, int height) {
         super(MinecraftClient.getInstance().textRenderer, x, y, width, height, Text.empty());
@@ -41,7 +41,7 @@ public class EnchantmentInputWidget extends TextFieldWidget {
     }
 
     private String getPossibleEnchantmentNameOrElse(String input) {
-        String enchantmentName = null;
+        String enchantmentName = "";
         for(Enchantment enchantment : ENCHANTMENT_REGISTRY) {
             boolean multipleLevels = enchantment.getMaxLevel() == 1;
             String[] parts = enchantment.getName(1).getString().split(" ");
@@ -52,8 +52,6 @@ public class EnchantmentInputWidget extends TextFieldWidget {
                 break;
             }
         }
-        if (enchantmentName == null)
-            enchantmentName = "";
         return enchantmentName;
     }
 
@@ -68,12 +66,12 @@ public class EnchantmentInputWidget extends TextFieldWidget {
 
     @Override
     public GuiNavigationPath getNavigationPath(GuiNavigation navigation) {
-        if (navigation instanceof GuiNavigation.Tab)
+        if (navigation instanceof GuiNavigation.Tab tab && tab.forward())
             setEnchantmentText();
         return super.getNavigationPath(navigation);
     }
 
     private void setEnchantmentText() {
-        setText(StringUtils.capitalize(getText() + ((suggestion == null) ? "": suggestion)));
+        setText(StringUtils.capitalize(getText().toLowerCase() + suggestion));
     }
 }

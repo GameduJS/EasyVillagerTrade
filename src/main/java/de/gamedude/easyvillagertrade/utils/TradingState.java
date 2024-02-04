@@ -11,5 +11,7 @@ public enum TradingState {
 
     SELECT_TRADE(),
     APPLY_TRADE(),
-    PICKUP_TRADE()
+    PICKUP_TRADE(),
+
+    WALKING()
 }

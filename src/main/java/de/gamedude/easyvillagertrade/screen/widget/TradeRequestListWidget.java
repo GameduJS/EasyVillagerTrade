@@ -1,7 +1,8 @@
 package de.gamedude.easyvillagertrade.screen.widget;
 
 import de.gamedude.easyvillagertrade.EasyVillagerTrade;
-import de.gamedude.easyvillagertrade.core.EasyVillagerTradeBase;
+import de.gamedude.easyvillagertrade.core.TradeRequestContainer;
+import de.gamedude.easyvillagertrade.core.TradeWorkflowHandler;
 import de.gamedude.easyvillagertrade.utils.TradeRequest;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
@@ -13,7 +14,7 @@ import net.minecraft.util.math.MathHelper;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
+import java.util.Optional;
 
 public class TradeRequestListWidget extends AbstractParentElement implements Drawable, Selectable {
 
@@ -27,7 +28,7 @@ public class TradeRequestListWidget extends AbstractParentElement implements Dra
     private final int height;
 
     private final List<TradeRequestEntry> children;
-    private final EasyVillagerTradeBase modBase;
+    private final TradeWorkflowHandler modBase;
 
     public TradeRequestListWidget(int x, int y, int width, int height) {
         this.x = x;
@@ -36,7 +37,7 @@ public class TradeRequestListWidget extends AbstractParentElement implements Dra
         this.height = height;
 
         this.children = new ArrayList<>();
-        this.modBase = EasyVillagerTrade.getModBase();
+        this.modBase = EasyVillagerTrade.getTradeWorkFlowHandler();
     }
 
     public int getEntryCount() {
@@ -101,12 +102,20 @@ public class TradeRequestListWidget extends AbstractParentElement implements Dra
         context.fill(x + width + 1, y, x + width + 2, height, -1);
     }
 
-    public void addEntry(TradeRequestEntry entry) {
-        entry.setRemoveConsumer(tradeRequestEntry -> {
-            modBase.getTradeRequestContainer().removeTradeRequest(tradeRequestEntry.tradeRequest);
-            children.remove(tradeRequestEntry);
-        });
-        children.add(entry);
+    public void addEntry(TradeRequest tradeRequest) {
+        this.children.add(new TradeRequestEntry(tradeRequest));
+    }
+
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        boolean bl = super.mouseClicked(mouseX, mouseY, button);
+        Optional<Element> element = this.hoveredElement(mouseX, mouseY);
+        if(element.isEmpty())
+            return bl;
+        TradeRequestEntry tradeRequestEntry = (TradeRequestEntry) element.get();
+        children.remove(tradeRequestEntry);
+        modBase.getHandler(TradeRequestContainer.class).removeTradeRequest(tradeRequestEntry.tradeRequest);
+        return bl;
     }
 
     @Override
@@ -125,14 +134,8 @@ public class TradeRequestListWidget extends AbstractParentElement implements Dra
         public final TradeRequest tradeRequest;
         private int x,y1,x2,y2;
 
-        private Consumer<TradeRequestEntry> removeConsumer;
-
         public TradeRequestEntry(TradeRequest request) {
             this.tradeRequest = request;
-        }
-
-        public void setRemoveConsumer(Consumer<TradeRequestEntry> removeConsumer) {
-            this.removeConsumer = removeConsumer;
         }
 
         private void render(DrawContext context, int index, int x, int y, int entryWidth) {
@@ -149,25 +152,13 @@ public class TradeRequestListWidget extends AbstractParentElement implements Dra
             context.drawText(textRenderer, tradeRequest.enchantment().getName(tradeRequest.level()), x + 20, y1 + 4, -1, false);
             context.drawText(textRenderer, "§e" + tradeRequest.maxPrice(), x + 20, y1 + 20, -1, false);
         }
-
-        @Override
-        public boolean mouseClicked(double mouseX, double mouseY, int button) {
-            boolean clicked = isMouseOver(mouseX, mouseY);
-
-            if(clicked)
-                removeConsumer.accept(this);
-            return clicked;
-        }
-
         @Override
         public boolean isMouseOver(double mouseX, double mouseY) {
             return x <= mouseX && mouseX <= x2 && y1 <= mouseY && mouseY <= y2;
         }
 
         @Override
-        public void setFocused(boolean focused) {
-
-        }
+        public void setFocused(boolean focused) { }
 
         @Override
         public boolean isFocused() {

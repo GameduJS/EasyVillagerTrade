@@ -1,4 +1,3 @@
-
 {
   "evt.command.execute": "§8| §7Führe Suchanfrage aus",
   "evt.command.selecting": "§8| §7Wähle den Dorfbewohner und sein Lesepult jeweils durch Rechtsklick aus.",
@@ -18,5 +17,6 @@
   "evt.logic.select.success": "§8| §aDer nächstgelegene Dorfbewohner und sein Lesepult wurden ausgewählt.",
   "evt.logic.pos_not_set": "§8| §cDu hast kein Lesepult ausgewählt!",
 
+  "evt.custom.title": "EasyVillagerTrade",
   "key.custom.openscreen": "Menu öffnen"
 }

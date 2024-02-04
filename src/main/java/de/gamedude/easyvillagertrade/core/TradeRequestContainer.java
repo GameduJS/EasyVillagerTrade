@@ -1,11 +1,12 @@
 package de.gamedude.easyvillagertrade.core;
 
+import de.gamedude.easyvillagertrade.config.Config;
 import de.gamedude.easyvillagertrade.utils.TradeRequest;
 import net.minecraft.enchantment.Enchantment;
 
 import java.util.*;
 
-public class TradeRequestContainer {
+public class TradeRequestContainer implements ConfigDependent {
 
     private final Set<TradeRequest> tradeRequestSet;
 
@@ -34,4 +35,13 @@ public class TradeRequestContainer {
         return tradeRequestSet.stream().anyMatch(request::matches);
     }
 
+    @Override
+    public void loadConfig(Config config) {
+
+    }
+
+    @Override
+    public void reloadConfig(Config config) {
+
+    }
 }

@@ -1,5 +1,7 @@
 package de.gamedude.easyvillagertrade.core;
 
+import de.gamedude.easyvillagertrade.config.Config;
+import de.gamedude.easyvillagertrade.core.autowalk.VillagerHubEngine;
 import de.gamedude.easyvillagertrade.utils.TradeRequest;
 import de.gamedude.easyvillagertrade.utils.TradingState;
 import net.minecraft.block.Blocks;
@@ -25,67 +27,68 @@ import net.minecraft.village.TradeOfferList;
 import net.minecraft.village.VillagerProfession;
 import net.minecraft.world.World;
 
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
-public class EasyVillagerTradeBase {
-    private TradingState state;
+public class TradeWorkflowHandler {
+    public TradingState state;
 
-    private final TradeRequestContainer tradeRequestContainer;
-    private final SelectionInterface selectionInterface;
-    private final TradeRequestInputHandler tradeRequestInputHandler;
-    private final TradeInterface tradeInterface;
-
+    private final Map<Class<? extends ConfigDependent>, ConfigDependent> handlersMap;
+    private final Config config;
     private final MinecraftClient minecraftClient;
 
-    public EasyVillagerTradeBase() {
+    public TradeWorkflowHandler() {
         this.minecraftClient = MinecraftClient.getInstance();
-        this.tradeRequestContainer = new TradeRequestContainer();
-        this.selectionInterface = new SelectionInterface(this);
-        this.tradeRequestInputHandler = new TradeRequestInputHandler();
-        this.tradeInterface = new TradeInterface(this);
+        this.handlersMap = new HashMap<>();
+
+        this.config = new Config("easyvillagertrade");
+        this.handlersMap.put(VillagerHubEngine.class, new VillagerHubEngine(this));
+        this.handlersMap.put(TradeRequestContainer.class, new TradeRequestContainer());
+        this.handlersMap.put(TradeRequestInputHandler.class, new TradeRequestInputHandler());
+        this.handlersMap.put(SelectionInterface.class, new SelectionInterface(this));
+        this.handlersMap.put(TradeAutomationProcessor.class, new TradeAutomationProcessor(this));
+        //Load config at the beginning
+        this.handlersMap.values().forEach(configDependent -> configDependent.loadConfig(config));
 
         this.state = TradingState.INACTIVE;
     }
 
-    public TradeRequestInputHandler getTradeRequestInputHandler() {
-        return tradeRequestInputHandler;
+    public Config getConfig() {
+        return config;
     }
 
-    public SelectionInterface getSelectionInterface() {
-        return this.selectionInterface;
-    }
-
-    public TradeRequestContainer getTradeRequestContainer() {
-        return this.tradeRequestContainer;
+    @SuppressWarnings("unchecked")
+    public <T extends ConfigDependent> T getHandler(Class<T> clazz) {
+        return (T) this.handlersMap.get(clazz);
     }
 
     public void setState(TradingState state) {
         this.state = state;
     }
 
-    public TradingState getState() {
-        return state;
-    }
-
-    public void handle() {
+    public void tick() {
         if (state == TradingState.INACTIVE)
             return;
+        SelectionInterface selectionInterface = getHandler(SelectionInterface.class);
+        TradeAutomationProcessor tradeAutomationProcessor = getHandler(TradeAutomationProcessor.class);
         switch (state) {
             case BREAK_WORKSTATION -> handleBreak();
             case PLACE_WORKSTATION -> handlePlacement();
-            case SELECT_TRADE -> tradeInterface.selectTrade();
-            case APPLY_TRADE -> tradeInterface.applyTrade();
-            case PICKUP_TRADE -> tradeInterface.pickupBook();
             case WAIT_JOB_LOSS -> {
                 if(selectionInterface.getVillager().getVillagerData().getProfession() == VillagerProfession.NONE)
                     setState(TradingState.PLACE_WORKSTATION);
             }
+
+            case SELECT_TRADE -> tradeAutomationProcessor.selectTrade();
+            case APPLY_TRADE -> tradeAutomationProcessor.applyTrade();
+            case PICKUP_TRADE -> tradeAutomationProcessor.pickupBook();
         }
     }
 
     private void handlePlacement() {
         ClientPlayerEntity player = minecraftClient.player;
-        BlockPos lecternPos = selectionInterface.getLecternPos();
+        BlockPos lecternPos = getHandler(SelectionInterface.class).getLecternPos();
 
         if(player.getOffHandStack().equals(ItemStack.EMPTY)) {
             player.sendMessage(Text.translatable("evt.logic.lectern_non"));
@@ -104,7 +107,7 @@ public class EasyVillagerTradeBase {
     private void handleBreak() {
         World world = minecraftClient.world;
         ClientPlayerEntity player = minecraftClient.player;
-        BlockPos blockPos = getSelectionInterface().getLecternPos();
+        BlockPos blockPos = getHandler(SelectionInterface.class).getLecternPos();
 
         if (world == null || player == null)
             return;
@@ -121,8 +124,8 @@ public class EasyVillagerTradeBase {
             return;
         }
 
-        if (world.getBlockState(getSelectionInterface().getLecternPos()).getBlock() == Blocks.LECTERN) {
-            minecraftClient.interactionManager.updateBlockBreakingProgress(getSelectionInterface().getLecternPos(), Direction.UP);
+        if (world.getBlockState(getHandler(SelectionInterface.class).getLecternPos()).getBlock() == Blocks.LECTERN) {
+            minecraftClient.interactionManager.updateBlockBreakingProgress(getHandler(SelectionInterface.class).getLecternPos(), Direction.UP);
             player.swingHand(Hand.MAIN_HAND, true);
             player.networkHandler.sendPacket(new HandSwingC2SPacket(Hand.MAIN_HAND));
         } else {
@@ -131,28 +134,26 @@ public class EasyVillagerTradeBase {
     }
 
     public void checkVillagerOffers(TradeOfferList tradeOffers) {
-        TradeOffer bookOffer = null;
-        for (TradeOffer offers : tradeOffers)
-            if (offers.getSellItem().getItem() == Items.ENCHANTED_BOOK) {
-                bookOffer = offers;
-                break;
-            }
-        if (bookOffer == null) {
+        Optional<TradeOffer> optionalTradeOffer = tradeOffers.stream().filter(tradeOffer -> tradeOffer.getSellItem().getItem() == Items.ENCHANTED_BOOK).findFirst();
+        if (optionalTradeOffer.isEmpty()) {
             setState(TradingState.BREAK_WORKSTATION);
             return;
         }
+        TradeOffer bookOffer = optionalTradeOffer.get();
+
         Map<Enchantment, Integer> enchantmentMap = EnchantmentHelper.get(bookOffer.getSellItem());
         Enchantment bookEnchantment = enchantmentMap.keySet().iterator().next();
         int level = enchantmentMap.values().iterator().next();
 
         TradeRequest offer = new TradeRequest(bookEnchantment, level, bookOffer.getAdjustedFirstBuyItem().getCount());
+        TradeRequestContainer tradeRequestContainer = getHandler(TradeRequestContainer.class);
 
         if (tradeRequestContainer.matchesAny(offer)) {
             minecraftClient.player.sendMessage(Text.translatable("evt.logic.trade_found", "§e" + bookEnchantment.getName(level).getString(), "§a" + offer.maxPrice()));
             minecraftClient.getSoundManager().play(new PositionedSoundInstance(SoundEvents.BLOCK_AMETHYST_CLUSTER_BREAK, SoundCategory.MASTER, 2f, 1f, new LocalRandom(0), MinecraftClient.getInstance().player.getBlockPos()));
 
             tradeRequestContainer.removeTradeRequestByEnchantment(bookEnchantment);
-            tradeInterface.setTradeSlotID(tradeOffers.indexOf(bookOffer));
+            getHandler(TradeAutomationProcessor.class).setTradeSlotID(tradeOffers.indexOf(bookOffer));
             setState(TradingState.SELECT_TRADE);
         } else {
             setState(TradingState.BREAK_WORKSTATION);
@@ -160,7 +161,7 @@ public class EasyVillagerTradeBase {
     }
 
     public void handleInteractionWithVillager() {
-        minecraftClient.interactionManager.interactEntity(MinecraftClient.getInstance().player, selectionInterface.getVillager(), Hand.MAIN_HAND);
+        minecraftClient.interactionManager.interactEntity(MinecraftClient.getInstance().player, getHandler(SelectionInterface.class).getVillager(), Hand.MAIN_HAND);
     }
 
 }

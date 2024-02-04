@@ -1,7 +1,10 @@
 package de.gamedude.easyvillagertrade.core;
 
+import de.gamedude.easyvillagertrade.config.Config;
+import de.gamedude.easyvillagertrade.core.autowalk.VillagerHubEngine;
 import de.gamedude.easyvillagertrade.utils.TradingState;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.packet.c2s.play.SelectMerchantTradeC2SPacket;
@@ -10,13 +13,13 @@ import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.text.Text;
 import net.minecraft.util.collection.DefaultedList;
 
-public class TradeInterface {
+public class TradeAutomationProcessor implements ConfigDependent {
 
-    private final EasyVillagerTradeBase modBase;
+    private final TradeWorkflowHandler modBase;
     private final MinecraftClient minecraftClient;
     private int tradeSlotID;
 
-    public TradeInterface(EasyVillagerTradeBase modBase) {
+    public TradeAutomationProcessor(TradeWorkflowHandler modBase) {
         this.modBase = modBase;
         this.minecraftClient = MinecraftClient.getInstance();
     }
@@ -41,7 +44,7 @@ public class TradeInterface {
     }
 
     public void pickupBook() {
-        PlayerEntity player = minecraftClient.player;
+        ClientPlayerEntity player = minecraftClient.player;
         ScreenHandler currentScreenHandler = player.currentScreenHandler;
         int freeSlot = getFreeSlot();
 
@@ -53,6 +56,8 @@ public class TradeInterface {
             player.sendMessage(Text.translatable("evt.logic.book_drop"));
 
         minecraftClient.interactionManager.clickSlot(currentScreenHandler.syncId, freeSlot, 0, SlotActionType.PICKUP, minecraftClient.player);
+        player.closeScreen();
+        getHandler(VillagerHubEngine.class).onWalk(player);
         modBase.setState(TradingState.INACTIVE);
     }
 
@@ -67,5 +72,15 @@ public class TradeInterface {
                 return i;
         }
         return -999;
+    }
+
+    @Override
+    public void loadConfig(Config config) {
+
+    }
+
+    @Override
+    public void reloadConfig(Config config) {
+
     }
 }
