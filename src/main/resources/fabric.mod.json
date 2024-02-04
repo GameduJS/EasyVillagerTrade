@@ -10,8 +10,8 @@
   "icon": "assets/icon.png",
   "environment": "client",
   "entrypoints": {
-    "main": [
-      "de.gamedude.easyvillagertrade.EasyVillagerTrade"
+    "client": [
+      "de.gamedude.evt.EasyVillagerTrade"
     ]
   },
   "mixins": [
