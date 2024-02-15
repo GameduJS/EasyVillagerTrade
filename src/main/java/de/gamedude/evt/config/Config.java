@@ -1,4 +1,4 @@
-package de.gamedude.old.config;
+package de.gamedude.evt.config;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;

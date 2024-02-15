@@ -1,4 +1,4 @@
-package de.gamedude.old.mixin;
+package de.gamedude.evt.mixin;
 
 import de.gamedude.old.EasyVillagerTrade;
 import de.gamedude.old.core.SelectionInterface;
@@ -30,7 +30,7 @@ public abstract class NetworkPacketMixin {
     @Unique
     private final TradeWorkflowHandler tradeAutomationHandler = EasyVillagerTrade.getTradeWorkFlowHandler();
 
-    @Inject(method = "channelRead0(Lio/netty/channel/ChannelHandlerContext;Lnet/minecraft/network/packet/Packet;)V", at = @At("HEAD"), cancellable = true)
+    //@Inject(method = "channelRead0(Lio/netty/channel/ChannelHandlerContext;Lnet/minecraft/network/packet/Packet;)V", at = @At("HEAD"), cancellable = true)
     private void channelRead(ChannelHandlerContext context, Packet<?> packet, CallbackInfo ci) {
         if(packet instanceof EntityStatusS2CPacket statusPacket) {
             World world = MinecraftClient.getInstance().world;

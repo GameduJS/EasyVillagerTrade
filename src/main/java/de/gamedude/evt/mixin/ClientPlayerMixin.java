@@ -1,11 +1,10 @@
-package de.gamedude.old.mixin;
+package de.gamedude.evt.mixin;
 
-import de.gamedude.old.EasyVillagerTrade;
-import de.gamedude.old.core.autowalk.VillagerHubEngine;
-import de.gamedude.old.core.autowalk.WalkAction;
-import de.gamedude.old.utils.ActionInterface;
+import de.gamedude.evt.EasyVillagerTrade;
+import de.gamedude.evt.autowalk.AutoWalkEngine;
+import de.gamedude.evt.autowalk.WalkAction;
+import de.gamedude.evt.utils.ActionInterface;
 import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.entity.player.PlayerEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -18,19 +17,19 @@ public class ClientPlayerMixin implements ActionInterface {
     @Unique
     public WalkAction walkAction;
     @Unique
-    private final VillagerHubEngine villagerHubEngine = EasyVillagerTrade.getTradeWorkFlowHandler().getHandler(VillagerHubEngine.class);
+    private final AutoWalkEngine autoWalkEngine = EasyVillagerTrade.getAutoWalkEngine();
 
     @Inject(method = "tickNewAi", at = @At("TAIL"))
     private void doTick(CallbackInfo ci) {
-        if(!villagerHubEngine.isToggled())
+        if(!autoWalkEngine.isToggled())
             return;
-        villagerHubEngine.tickPlayerMovement((PlayerEntity) (Object) this);
+        autoWalkEngine.tickMovement();
     }
 
     @Override
     public void easyVillagerTrade$setWalkAction(WalkAction walkAction) {
         this.walkAction = walkAction;
-        villagerHubEngine.toggleAutoWalk((PlayerEntity) (Object) this);
+        autoWalkEngine.toggleEngine();
     }
 
     @Override

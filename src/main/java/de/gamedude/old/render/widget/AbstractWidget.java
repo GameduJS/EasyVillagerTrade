@@ -28,11 +28,6 @@ public abstract class AbstractWidget implements Drawable, Element, Selectable {
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        return isMouseOver(mouseX, mouseY);
-    }
-
-    @Override
     public void setFocused(boolean focused) { this.focused = focused; }
     @Override
     public boolean isFocused() { return focused; }
