@@ -5,7 +5,13 @@ import de.gamedude.evt.autowalk.AutoWalkEngine;
 import de.gamedude.evt.autowalk.WalkAction;
 import de.gamedude.evt.utils.ActionInterface;
 import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.client.render.entity.EntityRendererFactory;
+import net.minecraft.client.render.entity.LivingEntityRenderer;
+import net.minecraft.client.render.entity.PlayerEntityRenderer;
+import net.minecraft.client.render.entity.feature.FeatureRenderer;
+import net.minecraft.client.render.entity.model.EntityModel;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -36,4 +42,6 @@ public class ClientPlayerMixin implements ActionInterface {
     public WalkAction easyVillagerTrade$getWalkaction() {
         return walkAction;
     }
+
+
 }

@@ -41,7 +41,21 @@ public class OptionWidget<T> extends AbstractParentElement implements Selectable
 
         context.drawTexture(RESOURCE_PACKS_TEXTURE, x, y, 96.0F, 32.0F, 32, 32, 256, 256);
         context.drawTexture(RESOURCE_PACKS_TEXTURE, x, y + 100, 96.0F, 0.0F, 32, 32, 256, 256);
+    }
 
+    @Override
+    public void appendNarrations(NarrationMessageBuilder builder) {
+
+    }
+
+    @Override
+    public List<? extends Element> children() {
+        return List.of();
+    }
+
+    @Override
+    public SelectionType getType() {
+        return SelectionType.NONE;
     }
 
     public static class Builder<T> {

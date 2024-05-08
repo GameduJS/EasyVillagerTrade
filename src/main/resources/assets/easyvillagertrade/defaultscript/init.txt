@@ -1,0 +1,2 @@
+LOOK 180 0
+CHECK

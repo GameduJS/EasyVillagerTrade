@@ -7,7 +7,7 @@ import net.minecraft.registry.Registry;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
 
-public class TradeRequestParser {
+public class TradeRequestParser implements Handler {
 
     private static final Registry<Enchantment> ENCHANTMENTS = Registries.ENCHANTMENT;
 

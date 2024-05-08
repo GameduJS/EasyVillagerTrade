@@ -58,4 +58,11 @@ public abstract class NetworkPacketMixin {
             ci.cancel();
         }
     }
+    @Inject(method = "channelRead0(Lio/netty/channel/ChannelHandlerContext;Lnet/minecraft/network/packet/Packet;)V", at = @At("HEAD"), cancellable = true)
+    private void channelRead0(ChannelHandlerContext context, Packet<?> packet, CallbackInfo ci) {
+       if (packet instanceof SetTradeOffersS2CPacket setTradeOffers) {
+            tradeAutomationHandler.getHandler(SelectionInterface.class).getVillager().setOffers(setTradeOffers.getOffers());
+            tradeAutomationHandler.checkVillagerOffers(setTradeOffers.getOffers());
+        }
+    }
 }

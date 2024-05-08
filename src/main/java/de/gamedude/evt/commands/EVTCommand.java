@@ -5,6 +5,7 @@ import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.tree.CommandNode;
 import de.gamedude.evt.handler.TradeRequestContainer;
+import de.gamedude.evt.handler.TradeWorkflow;
 import de.gamedude.evt.utils.TradeRequest;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
@@ -17,7 +18,7 @@ import net.minecraft.text.Text;
 
 import static net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.*;
 
-public record EVTCommand(TradeRequestContainer tradeRequestContainer) implements ClientCommandRegistrationCallback {
+public record EVTCommand(TradeWorkflow tradeWorkflow) implements ClientCommandRegistrationCallback {
 
     @Override
     public void register(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandRegistryAccess registryAccess) {
@@ -48,7 +49,7 @@ public record EVTCommand(TradeRequestContainer tradeRequestContainer) implements
         int level = getArgumentOrElse(commandContext, "level", 1);
 
         TradeRequest tradeRequest = new TradeRequest(enchantment, level, price);
-        tradeRequestContainer.addRequest(tradeRequest);
+        tradeWorkflow.getHandler(TradeRequestContainer.class).addRequest(tradeRequest);
 
         return sendFeedback(commandContext, Text.translatable("evt.command.add", "§e" + tradeRequest.enchantment().getName(tradeRequest.level()).getString(), "§a" + tradeRequest.cost()));
     }

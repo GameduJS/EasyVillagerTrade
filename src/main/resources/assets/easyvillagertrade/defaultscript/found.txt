@@ -1,0 +1,4 @@
+BUY
+LOOK 180 0
+WALK 2 0
+LOOK $

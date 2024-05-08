@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class TradeRequestContainer {
+public class TradeRequestContainer implements Handler {
 
     private final List<TradeRequest> tradeRequests;
 
@@ -35,12 +35,10 @@ public class TradeRequestContainer {
         return tradeRequests;
     }
 
-    public boolean checkTradeRequest(TradeOfferList tradeOfferList) {
+    public Optional<TradeRequest> getValidTradeRequest(TradeOfferList tradeOfferList) {
         Optional<TradeOffer> optionalTradeOffer = tradeOfferList.stream().filter(tradeOffer -> tradeOffer.getSellItem().getItem() == Items.ENCHANTED_BOOK).findFirst();
-        if (optionalTradeOffer.isEmpty()) {
-            // setState(TradingState.BREAK_WORKSTATION);
-            return false;
-        }
+        if (optionalTradeOffer.isEmpty())
+            return Optional.empty();
 
         TradeOffer tradeOffer = optionalTradeOffer.get();
         Enchantment enchantment = EnchantmentHelper.get(tradeOffer.getSellItem()).keySet().iterator().next();
@@ -49,7 +47,7 @@ public class TradeRequestContainer {
 
         TradeRequest tradeRequest = new TradeRequest(enchantment, level, cost);
 
-        return tradeRequests.stream().anyMatch(request -> request.matchRequest(tradeRequest));
+        return tradeRequests.stream().anyMatch(request -> request.matchRequest(tradeRequest)) ? Optional.of(tradeRequest) : Optional.empty();
     }
 
 }

@@ -1,59 +1,73 @@
 package de.gamedude.evt.script;
 
-import de.gamedude.evt.EasyVillagerTrade;
-import de.gamedude.evt.autowalk.AutomationEngine;
+import com.mojang.logging.LogUtils;
+import de.gamedude.evt.logic.MalformedParameterException;
+import de.gamedude.evt.logic.State;
+import de.gamedude.evt.utils.StateType;
+import net.minecraft.client.MinecraftClient;
 
-public abstract class Script {
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.*;
+
+public class Script {
+
+    private final Path destinationPath = Path.of(MinecraftClient.getInstance().runDirectory.getPath(), "/config/evt/scripts/");
+
+    private  List<State> initProcess;
+    private  List<State> mainProcess;
+    private  List<State> tradeFoundProcess;
+
+    private Map<ScriptType, List<State>> typeScriptMap;
+
+    private Iterator<State> currentIterator;
+    private State currentState = null;
 
 
-    private final AutomationEngine automationEngine = EasyVillagerTrade.getAutoWalkEngine();
+    public Script(Map<ScriptType, List<State>> typeScriptMap) {
+        this.typeScriptMap = typeScriptMap;
+    }
 
-    /**
-     * Returns the counts of cycles done
-     */
-    protected int count = automationEngine.getRepetitionCount(); // TODO: AutoWalkEngine#count
+    public void tickInitial() {
+        this.currentIterator = initProcess.iterator();
+    }
 
-    /**
-     * Executes the command to move
-     * @param dx: Distance walked in x-Direction
-     * @param dz: Distance walked in z-Direction
-     */
-    protected final void move(int dx, int dz) {
-        automationEngine.setOffset(dx, dz);
-        automationEngine.move();
-        // TODO: AutoWalkEngine
+    public void tickRepetition() {
+        this.currentIterator = mainProcess.iterator();
+    }
+
+    public void tickTradeFound() {
+        this.currentIterator = tradeFoundProcess.iterator();
+    }
+
+    public void tick() {
+        if(currentIterator == null || !currentIterator.hasNext())
+            return;
+        if(currentState == null)
+            currentState = currentIterator.next();
+        // currentState#run == true | completed
+        if(currentState.run() == 1)
+            currentState = currentIterator.next();
     }
 
 
-    /**
-     * If executed the script will turn itself off
-     */
-    protected final void cancel() {
-        automationEngine.cancel();
-    }
 
+    public enum ScriptType {
+        INIT,
+        REPEAT,
+        FOUND;
 
-    /**
-     * Executes the command to look around given a yaw
-     * @param yaw: Destination yaw where the player should look
-     * @param variance: Whether there should be a tiny variance in the yaw
-     */
-    protected final void look(float yaw, boolean variance) {
-        if(variance) {
-            yaw+= ((float) Math.random() - 0.5f) * 2;
+        private final static ScriptType[] VALUES = values();
+        public static ScriptType byFileName(String name) throws Exception {
+            for (ScriptType value : VALUES) {
+                if(name.toLowerCase().contains(value.name().toLowerCase()))
+                    return value;
+            }
+            throw new Exception("'" + name + "' is not a suitable name for a type of script.");
         }
-      automationEngine.look(yaw);
     }
-
-    /**
-     * Executed whenever the script gets initialized
-     */
-    public abstract void init();
-
-    /**
-     * Executed whenever a cycle is finished
-     */
-    public abstract void tick();
 
 
 }

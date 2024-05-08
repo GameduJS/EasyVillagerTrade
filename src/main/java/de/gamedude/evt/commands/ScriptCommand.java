@@ -10,11 +10,6 @@ import static net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.*;
 
 public class ScriptCommand implements ClientCommandRegistrationCallback {
 
-    private final AutoWalkEngine autoWalkEngine;
-
-    public ScriptCommand(AutoWalkEngine autoWalkEngine) {
-        this.autoWalkEngine = autoWalkEngine;
-    }
 
     @Override
     public void register(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandRegistryAccess registryAccess) {
