@@ -18,8 +18,8 @@
     "EasyVillagerTrade.mixins.json"
   ],
   "depends": {
-    "fabricloader": ">=0.14.21",
+    "fabricloader": ">=0.15.11",
     "fabric-api": "*",
-    "minecraft": ">=1.20.2"
+    "minecraft": ">=1.20.5"
   }
 }

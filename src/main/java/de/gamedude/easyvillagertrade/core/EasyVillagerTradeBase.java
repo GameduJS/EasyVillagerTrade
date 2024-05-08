@@ -6,12 +6,13 @@ import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.sound.PositionedSoundInstance;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.ItemEnchantmentsComponent;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.network.packet.c2s.play.HandSwingC2SPacket;
-import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.Hand;
@@ -19,13 +20,10 @@ import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.math.random.LocalRandom;
 import net.minecraft.village.TradeOffer;
 import net.minecraft.village.TradeOfferList;
 import net.minecraft.village.VillagerProfession;
 import net.minecraft.world.World;
-
-import java.util.Map;
 
 public class EasyVillagerTradeBase {
     private TradingState state;
@@ -77,7 +75,7 @@ public class EasyVillagerTradeBase {
             case APPLY_TRADE -> tradeInterface.applyTrade();
             case PICKUP_TRADE -> tradeInterface.pickupBook();
             case WAIT_JOB_LOSS -> {
-                if(selectionInterface.getVillager().getVillagerData().getProfession() == VillagerProfession.NONE)
+                if (selectionInterface.getVillager().getVillagerData().getProfession() == VillagerProfession.NONE)
                     setState(TradingState.PLACE_WORKSTATION);
             }
         }
@@ -87,7 +85,7 @@ public class EasyVillagerTradeBase {
         ClientPlayerEntity player = minecraftClient.player;
         BlockPos lecternPos = selectionInterface.getLecternPos();
 
-        if(player.getOffHandStack().equals(ItemStack.EMPTY)) {
+        if (player.getOffHandStack().equals(ItemStack.EMPTY)) {
             player.sendMessage(Text.translatable("evt.logic.lectern_non"));
             setState(TradingState.INACTIVE);
             return;
@@ -109,13 +107,13 @@ public class EasyVillagerTradeBase {
         if (world == null || player == null)
             return;
         ItemStack axe = player.getMainHandStack();
-        if(axe.getMaxDamage() - axe.getDamage() < 20) {
+        if (axe.getMaxDamage() - axe.getDamage() < 20) {
             player.sendMessage(Text.translatable("evt.logic.axe_durability"));
             setState(TradingState.INACTIVE);
             return;
         }
 
-        if(blockPos == null) {
+        if (blockPos == null) {
             player.sendMessage(Text.translatable("evt.logic.pos_not_set"));
             setState(TradingState.INACTIVE);
             return;
@@ -137,19 +135,22 @@ public class EasyVillagerTradeBase {
                 bookOffer = offers;
                 break;
             }
+
         if (bookOffer == null) {
             setState(TradingState.BREAK_WORKSTATION);
             return;
         }
-        Map<Enchantment, Integer> enchantmentMap = EnchantmentHelper.get(bookOffer.getSellItem());
-        Enchantment bookEnchantment = enchantmentMap.keySet().iterator().next();
-        int level = enchantmentMap.values().iterator().next();
 
-        TradeRequest offer = new TradeRequest(bookEnchantment, level, bookOffer.getAdjustedFirstBuyItem().getCount());
+
+        ItemEnchantmentsComponent enchantments = EnchantmentHelper.getEnchantments(bookOffer.getSellItem());
+        Enchantment bookEnchantment = enchantments.getEnchantments().iterator().next().value();
+        int level = enchantments.getLevel(bookEnchantment);
+
+        TradeRequest offer = new TradeRequest(bookEnchantment, level, bookOffer.getDisplayedFirstBuyItem().getCount());
 
         if (tradeRequestContainer.matchesAny(offer)) {
             minecraftClient.player.sendMessage(Text.translatable("evt.logic.trade_found", "§e" + bookEnchantment.getName(level).getString(), "§a" + offer.maxPrice()));
-            minecraftClient.getSoundManager().play(new PositionedSoundInstance(SoundEvents.BLOCK_AMETHYST_CLUSTER_BREAK, SoundCategory.MASTER, 2f, 1f, new LocalRandom(0), MinecraftClient.getInstance().player.getBlockPos()));
+            minecraftClient.getSoundManager().play(PositionedSoundInstance.master(SoundEvents.BLOCK_AMETHYST_CLUSTER_BREAK, 1f));
 
             tradeRequestContainer.removeTradeRequestByEnchantment(bookEnchantment);
             tradeInterface.setTradeSlotID(tradeOffers.indexOf(bookOffer));
