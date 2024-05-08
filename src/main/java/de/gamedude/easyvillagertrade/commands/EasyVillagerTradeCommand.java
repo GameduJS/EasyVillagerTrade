@@ -11,8 +11,10 @@ import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallba
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.command.CommandRegistryAccess;
-import net.minecraft.command.argument.EnchantmentArgumentType;
+import net.minecraft.command.argument.RegistryEntryArgumentType;
 import net.minecraft.enchantment.Enchantment;
+import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.text.Text;
 import org.apache.commons.lang3.StringUtils;
 
@@ -34,9 +36,12 @@ public class EasyVillagerTradeCommand implements ClientCommandRegistrationCallba
         dispatcher.register(literal(command_base)
                 .then(literal("select").then(literal("close").executes(this::executeSelectionClosest)).executes(this::executeSelection))
                 .then(literal("search")
-                        .then(literal("add").then(argument("maxPrice", IntegerArgumentType.integer()).then(argument("enchantment", EnchantmentArgumentType.enchantment()).executes(this::executeAddTradeRequest).then(argument("level", IntegerArgumentType.integer()).executes(this::executeAddTradeRequest)))))
+                        .then(literal("add").then(argument("maxPrice", IntegerArgumentType.integer()).then(argument("enchantment", RegistryEntryArgumentType.registryEntry(registryAccess, RegistryKeys.ENCHANTMENT))
+                                .executes(this::executeAddTradeRequest).then(argument("level", IntegerArgumentType.integer()).executes(this::executeAddTradeRequest)))))
 
-                        .then(literal("remove").then(argument("enchantment", EnchantmentArgumentType.enchantment()).executes(this::executeRemoveTradeRequest)))
+                        .then(literal("remove").then(argument("enchantment", RegistryEntryArgumentType.registryEntry(registryAccess, RegistryKeys.ENCHANTMENT))
+                                .executes(this::executeRemoveTradeRequest)))
+
                         .then(literal("list").executes(this::executeListTradeRequest)))
                 .then(literal("execute").executes(this::executeVillagerTrade))
                 .then(literal("stop").executes(ctx -> {
@@ -51,7 +56,10 @@ public class EasyVillagerTradeCommand implements ClientCommandRegistrationCallba
 
 
     public int executeAddTradeRequest(CommandContext<FabricClientCommandSource> context) {
-        Enchantment enchantment = context.getArgument("enchantment", Enchantment.class);
+        RegistryEntry.Reference<?> reference = context.getArgument("enchantment", RegistryEntry.Reference.class);
+        if(!(reference.value() instanceof  Enchantment enchantment))
+            return 0;
+
         int maxPrice = context.getArgument("maxPrice", Integer.class);
         int level = getArgumentOrElse(context, "level", Integer.class, enchantment.getMaxLevel());
 
@@ -63,7 +71,10 @@ public class EasyVillagerTradeCommand implements ClientCommandRegistrationCallba
     }
 
     public int executeRemoveTradeRequest(CommandContext<FabricClientCommandSource> context) {
-        Enchantment enchantment = context.getArgument("enchantment", Enchantment.class);
+        RegistryEntry.Reference<?> reference = context.getArgument("enchantment", RegistryEntry.Reference.class);
+        if(!(reference.value() instanceof  Enchantment enchantment))
+            return 0;
+
         modBase.getTradeRequestContainer().removeTradeRequestByEnchantment(enchantment);
 
         boolean multipleLevels = enchantment.getMaxLevel() == 1;
@@ -109,7 +120,7 @@ public class EasyVillagerTradeCommand implements ClientCommandRegistrationCallba
         T t;
         try {
             t = context.getArgument(argument, argumentClass);
-        } catch ( IllegalArgumentException e ) {
+        } catch (IllegalArgumentException e) {
             return orElse;
         }
         return t;

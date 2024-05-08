@@ -37,6 +37,7 @@ public class EasyVillagerTrade implements ModInitializer {
         KeyBindingHelper.registerKeyBinding(keyBinding);
     }
 
+
     public void registerCallbacks() {
         UseEntityCallback.EVENT.register((player, world, hand, entity, hitResult) -> {
             if (hand == Hand.OFF_HAND || hitResult == null || !world.isClient())

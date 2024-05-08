@@ -2,13 +2,14 @@ package de.gamedude.easyvillagertrade.core;
 
 import de.gamedude.easyvillagertrade.utils.TradeRequest;
 import net.minecraft.enchantment.Enchantment;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.registry.Registry;
 
 public class TradeRequestInputHandler {
 
-    private static final Registry<Enchantment> ENCHANTMENT_REGISTRY = Registry.ENCHANTMENT;
+    private static final Registry<Enchantment> ENCHANTMENT_REGISTRY = Registries.ENCHANTMENT;
 
     public TradeRequest handleCommandInput(Enchantment enchantment, int inputLevel, int maxPrice) {
         int level = mapLevel(enchantment, inputLevel);
