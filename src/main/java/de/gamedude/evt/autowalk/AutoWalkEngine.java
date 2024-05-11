@@ -14,22 +14,17 @@ import java.util.function.Supplier;
 public class AutoWalkEngine extends AutomationEngine {
 
     private final Supplier<ClientPlayerEntity> player = () -> MinecraftClient.getInstance().player;
-    private int state;
-
-    public AutoWalkEngine() { }
 
     @Override
     public void move() {
         Vec2f offset = getOffset();
         WalkAction walkAction = new WalkAction(new Vec3d(offset.x, player.get().getY(), offset.y), player.get());
-
         ((ActionInterface) player.get()).easyVillagerTrade$setWalkAction(walkAction);
     }
 
     @Override
     public void cancel() {
         ((ActionInterface) player.get()).easyVillagerTrade$setWalkAction(null);
-        this.state = 0;
     }
 
     @Override
@@ -37,25 +32,6 @@ public class AutoWalkEngine extends AutomationEngine {
         WalkAction walkAction = new WalkAction(yaw, player.get());
         ((ActionInterface) player.get()).easyVillagerTrade$setWalkAction(walkAction);
     }
-
-    public void tickMovement() {
-        switch (state) {
-            case 0, 2-> lookInternal();
-            case 1-> walkInternal();
-            case 3 -> onFinish();
-            default -> throw new NotImplementedException("Faulty implementation!");
-        }
-    }
-
-    private void onFinish() {
-        toggleEngine();
-        this.count++;
-    }
-
-    public synchronized void increaseCount() {
-        this.count++;
-    }
-
     private void walkInternal() {
         WalkAction walkAction = ((ActionInterface) player.get()).easyVillagerTrade$getWalkaction();
         Vec3d walkVec = walkAction.getWalkVec();
@@ -66,7 +42,7 @@ public class AutoWalkEngine extends AutomationEngine {
             walkAction.getPlayer().forwardSpeed = MathHelper.clampedMap((float) length, 9, 0, 1, 0.3f); // 0.5f would be more realistic looking imo
         } else {
             walkAction.getPlayer().forwardSpeed = 0f;
-            state +=1;
+            toggleEngine();
         }
     }
 
@@ -87,21 +63,16 @@ public class AutoWalkEngine extends AutomationEngine {
 
         if (Math.abs(angleDiff) <= 0.05) {
             player.setYaw(walkAction.getFinalYaw());
-            state += 1;
+            toggleEngine();
         }
     }
 
     public void toggleEngine() {
-        WalkAction walkAction = ((ActionInterface) player.get()).easyVillagerTrade$getWalkaction();
-        if(walkAction == null)
-            return;
-        this.state = 0;
+        ((ActionInterface) player.get()).easyVillagerTrade$setWalkAction(null);
     }
 
     public boolean isToggled() {
         return ((ActionInterface) player.get()).easyVillagerTrade$getWalkaction() != null;
     }
-
-
 
 }

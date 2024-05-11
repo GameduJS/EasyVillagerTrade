@@ -35,7 +35,6 @@ public class ClientPlayerMixin implements ActionInterface {
     @Override
     public void easyVillagerTrade$setWalkAction(WalkAction walkAction) {
         this.walkAction = walkAction;
-        autoWalkEngine.toggleEngine();
     }
 
     @Override
