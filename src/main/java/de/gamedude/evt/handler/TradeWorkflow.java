@@ -19,6 +19,14 @@ public class TradeWorkflow implements Handler {
         this.handlerMap.put(ScriptManager.class, new ScriptManager(this));
     }
 
+    public void toggle(boolean state) {
+        this.enabled = state;
+    }
+
+    public boolean isEnabled() {
+        return enabled;
+    }
+
     @Override
     @SuppressWarnings("unchecked")
     public <T extends Handler> T getHandler(Class<T> clazz) {
@@ -35,8 +43,9 @@ public class TradeWorkflow implements Handler {
         if(!enabled)
             return;
         Script script = getHandler(ScriptManager.class).getScript();
-        if(script != null)
+        if(script != null) {
             script.tick();
+        }
     }
 
     @Override

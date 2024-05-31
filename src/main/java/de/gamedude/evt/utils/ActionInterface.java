@@ -1,11 +1,11 @@
 package de.gamedude.evt.utils;
 
-import de.gamedude.evt.autowalk.WalkAction;
+import de.gamedude.evt.autowalk.AutoAction;
 
 public interface ActionInterface {
 
-    void easyVillagerTrade$setWalkAction(WalkAction walkAction);
+    void easyVillagerTrade$setWalkAction(AutoAction walkAction);
 
-    WalkAction easyVillagerTrade$getWalkaction();
+    AutoAction easyVillagerTrade$getWalkaction();
 
 }

@@ -1,15 +1,14 @@
 package de.gamedude.evt.screen.widget;
 
+import de.gamedude.evt.EasyVillagerTrade;
+import de.gamedude.evt.handler.TradeRequestContainer;
+import de.gamedude.evt.handler.TradeWorkflow;
 import de.gamedude.evt.utils.TradeRequest;
-import de.gamedude.old.EasyVillagerTrade;
-import de.gamedude.old.core.TradeWorkflowHandler;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.*;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
-import net.minecraft.client.gui.tooltip.Tooltip;
-import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.text.Text;
+import net.minecraft.enchantment.Enchantment;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.ColorHelper;
 import net.minecraft.util.math.MathHelper;
@@ -21,6 +20,7 @@ import java.util.Optional;
 public class TradeRequestListWidget extends AbstractParentElement implements Drawable, Selectable {
 
     private static final int ENTRY_HEIGHT = 32;
+    private static final TradeWorkflow TRADE_WORKFLOW = EasyVillagerTrade.getTradeWorkflow();
     private static int ENTRIES_PER_PAGE;
 
     private double scrollAmount;
@@ -44,21 +44,14 @@ public class TradeRequestListWidget extends AbstractParentElement implements Dra
         return children.size();
     }
 
-    public TradeRequestEntry getEntry(int index) {
-        return this.children.get(index);
-    }
-
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         ENTRIES_PER_PAGE = (int) Math.ceil((height - y + 5) / (ENTRY_HEIGHT + 5f) - 1);
         if (ENTRIES_PER_PAGE == 0)
             return;
-
         this.renderBackground(context);
-
-        for (int index = 0; index < Math.min(getEntryCount(), ENTRIES_PER_PAGE); ++index) {
-            getEntry(index + getOffset()).render(context, index, x, y + 1, width, mouseX, mouseY, delta);
-        }
+        for (int index = 0; index < Math.min(getEntryCount(), ENTRIES_PER_PAGE); ++index)
+            this.children.get(index + getOffset()).render(context, index, x, y + 1, width, mouseX, mouseY, delta);
     }
 
     private int getOffset() {
@@ -110,10 +103,16 @@ public class TradeRequestListWidget extends AbstractParentElement implements Dra
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         boolean bl = super.mouseClicked(mouseX, mouseY, button);
         Optional<Element> element = this.hoveredElement(mouseX, mouseY);
-        if(element.isEmpty())
-            return bl;
-        TradeRequestEntry tradeRequestEntry = (TradeRequestEntry) element.get();
+        if(element.isPresent()) {
+            TradeRequestEntry tradeRequestEntry = (TradeRequestEntry) element.get();
+            children.remove(tradeRequestEntry);
+            TRADE_WORKFLOW.getHandler(TradeRequestContainer.class).removeRequest(tradeRequestEntry.tradeRequest);
+        }
         return bl;
+    }
+
+    public void removeChildByEnchantment(Enchantment enchantment) {
+        this.children.removeIf(tradeRequestEntry -> tradeRequestEntry.tradeRequest.enchantment().getTranslationKey().equals(enchantment.getTranslationKey()));
     }
 
     @Override
@@ -132,8 +131,6 @@ public class TradeRequestListWidget extends AbstractParentElement implements Dra
         public final TradeRequest tradeRequest;
         private int x,y1,x2,y2;
 
-        private ButtonWidget widget;
-
         public TradeRequestEntry(TradeRequest request) {
             this.tradeRequest = request;
         }
@@ -151,22 +148,12 @@ public class TradeRequestListWidget extends AbstractParentElement implements Dra
 
             context.drawText(textRenderer, tradeRequest.enchantment().getName(tradeRequest.level()), x + 20, y1 + 4, -1, false);
             context.drawText(textRenderer, "§e" + tradeRequest.cost(), x + 20, y1 + 20, -1, false);
-
-            if(widget == null) {
-                widget = ButtonWidget.builder(Text.of("test"), button -> System.out.println("[DEBUG] TradeRequestEntry.render: " + "test")).dimensions(x, y1, 50, 20).tooltip(Tooltip.of(Text.of("Test"))).build();
-            }
-            widget.render(context, mouseX, mouseY, delta);
         }
 
 
         @Override
         public boolean isMouseOver(double mouseX, double mouseY) {
             return x <= mouseX && mouseX <= x2 && y1 <= mouseY && mouseY <= y2;
-        }
-
-        @Override
-        public boolean mouseClicked(double mouseX, double mouseY, int button) {
-            return widget.mouseClicked(mouseX, mouseY, button);
         }
 
         @Override

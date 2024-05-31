@@ -20,7 +20,7 @@ public class InteractState  extends State{
             // TODO: MESSAGE
             return 2;
         }
-        minecraftClient.interactionManager.interactEntity(minecraftClient.player, villagerEntity, Hand.MAIN_HAND);
+        client.interactionManager.interactEntity(client.player, villagerEntity, Hand.MAIN_HAND);
         return 1;
     }
 }

@@ -8,6 +8,10 @@ import net.minecraft.screen.slot.SlotActionType;
 
 public class TradeWithVillagerHandler implements Handler {
 
+    public void setTradeIndex(int index) {
+
+    }
+
     public void a() {
         /*ScreenHandler screenHandler = player().currentScreenHandler;
         if(!(screenHandler instanceof MerchantScreenHandler merchantScreen))

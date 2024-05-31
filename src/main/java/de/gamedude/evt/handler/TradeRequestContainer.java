@@ -4,6 +4,7 @@ import de.gamedude.evt.utils.TradeRequest;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.item.Items;
+import net.minecraft.util.Pair;
 import net.minecraft.village.TradeOffer;
 import net.minecraft.village.TradeOfferList;
 
@@ -35,7 +36,7 @@ public class TradeRequestContainer implements Handler {
         return tradeRequests;
     }
 
-    public Optional<TradeRequest> getValidTradeRequest(TradeOfferList tradeOfferList) {
+    public Optional<Pair<TradeOffer, TradeRequest>> getValidTradeRequest(TradeOfferList tradeOfferList) {
         Optional<TradeOffer> optionalTradeOffer = tradeOfferList.stream().filter(tradeOffer -> tradeOffer.getSellItem().getItem() == Items.ENCHANTED_BOOK).findFirst();
         if (optionalTradeOffer.isEmpty())
             return Optional.empty();
@@ -47,7 +48,11 @@ public class TradeRequestContainer implements Handler {
 
         TradeRequest tradeRequest = new TradeRequest(enchantment, level, cost);
 
-        return tradeRequests.stream().anyMatch(request -> request.matchRequest(tradeRequest)) ? Optional.of(tradeRequest) : Optional.empty();
+        if(tradeRequests.stream().anyMatch(tradeRequest::matchRequest)) {
+            Pair<TradeOffer, TradeRequest> pair = new Pair<>(tradeOffer, tradeRequest);
+            return Optional.of(pair);
+        }
+        return Optional.empty();
     }
 
 }

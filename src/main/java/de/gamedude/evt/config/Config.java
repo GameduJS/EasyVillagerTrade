@@ -44,7 +44,7 @@ public class Config {
         }
     }
 
-    private void savePropertiesToFile() {
+    public void savePropertiesToFile() {
         JsonObject jsonObject = new JsonObject();
 
         for(Map.Entry<String, JsonElement> entry : properties.entrySet()) {

@@ -4,6 +4,7 @@ import de.gamedude.evt.autowalk.AutoWalkEngine;
 import de.gamedude.evt.commands.EVTCommand;
 import de.gamedude.evt.commands.ScriptCommand;
 import de.gamedude.evt.handler.TradeWorkflow;
+import de.gamedude.evt.screen.OptionScreen;
 import de.gamedude.evt.screen.TradeSelectScreen;
 import de.gamedude.evt.script.ScriptManager;
 import net.fabricmc.api.ClientModInitializer;
@@ -27,9 +28,12 @@ public class EasyVillagerTrade implements ClientModInitializer {
         ClientTickEvents.START_CLIENT_TICK.register(client -> {
             if(SCREEN_KEY_BINDING.wasPressed())
                 client.setScreen(new TradeSelectScreen());
+            tradeWorkflow.tickWorkflow();
         });
 
-        ClientLifecycleEvents.CLIENT_STARTED.register(client -> tradeWorkflow.getHandler(ScriptManager.class).copyDefaultToCache());
+        ClientLifecycleEvents.CLIENT_STARTED.register(client -> {
+            tradeWorkflow.getHandler(ScriptManager.class).copyDefaultToCache();
+        });
 
         ClientCommandRegistrationCallback.EVENT.register(new ScriptCommand());
         ClientCommandRegistrationCallback.EVENT.register(new EVTCommand(tradeWorkflow));

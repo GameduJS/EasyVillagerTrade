@@ -1,5 +1,6 @@
 package de.gamedude.evt.autowalk;
 
+import de.gamedude.evt.EasyVillagerTrade;
 import de.gamedude.evt.utils.ActionInterface;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
@@ -7,33 +8,26 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
-import org.apache.commons.lang3.NotImplementedException;
 
 import java.util.function.Supplier;
 
-public class AutoWalkEngine extends AutomationEngine {
+public class AutoWalkEngine {
 
     private final Supplier<ClientPlayerEntity> player = () -> MinecraftClient.getInstance().player;
 
-    @Override
-    public void move() {
-        Vec2f offset = getOffset();
-        WalkAction walkAction = new WalkAction(new Vec3d(offset.x, player.get().getY(), offset.y), player.get());
+    //TODO: LATER maybe add vertical movement
+    public void move(Vec2f relativeDestination) {
+        Vec3d toMoveVec = new Vec3d(relativeDestination.x, player.get().getY(), relativeDestination.y);
+        WalkAction walkAction = new WalkAction(toMoveVec);
         ((ActionInterface) player.get()).easyVillagerTrade$setWalkAction(walkAction);
     }
 
-    @Override
-    public void cancel() {
-        ((ActionInterface) player.get()).easyVillagerTrade$setWalkAction(null);
-    }
-
-    @Override
     public void look(float yaw) {
-        WalkAction walkAction = new WalkAction(yaw, player.get());
-        ((ActionInterface) player.get()).easyVillagerTrade$setWalkAction(walkAction);
+        ViewAction viewAction = new ViewAction(0, yaw);
+        ((ActionInterface) player.get()).easyVillagerTrade$setWalkAction(viewAction);
     }
-    private void walkInternal() {
-        WalkAction walkAction = ((ActionInterface) player.get()).easyVillagerTrade$getWalkaction();
+
+    private void walkInternal(WalkAction walkAction) {
         Vec3d walkVec = walkAction.getWalkVec();
 
         double length = walkVec.horizontalLengthSquared();
@@ -42,37 +36,44 @@ public class AutoWalkEngine extends AutomationEngine {
             walkAction.getPlayer().forwardSpeed = MathHelper.clampedMap((float) length, 9, 0, 1, 0.3f); // 0.5f would be more realistic looking imo
         } else {
             walkAction.getPlayer().forwardSpeed = 0f;
-            toggleEngine();
+            finishAction();
         }
     }
 
-    private void lookInternal() {
-        WalkAction walkAction = ((ActionInterface) player.get()).easyVillagerTrade$getWalkaction();
-        Vec3d walkVec = walkAction.getWalkVec();
-
-        if (walkVec == Vec3d.ZERO)
-            return;
-        PlayerEntity player = walkAction.getPlayer();
+    private void lookInternal(ViewAction viewAction) {
+        System.out.println("[DEBUG] AutoWalkEngine.lookInternal: " + "hiha");
+        PlayerEntity player = viewAction.getPlayer();
 
         float currentYaw = player.getYaw();
-        float angleDiff = MathHelper.wrapDegrees(walkAction.getFinalYaw() - currentYaw);
+        float angleDiff = MathHelper.wrapDegrees(viewAction.finalYaw - currentYaw);
         float rotationAmount = 4f * Math.min(1.0f, Math.abs(angleDiff) / 10f);
         float newYaw = MathHelper.wrapDegrees(currentYaw + Math.signum(angleDiff) * rotationAmount);
 
         player.setYaw(newYaw);
 
         if (Math.abs(angleDiff) <= 0.05) {
-            player.setYaw(walkAction.getFinalYaw());
-            toggleEngine();
+            player.setYaw(viewAction.finalYaw);
+            finishAction();
         }
     }
 
-    public void toggleEngine() {
-        ((ActionInterface) player.get()).easyVillagerTrade$setWalkAction(null);
+    public void tickMovement() {
+        if(!EasyVillagerTrade.getTradeWorkflow().isEnabled())
+            return;
+        AutoAction autoAction = ((ActionInterface) player.get()).easyVillagerTrade$getWalkaction();
+        if(autoAction == null)
+            return;
+
+        System.out.println("[DEBUG] AutoWalkEngine.tickMovement: " + "moving");
+
+        if(autoAction instanceof ViewAction viewAction)
+            lookInternal(viewAction);
+        else if(autoAction instanceof WalkAction walkAction)
+            walkInternal(walkAction);
     }
 
-    public boolean isToggled() {
-        return ((ActionInterface) player.get()).easyVillagerTrade$getWalkaction() != null;
+    private void finishAction() {
+        ((ActionInterface) player.get()).easyVillagerTrade$setWalkAction(null);
     }
 
 }

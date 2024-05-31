@@ -1,6 +1,7 @@
 package de.gamedude.evt.handler;
 
 import net.minecraft.block.LecternBlock;
+import net.minecraft.entity.ai.TargetPredicate;
 import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.BlockPos;
@@ -42,16 +43,7 @@ public class SelectionInterface implements Handler {
     }
 
     private VillagerEntity getClosestEntity(World world, BlockPos blockPos) {
-        VillagerEntity entity = null;
-        double dist = Double.MAX_VALUE;
-
-        for(VillagerEntity villagerEntity : world.getEntitiesByClass(VillagerEntity.class, new Box(blockPos).expand(3), (villager) -> villager.getVillagerData().getProfession() == VillagerProfession.LIBRARIAN)) {
-            double distanceSquared = villagerEntity.squaredDistanceTo(blockPos.getX(), blockPos.getY(), blockPos.getZ());
-            if(distanceSquared < dist) {
-                dist = distanceSquared;
-                entity = villagerEntity;
-            }
-        }
-        return entity;
+        return world.getClosestEntity(VillagerEntity.class, TargetPredicate.DEFAULT.setPredicate(livingEntity -> ((VillagerEntity) livingEntity).getVillagerData().getProfession() == VillagerProfession.LIBRARIAN),
+                null, blockPos.getX(), blockPos.getY(), blockPos.getZ(), new Box(blockPos).expand(3));
     }
 }

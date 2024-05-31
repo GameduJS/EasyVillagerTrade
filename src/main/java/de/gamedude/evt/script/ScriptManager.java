@@ -6,6 +6,7 @@ import de.gamedude.evt.handler.TradeWorkflow;
 import de.gamedude.evt.logic.MalformedParameterException;
 import de.gamedude.evt.logic.State;
 import de.gamedude.evt.utils.StateType;
+import joptsimple.internal.Strings;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.resource.Resource;
 import net.minecraft.resource.ResourceManager;
@@ -72,6 +73,8 @@ public class ScriptManager implements Handler {
             String[] parameters = (Arrays.copyOfRange(objects, 1, objects.length));
 
             try {
+                System.out.println("Parsing: " + line);
+                System.out.println("With objects: " + Strings.join(parameters, ";"));
                 State state = StateType.getByToken(objects[0]).getState(tradeWorkflow, parameters);
                 states.add(state);
             } catch ( MalformedParameterException e ) {
@@ -87,7 +90,7 @@ public class ScriptManager implements Handler {
      * TODO: load default script to config cache
      */
     public void loadScript(String scriptDirectory) throws Exception {
-        File[] files = destinationPath.resolve("/" + scriptDirectory).toFile().listFiles((dir, name) -> name.endsWith(".txt"));
+        File[] files = destinationPath.resolve(scriptDirectory).toFile().listFiles((dir, name) -> name.endsWith(".txt"));
         if(files == null)
             throw new Exception("Directory is empty or does not have any scripts");
         Map<Script.ScriptType, List<State>> typeScriptMap = new HashMap<>();

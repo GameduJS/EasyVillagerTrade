@@ -1,7 +1,8 @@
 package de.gamedude.evt.mixin;
 
-import de.gamedude.old.EasyVillagerTrade;
-import de.gamedude.old.core.SelectionInterface;
+import de.gamedude.evt.EasyVillagerTrade;
+import de.gamedude.evt.handler.SelectionInterface;
+import de.gamedude.evt.handler.TradeWorkflow;
 import de.gamedude.old.core.TradeWorkflowHandler;
 import de.gamedude.old.utils.TradingState;
 import io.netty.channel.ChannelHandlerContext;
@@ -28,41 +29,43 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class NetworkPacketMixin {
 
     @Unique
-    private final TradeWorkflowHandler tradeAutomationHandler = EasyVillagerTrade.getTradeWorkFlowHandler();
+    private final TradeWorkflow tradeWorkFlowHandler = EasyVillagerTrade.getTradeWorkflow();
 
     //@Inject(method = "channelRead0(Lio/netty/channel/ChannelHandlerContext;Lnet/minecraft/network/packet/Packet;)V", at = @At("HEAD"), cancellable = true)
-    private void channelRead(ChannelHandlerContext context, Packet<?> packet, CallbackInfo ci) {
+    /*private void channelRead(ChannelHandlerContext context, Packet<?> packet, CallbackInfo ci) {
         if(packet instanceof EntityStatusS2CPacket statusPacket) {
             World world = MinecraftClient.getInstance().world;
             if(world == null)
                 return;
-            if(tradeAutomationHandler.state != TradingState.WAIT_PROFESSION)
+            if(tradeWorkFlowHandler.state != TradingState.WAIT_PROFESSION)
                 return;
             if(!(statusPacket.getEntity(world) instanceof VillagerEntity villager))
                 return;
-            if(!villager.equals(tradeAutomationHandler.getHandler(SelectionInterface.class).getVillager()))
+            if(!villager.equals(tradeWorkFlowHandler.getHandler(SelectionInterface.class).getVillager()))
                 return;
-            tradeAutomationHandler.setState(TradingState.CHECK_OFFERS);
-            tradeAutomationHandler.handleInteractionWithVillager();
+            tradeWorkFlowHandler.setState(TradingState.CHECK_OFFERS);
+            tradeWorkFlowHandler.handleInteractionWithVillager();
 
         } else if (packet instanceof SetTradeOffersS2CPacket setTradeOffers) {
-            if (tradeAutomationHandler.state != TradingState.CHECK_OFFERS)
+            if (tradeWorkFlowHandler.state != TradingState.CHECK_OFFERS)
                 return;
-            tradeAutomationHandler.checkVillagerOffers(setTradeOffers.getOffers());
+            tradeWorkFlowHandler.checkVillagerOffers(setTradeOffers.getOffers());
         } else if (packet instanceof OpenScreenS2CPacket screenPacket && screenPacket.getScreenHandlerType() == ScreenHandlerType.MERCHANT) {
-            if (tradeAutomationHandler.state != TradingState.CHECK_OFFERS)
+            if (tradeWorkFlowHandler.state != TradingState.CHECK_OFFERS)
                 return;
             if(MinecraftClient.getInstance().getNetworkHandler() == null)
                 return;
             MinecraftClient.getInstance().executeSync(() -> MinecraftClient.getInstance().getNetworkHandler().sendPacket(new CloseHandledScreenC2SPacket(screenPacket.getSyncId() + 1)));
             ci.cancel();
         }
-    }
+    }*/
+
     @Inject(method = "channelRead0(Lio/netty/channel/ChannelHandlerContext;Lnet/minecraft/network/packet/Packet;)V", at = @At("HEAD"), cancellable = true)
     private void channelRead0(ChannelHandlerContext context, Packet<?> packet, CallbackInfo ci) {
-       if (packet instanceof SetTradeOffersS2CPacket setTradeOffers) {
-            tradeAutomationHandler.getHandler(SelectionInterface.class).getVillager().setOffers(setTradeOffers.getOffers());
-            tradeAutomationHandler.checkVillagerOffers(setTradeOffers.getOffers());
+        if (!tradeWorkFlowHandler.isEnabled())
+            return;
+        if (packet instanceof SetTradeOffersS2CPacket setTradeOffers) {
+            tradeWorkFlowHandler.getHandler(SelectionInterface.class).getVillager().setOffers(setTradeOffers.getOffers());
         }
     }
 }
