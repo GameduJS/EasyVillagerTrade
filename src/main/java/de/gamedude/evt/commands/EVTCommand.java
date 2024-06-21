@@ -1,5 +1,6 @@
 package de.gamedude.evt.commands;
 
+import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.context.CommandContext;
@@ -45,24 +46,34 @@ public record EVTCommand(TradeWorkflow tradeWorkflow) implements ClientCommandRe
 
         CommandNode<FabricClientCommandSource> selectNode = literal("select")
                 .then(literal("close").executes(this::executeCloseSelect))
-                .executes(context -> sendFeedback(context, "Manually selecting")).build();
+                .executes(this::executeManualSelection).build();
 
 
         dispatcher.register(literal("evt")
                         .executes(context -> sendFeedback(context, "Use /evt <start/stop/search>"))
 
                 .then(literal("start").executes(this::executeStart))
-                .then(literal("stop").executes(context -> sendFeedback(context, "Stopping....")))
+                .then(literal("stop").executes(this::executeStop))
 
                 // SEARCH SUBCOMMAND
                 .then(searchNode)
                 .then(selectNode));
     }
 
+    private int executeManualSelection(CommandContext<?> commandContext) {
+        this.tradeWorkflow.getHandler(SelectionInterface.class).startSelection();
+        return sendFeedback(commandContext, "Manually selecting...");
+    }
+
     private int executeStart(CommandContext<?> commandContext) {
         this.tradeWorkflow.getHandler(ScriptManager.class).getScript().tickScriptType(Script.ScriptType.INIT);
         this.tradeWorkflow.toggle(true);
         return sendFeedback(commandContext, "Starting the search...");
+    }
+
+    private int executeStop(CommandContext<?> commandContext) {
+        this.tradeWorkflow.toggle(false);
+        return sendFeedback(commandContext, "Stopping the search...");
     }
 
     private int executeAddSearch(CommandContext<?> commandContext) {

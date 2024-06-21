@@ -8,11 +8,11 @@ public class WalkAction extends AutoAction {
     private final Vec3d startPosition;
 
     public WalkAction(Vec3d offset) {
-        this.startPosition = getPlayer().getPos();
+        this.startPosition = player().get().getPos();
         this.destination = startPosition.add(offset);
     }
 
     public Vec3d getWalkVec() {
-        return this.destination.subtract(getPlayer().getPos());
+        return this.destination.subtract(player().get().getPos());
     }
 }

@@ -1,6 +1,6 @@
 package de.gamedude.evt.autowalk;
 
-import de.gamedude.evt.EasyVillagerTrade;
+import de.gamedude.evt.handler.TradeWorkflow;
 import de.gamedude.evt.utils.ActionInterface;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
@@ -13,9 +13,10 @@ import java.util.function.Supplier;
 
 public class AutoWalkEngine {
 
+    public static final AutoWalkEngine INSTANCE = new AutoWalkEngine();
     private final Supplier<ClientPlayerEntity> player = () -> MinecraftClient.getInstance().player;
 
-    //TODO: LATER maybe add vertical movement
+    //TODO:  maybe add vertical movement LATER
     public void move(Vec2f relativeDestination) {
         Vec3d toMoveVec = new Vec3d(relativeDestination.x, player.get().getY(), relativeDestination.y);
         WalkAction walkAction = new WalkAction(toMoveVec);
@@ -33,16 +34,15 @@ public class AutoWalkEngine {
         double length = walkVec.horizontalLengthSquared();
         if (Math.abs(length) >= 0.1 * 0.1 || length < 0) { // check for length < 0, when player was moving a little bit too much last tick -> will be correct during next repetitions
             // adjust mapping InitialLengthSquared -> 0 <---> 1 -> 0.3
-            walkAction.getPlayer().forwardSpeed = MathHelper.clampedMap((float) length, 9, 0, 1, 0.3f); // 0.5f would be more realistic looking imo
+            walkAction.player().get().forwardSpeed = MathHelper.clampedMap((float) length, 9, 0, 1, 0.3f); // 0.5f would be more realistic looking imo
         } else {
-            walkAction.getPlayer().forwardSpeed = 0f;
+            walkAction.player().get().forwardSpeed = 0f;
             finishAction();
         }
     }
 
     private void lookInternal(ViewAction viewAction) {
-        System.out.println("[DEBUG] AutoWalkEngine.lookInternal: " + "hiha");
-        PlayerEntity player = viewAction.getPlayer();
+        PlayerEntity player = viewAction.player().get();
 
         float currentYaw = player.getYaw();
         float angleDiff = MathHelper.wrapDegrees(viewAction.finalYaw - currentYaw);
@@ -58,13 +58,11 @@ public class AutoWalkEngine {
     }
 
     public void tickMovement() {
-        if(!EasyVillagerTrade.getTradeWorkflow().isEnabled())
+        if(!TradeWorkflow.INSTANCE.isEnabled())
             return;
         AutoAction autoAction = ((ActionInterface) player.get()).easyVillagerTrade$getWalkaction();
         if(autoAction == null)
             return;
-
-        System.out.println("[DEBUG] AutoWalkEngine.tickMovement: " + "moving");
 
         if(autoAction instanceof ViewAction viewAction)
             lookInternal(viewAction);

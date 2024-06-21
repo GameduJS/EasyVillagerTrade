@@ -1,18 +1,16 @@
 package de.gamedude.evt.logic;
 
-import de.gamedude.evt.handler.TradeWorkflow;
-
 public class WaitState extends State {
 
-    int ticks;
-
-    public WaitState(TradeWorkflow tradeWorkflow, int ticks) {
-        super(tradeWorkflow);
+    private int ticks;
+    public WaitState(int ticks) {
         this.ticks = ticks;
     }
 
     @Override
     public int run() {
-        return ticks-- <= 0 ? 1 : 0;
+        if(ticks-- == 0)
+            return 1;
+        return 0;
     }
 }

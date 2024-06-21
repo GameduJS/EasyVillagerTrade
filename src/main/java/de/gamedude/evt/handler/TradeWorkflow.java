@@ -8,15 +8,18 @@ import java.util.*;
 
 public class TradeWorkflow implements Handler {
 
+    public static final TradeWorkflow INSTANCE = new TradeWorkflow();
     private final Map<Class<? extends Handler>, Handler> handlerMap;
     private boolean enabled;
+    public boolean enableSelection;
 
     public TradeWorkflow() {
         this.handlerMap = new HashMap<>();
         this.handlerMap.put(TradeRequestContainer.class, new TradeRequestContainer());
         this.handlerMap.put(TradeRequestParser.class, new TradeRequestParser());
         this.handlerMap.put(SelectionInterface.class, new SelectionInterface());
-        this.handlerMap.put(ScriptManager.class, new ScriptManager(this));
+        this.handlerMap.put(ScriptManager.class, new ScriptManager());
+        this.handlerMap.put(TradeWithVillagerHandler.class, new TradeWithVillagerHandler());
     }
 
     public void toggle(boolean state) {

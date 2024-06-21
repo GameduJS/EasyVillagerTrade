@@ -10,6 +10,7 @@ import net.minecraft.village.TradeOfferList;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public class TradeRequestContainer implements Handler {
@@ -29,7 +30,7 @@ public class TradeRequestContainer implements Handler {
     }
     
     public void removeRequestByEnchantment(Enchantment enchantment) {
-        this.tradeRequests.removeIf( tradeRequest -> enchantment.getTranslationKey().equals(enchantment.getTranslationKey()) );
+        this.tradeRequests.removeIf(tradeRequest -> tradeRequest.enchantment().getTranslationKey().equals(enchantment.getTranslationKey()) );
     }
 
     public List<TradeRequest> getRequests() {
@@ -42,11 +43,14 @@ public class TradeRequestContainer implements Handler {
             return Optional.empty();
 
         TradeOffer tradeOffer = optionalTradeOffer.get();
-        Enchantment enchantment = EnchantmentHelper.get(tradeOffer.getSellItem()).keySet().iterator().next();
-        int level = EnchantmentHelper.getLevel(enchantment, tradeOffer.getSellItem());
+
+        Map.Entry<Enchantment, Integer> entry0 = EnchantmentHelper.get(tradeOffer.getSellItem()).entrySet().iterator().next();
+        Enchantment enchantment = entry0.getKey();
+        int level = entry0.getValue();
         int cost = tradeOffer.getAdjustedFirstBuyItem().getCount();
 
         TradeRequest tradeRequest = new TradeRequest(enchantment, level, cost);
+        System.out.println("[DEBUG] TradeRequestContainer.getValidTradeRequest: " + tradeRequest);
 
         if(tradeRequests.stream().anyMatch(tradeRequest::matchRequest)) {
             Pair<TradeOffer, TradeRequest> pair = new Pair<>(tradeOffer, tradeRequest);

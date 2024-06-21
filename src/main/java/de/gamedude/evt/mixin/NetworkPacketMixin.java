@@ -3,12 +3,17 @@ package de.gamedude.evt.mixin;
 import de.gamedude.evt.EasyVillagerTrade;
 import de.gamedude.evt.handler.SelectionInterface;
 import de.gamedude.evt.handler.TradeWorkflow;
+import de.gamedude.evt.logic.BuyState;
+import de.gamedude.evt.logic.CheckTradeState;
+import de.gamedude.evt.logic.InteractState;
+import de.gamedude.evt.script.ScriptManager;
 import de.gamedude.old.core.TradeWorkflowHandler;
 import de.gamedude.old.utils.TradingState;
 import io.netty.channel.ChannelHandlerContext;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.screen.ChatScreen;
 import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.network.packet.Packet;
@@ -29,43 +34,30 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class NetworkPacketMixin {
 
     @Unique
-    private final TradeWorkflow tradeWorkFlowHandler = EasyVillagerTrade.getTradeWorkflow();
-
-    //@Inject(method = "channelRead0(Lio/netty/channel/ChannelHandlerContext;Lnet/minecraft/network/packet/Packet;)V", at = @At("HEAD"), cancellable = true)
-    /*private void channelRead(ChannelHandlerContext context, Packet<?> packet, CallbackInfo ci) {
-        if(packet instanceof EntityStatusS2CPacket statusPacket) {
-            World world = MinecraftClient.getInstance().world;
-            if(world == null)
-                return;
-            if(tradeWorkFlowHandler.state != TradingState.WAIT_PROFESSION)
-                return;
-            if(!(statusPacket.getEntity(world) instanceof VillagerEntity villager))
-                return;
-            if(!villager.equals(tradeWorkFlowHandler.getHandler(SelectionInterface.class).getVillager()))
-                return;
-            tradeWorkFlowHandler.setState(TradingState.CHECK_OFFERS);
-            tradeWorkFlowHandler.handleInteractionWithVillager();
-
-        } else if (packet instanceof SetTradeOffersS2CPacket setTradeOffers) {
-            if (tradeWorkFlowHandler.state != TradingState.CHECK_OFFERS)
-                return;
-            tradeWorkFlowHandler.checkVillagerOffers(setTradeOffers.getOffers());
-        } else if (packet instanceof OpenScreenS2CPacket screenPacket && screenPacket.getScreenHandlerType() == ScreenHandlerType.MERCHANT) {
-            if (tradeWorkFlowHandler.state != TradingState.CHECK_OFFERS)
-                return;
-            if(MinecraftClient.getInstance().getNetworkHandler() == null)
-                return;
-            MinecraftClient.getInstance().executeSync(() -> MinecraftClient.getInstance().getNetworkHandler().sendPacket(new CloseHandledScreenC2SPacket(screenPacket.getSyncId() + 1)));
-            ci.cancel();
-        }
-    }*/
+    private final TradeWorkflow tradeWorkFlowHandler = TradeWorkflow.INSTANCE;
 
     @Inject(method = "channelRead0(Lio/netty/channel/ChannelHandlerContext;Lnet/minecraft/network/packet/Packet;)V", at = @At("HEAD"), cancellable = true)
     private void channelRead0(ChannelHandlerContext context, Packet<?> packet, CallbackInfo ci) {
         if (!tradeWorkFlowHandler.isEnabled())
             return;
         if (packet instanceof SetTradeOffersS2CPacket setTradeOffers) {
-            tradeWorkFlowHandler.getHandler(SelectionInterface.class).getVillager().setOffers(setTradeOffers.getOffers());
+            if(!TradeWorkflow.INSTANCE.isEnabled())
+                return;
+            VillagerEntity villager = tradeWorkFlowHandler.getHandler(SelectionInterface.class).getVillager().get();
+            if(villager == null)
+                return;
+            villager.setOffers(setTradeOffers.getOffers());
+        } else if (packet instanceof OpenScreenS2CPacket openScreenS2CPacket) {
+            if(!TradeWorkflow.INSTANCE.isEnabled())
+                return;
+            if(MinecraftClient.getInstance().getNetworkHandler() == null)
+                return;
+            if(openScreenS2CPacket.getScreenHandlerType() != ScreenHandlerType.MERCHANT)
+                return;
+            if(!(TradeWorkflow.INSTANCE.getHandler(ScriptManager.class).getScript().getCurrentState() instanceof BuyState)) {
+                MinecraftClient.getInstance().executeSync(() -> MinecraftClient.getInstance().getNetworkHandler().sendPacket(new CloseHandledScreenC2SPacket(openScreenS2CPacket.getSyncId() + 1)));
+                ci.cancel();
+            }
         }
     }
 }

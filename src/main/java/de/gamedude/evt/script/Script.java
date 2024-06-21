@@ -1,5 +1,8 @@
 package de.gamedude.evt.script;
 
+import com.mojang.logging.LogUtils;
+import de.gamedude.evt.EasyVillagerTrade;
+import de.gamedude.evt.handler.TradeWorkflow;
 import de.gamedude.evt.logic.State;
 import joptsimple.internal.Strings;
 
@@ -34,15 +37,27 @@ public class Script {
                 return;
             }
             currentState = currentIterator.next();
+            currentState.initState();
         }
 
-        if (currentState.run() == 1) {
+        int status = currentState.run();
+
+        if (status == 1) {
             if (!currentIterator.hasNext()) {
                 currentIterator = null;
                 return;
             }
             currentState = currentIterator.next();
+            currentState.initState();
+        } else if(status == 2) {
+            this.currentIterator = null;
+            TradeWorkflow.INSTANCE.toggle(false);
+            LogUtils.getLogger().error("Error while executing script!! Shutdown");
         }
+    }
+
+    public State getCurrentState() {
+        return currentState;
     }
 
     public enum ScriptType {

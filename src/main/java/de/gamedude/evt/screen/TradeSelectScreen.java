@@ -33,7 +33,7 @@ import java.util.Arrays;
 
 public class TradeSelectScreen extends Screen {
 
-    private static final TradeWorkflow tradeWorkflow = EasyVillagerTrade.getTradeWorkflow();
+    private static final TradeWorkflow tradeWorkflow = TradeWorkflow.INSTANCE;
     private final int enchantmentWidth;
     private final int levelWidth;
     private final int priceWidth;

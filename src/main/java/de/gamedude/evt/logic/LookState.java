@@ -1,18 +1,29 @@
 package de.gamedude.evt.logic;
 
 import de.gamedude.evt.autowalk.ViewAction;
-import de.gamedude.evt.handler.TradeWorkflow;
 import de.gamedude.evt.utils.ActionInterface;
+import org.apache.commons.lang3.NotImplementedException;
 
-public class LookState  extends State{
+import java.util.function.Supplier;
 
-    public LookState(TradeWorkflow tradeWorkflow, boolean toFormerRotation) {
-        super(tradeWorkflow);
+public class LookState  extends State {
+
+    private final Supplier<Float> yaw, pitch;
+    public LookState(boolean toFormerRotation) {
+        this.yaw = () -> 0f;
+        this.pitch = () ->0f;
+        throw new NotImplementedException();
     }
 
-    public LookState(TradeWorkflow tradeWorkflow, float yaw, float pitch) {
-        super(tradeWorkflow);
-        ((ActionInterface) player.get()).easyVillagerTrade$setWalkAction(new ViewAction(pitch, yaw));
+    public LookState(float yaw, float pitch) {
+        this.yaw = () -> yaw;
+        this.pitch = () -> pitch;
+    }
+
+    @Override
+    public void initState() {
+        ((ActionInterface) player.get()).easyVillagerTrade$setWalkAction(new ViewAction(pitch.get(), yaw.get()));
+        super.initState();
     }
 
     @Override

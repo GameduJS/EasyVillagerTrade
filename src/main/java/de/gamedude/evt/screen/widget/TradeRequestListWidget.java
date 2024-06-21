@@ -1,6 +1,5 @@
 package de.gamedude.evt.screen.widget;
 
-import de.gamedude.evt.EasyVillagerTrade;
 import de.gamedude.evt.handler.TradeRequestContainer;
 import de.gamedude.evt.handler.TradeWorkflow;
 import de.gamedude.evt.utils.TradeRequest;
@@ -20,7 +19,7 @@ import java.util.Optional;
 public class TradeRequestListWidget extends AbstractParentElement implements Drawable, Selectable {
 
     private static final int ENTRY_HEIGHT = 32;
-    private static final TradeWorkflow TRADE_WORKFLOW = EasyVillagerTrade.getTradeWorkflow();
+    private static final TradeWorkflow TRADE_WORKFLOW = TradeWorkflow.INSTANCE;
     private static int ENTRIES_PER_PAGE;
 
     private double scrollAmount;

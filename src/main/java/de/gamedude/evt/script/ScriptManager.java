@@ -1,12 +1,10 @@
 package de.gamedude.evt.script;
 
+import com.google.common.collect.Iterables;
 import com.mojang.logging.LogUtils;
 import de.gamedude.evt.handler.Handler;
-import de.gamedude.evt.handler.TradeWorkflow;
-import de.gamedude.evt.logic.MalformedParameterException;
-import de.gamedude.evt.logic.State;
+import de.gamedude.evt.logic.*;
 import de.gamedude.evt.utils.StateType;
-import joptsimple.internal.Strings;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.resource.Resource;
 import net.minecraft.resource.ResourceManager;
@@ -23,12 +21,7 @@ import java.util.*;
 public class ScriptManager implements Handler {
 
     private final Path destinationPath = Path.of(MinecraftClient.getInstance().runDirectory.getPath(), "/config/evt/scripts/");
-    private final TradeWorkflow tradeWorkflow;
     private Script script;
-
-    public ScriptManager(TradeWorkflow tradeWorkflow) {
-        this.tradeWorkflow = tradeWorkflow;
-    }
 
     public void copyDefaultToCache() {
         if(!destinationPath.toFile().exists())
@@ -55,7 +48,7 @@ public class ScriptManager implements Handler {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            LogUtils.getLogger().error(e.getMessage());
         }
     }
 
@@ -73,9 +66,13 @@ public class ScriptManager implements Handler {
             String[] parameters = (Arrays.copyOfRange(objects, 1, objects.length));
 
             try {
-                System.out.println("Parsing: " + line);
-                System.out.println("With objects: " + Strings.join(parameters, ";"));
-                State state = StateType.getByToken(objects[0]).getState(tradeWorkflow, parameters);
+                State state = StateType.getByToken(objects[0]).getState(parameters);
+                State correction = makeInternalCorrections(state, states);
+                if(correction != null) {
+                    LogUtils.getLogger().warn("Added state '" + correction.getClass().getSimpleName() + "' before '"
+                            + state.getClass().getSimpleName()  + "' to maintain function. Script: " + file.getName() + " Line: " + lines.indexOf(line));
+                    states.add(correction);
+                }
                 states.add(state);
             } catch ( MalformedParameterException e ) {
                 LogUtils.getLogger().error("Unable to run script!");
@@ -84,6 +81,14 @@ public class ScriptManager implements Handler {
             }
         }
         return states;
+    }
+
+    private State makeInternalCorrections(State nextState, List<State> states) {
+        if(nextState instanceof BuyState) {
+           if(states.isEmpty() || !(Iterables.getLast(states) instanceof InteractState))
+               return new InteractState();
+        }
+        return null;
     }
 
     /**
@@ -113,8 +118,5 @@ public class ScriptManager implements Handler {
     public List<String> getStoredScriptNames() {
         return Arrays.stream(Optional.ofNullable(destinationPath.toFile().listFiles((dir, name) -> dir.isDirectory())).orElse(new File[0])).map(File::getName).toList();
     }
-
-
-
 
 }

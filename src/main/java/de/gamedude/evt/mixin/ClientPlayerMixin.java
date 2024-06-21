@@ -17,7 +17,7 @@ public class ClientPlayerMixin implements ActionInterface {
     @Unique
     public AutoAction autoAction;
     @Unique
-    private final AutoWalkEngine autoWalkEngine = EasyVillagerTrade.getAutoWalkEngine();
+    private final AutoWalkEngine autoWalkEngine = AutoWalkEngine.INSTANCE;
 
     @Inject(method = "tickNewAi", at = @At("TAIL"))
     private void doTick(CallbackInfo ci) {
@@ -33,6 +33,5 @@ public class ClientPlayerMixin implements ActionInterface {
     public AutoAction easyVillagerTrade$getWalkaction() {
         return autoAction;
     }
-
 
 }
