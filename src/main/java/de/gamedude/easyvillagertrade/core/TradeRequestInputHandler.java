@@ -1,36 +1,35 @@
 package de.gamedude.easyvillagertrade.core;
 
 import de.gamedude.easyvillagertrade.utils.TradeRequest;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.enchantment.Enchantment;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
-import net.minecraft.text.Text;
+import net.minecraft.registry.*;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.math.MathHelper;
 
 public class TradeRequestInputHandler {
-
-    private static final Registry<Enchantment> ENCHANTMENT_REGISTRY = Registries.ENCHANTMENT;
 
     public TradeRequest handleCommandInput(Enchantment enchantment, int inputLevel, int maxPrice) {
         int level = mapLevel(enchantment, inputLevel);
         int price = mapPrice(maxPrice);
 
-        return new TradeRequest(enchantment, level, price);
+        return new TradeRequest(getRegistry().getEntry(enchantment), level, price);
     }
 
     public TradeRequest handleGUIInput(String enchantmentInput, String levelInput, String priceInput) {
-        Enchantment enchantment = getEnchantment(enchantmentInput);
+        RegistryEntry<Enchantment> enchantment = getEnchantment(enchantmentInput);
         if (enchantment == null)
             return null;
-        int level = isInteger(levelInput) ? mapLevel(enchantment, Integer.parseInt(levelInput)) : -1;
+        int level = isInteger(levelInput) ? mapLevel(enchantment.value(), Integer.parseInt(levelInput)) : -1;
         int maxPrice = isInteger(priceInput) ? mapPrice(Integer.parseInt(priceInput)) : -1;
         if (level == -1 || maxPrice == -1)
             return null;
         return new TradeRequest(enchantment, level, maxPrice);
     }
 
-    public Enchantment getEnchantment(String enchantmentInput) {
-        return ENCHANTMENT_REGISTRY.stream().filter(enchantment -> Text.translatable(enchantment.getTranslationKey()).getString().equalsIgnoreCase(enchantmentInput.trim())).findFirst().orElse(null);
+    public RegistryEntry<Enchantment> getEnchantment(String enchantmentInput) {
+        Registry<Enchantment> enchantmentRegistry = getRegistry();
+        return enchantmentRegistry.stream().filter(enchantment -> enchantment.description().getString().equalsIgnoreCase(enchantmentInput.trim())).findFirst().map(enchantmentRegistry::getEntry).orElse(null);
     }
 
     private int mapPrice(int maxPriceInput) {
@@ -48,6 +47,10 @@ public class TradeRequestInputHandler {
             return false;
         }
         return true;
+    }
+
+    private Registry<Enchantment> getRegistry() {
+        return MinecraftClient.getInstance().world.getRegistryManager().get(RegistryKeys.ENCHANTMENT);
     }
 
 }

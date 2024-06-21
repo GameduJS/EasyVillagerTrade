@@ -11,6 +11,7 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.enchantment.Enchantment;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.ColorHelper;
 
@@ -68,14 +69,14 @@ public class TradeSelectScreen extends Screen {
         }).position(x + 9, px + 15 + 20 + 5).size(50, 20).build();
 
         ButtonWidget removeButton = ButtonWidget.builder(Text.of("Remove"), button -> {
-            Enchantment enchantment = modBase.getTradeRequestInputHandler().getEnchantment(enchantmentInputWidget.getText());
+            RegistryEntry<Enchantment> enchantment = modBase.getTradeRequestInputHandler().getEnchantment(enchantmentInputWidget.getText());
             if (enchantment == null) {
                 enchantmentInputWidget.setEditableColor(ColorHelper.Argb.getArgb(255, 255, 0, 0));
                 return;
             }
             for (Iterator<TradeRequestListWidget.TradeRequestEntry> it = tradeRequestListWidget.children().iterator(); it.hasNext(); ) {
                 TradeRequestListWidget.TradeRequestEntry entry = it.next();
-                if (entry.tradeRequest.enchantment().getTranslationKey().equals(enchantment.getTranslationKey())) {
+                if (TradeRequest.equalEnchantment(enchantment, entry.tradeRequest.enchantment())) {
                     modBase.getTradeRequestContainer().removeTradeRequest(entry.tradeRequest);
                     it.remove();
                     clearTextFieldWidgets(enchantmentInputWidget, levelTextFieldWidget, priceTextFieldWidget);

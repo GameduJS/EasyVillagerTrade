@@ -6,13 +6,13 @@ import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.sound.PositionedSoundInstance;
-import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.ItemEnchantmentsComponent;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.network.packet.c2s.play.HandSwingC2SPacket;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.Hand;
@@ -143,13 +143,13 @@ public class EasyVillagerTradeBase {
 
 
         ItemEnchantmentsComponent enchantments = EnchantmentHelper.getEnchantments(bookOffer.getSellItem());
-        Enchantment bookEnchantment = enchantments.getEnchantments().iterator().next().value();
+        RegistryEntry<Enchantment> bookEnchantment = enchantments.getEnchantments().iterator().next();
         int level = enchantments.getLevel(bookEnchantment);
 
         TradeRequest offer = new TradeRequest(bookEnchantment, level, bookOffer.getDisplayedFirstBuyItem().getCount());
 
         if (tradeRequestContainer.matchesAny(offer)) {
-            minecraftClient.player.sendMessage(Text.translatable("evt.logic.trade_found", "§e" + bookEnchantment.getName(level).getString(), "§a" + offer.maxPrice()));
+            minecraftClient.player.sendMessage(Text.translatable("evt.logic.trade_found", "§e" + Enchantment.getName(bookEnchantment, level).getString(), "§a" + offer.maxPrice()));
             minecraftClient.getSoundManager().play(PositionedSoundInstance.master(SoundEvents.BLOCK_AMETHYST_CLUSTER_BREAK, 1f));
 
             tradeRequestContainer.removeTradeRequestByEnchantment(bookEnchantment);

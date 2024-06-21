@@ -11,10 +11,7 @@ import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallba
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.command.CommandRegistryAccess;
-import net.minecraft.command.argument.ArgumentTypes;
-import net.minecraft.command.argument.RegistryEntryArgumentType;
 import net.minecraft.command.argument.RegistryEntryReferenceArgumentType;
-import net.minecraft.command.argument.serialize.ArgumentSerializer;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
@@ -39,8 +36,9 @@ public class EasyVillagerTradeCommand implements ClientCommandRegistrationCallba
         dispatcher.register(literal(command_base)
                 .then(literal("select").then(literal("close").executes(this::executeSelectionClosest)).executes(this::executeSelection))
                 .then(literal("search")
-                        .then(literal("add").then(argument("maxPrice", IntegerArgumentType.integer()).then(argument("enchantment", RegistryEntryReferenceArgumentType.registryEntry(registryAccess, RegistryKeys.ENCHANTMENT))
-                                .executes(this::executeAddTradeRequest).then(argument("level", IntegerArgumentType.integer()).executes(this::executeAddTradeRequest)))))
+                        .then(literal("add").then(argument("maxPrice", IntegerArgumentType.integer(1, 64)).then(argument("enchantment", RegistryEntryReferenceArgumentType.registryEntry(registryAccess, RegistryKeys.ENCHANTMENT))
+                                .executes(context -> executeAddTradeRequest(context, IntegerArgumentType.getInteger(context, "maxPrice"), 1))
+                                .then(argument("level", IntegerArgumentType.integer(1, 5)).executes(context -> executeAddTradeRequest(context, IntegerArgumentType.getInteger(context, "maxPrice"), IntegerArgumentType.getInteger(context, "level")))))))
 
                         .then(literal("remove").then(argument("enchantment", RegistryEntryReferenceArgumentType.registryEntry(registryAccess, RegistryKeys.ENCHANTMENT))
                                 .executes(this::executeRemoveTradeRequest)))
@@ -57,31 +55,30 @@ public class EasyVillagerTradeCommand implements ClientCommandRegistrationCallba
                 }));
     }
 
-
-    public int executeAddTradeRequest(CommandContext<FabricClientCommandSource> context) {
+    public int executeAddTradeRequest(CommandContext<FabricClientCommandSource> context, int maxPrice, int level) {
         RegistryEntry.Reference<?> reference = context.getArgument("enchantment", RegistryEntry.Reference.class);
-        if(!(reference.value() instanceof  Enchantment enchantment))
+        if(!reference.registryKey().isOf(RegistryKeys.ENCHANTMENT))
             return 0;
-
-        int maxPrice = context.getArgument("maxPrice", Integer.class);
-        int level = getArgumentOrElse(context, "level", Integer.class, enchantment.getMaxLevel());
+        Enchantment enchantment = (Enchantment) reference.value();
 
         TradeRequest tradeRequest = modBase.getTradeRequestInputHandler().handleCommandInput(enchantment, level, maxPrice);
         modBase.getTradeRequestContainer().addTradeRequest(tradeRequest);
 
-        context.getSource().sendFeedback(Text.translatable("evt.command.add", "§e" + tradeRequest.enchantment().getName(tradeRequest.level()).getString(), "§a" + tradeRequest.maxPrice()));
+        context.getSource().sendFeedback(Text.translatable("evt.command.add", "§e" + Enchantment.getName(tradeRequest.enchantment(), tradeRequest.level()).getString(), "§a" + tradeRequest.maxPrice()));
         return 1;
     }
 
+    @SuppressWarnings("unchecked")
     public int executeRemoveTradeRequest(CommandContext<FabricClientCommandSource> context) {
         RegistryEntry.Reference<?> reference = context.getArgument("enchantment", RegistryEntry.Reference.class);
-        if(!(reference.value() instanceof  Enchantment enchantment))
+        if(!(reference.value() instanceof Enchantment enchantment))
             return 0;
+        RegistryEntry<Enchantment> enchantmentRegistryEntry = (RegistryEntry<Enchantment>) reference;
 
-        modBase.getTradeRequestContainer().removeTradeRequestByEnchantment(enchantment);
+        modBase.getTradeRequestContainer().removeTradeRequestByEnchantment(enchantmentRegistryEntry);
 
         boolean multipleLevels = enchantment.getMaxLevel() == 1;
-        String[] parts = enchantment.getName(1).getString().split(" ");
+        String[] parts = Enchantment.getName(enchantmentRegistryEntry, 1).getString().split(" ");
         String name = Strings.join((multipleLevels) ? parts : Arrays.copyOf(parts, parts.length - 1), " ");
 
         context.getSource().sendFeedback(Text.translatable("evt.command.remove", "§e" + StringUtils.capitalize(name)));
@@ -91,7 +88,7 @@ public class EasyVillagerTradeCommand implements ClientCommandRegistrationCallba
     public int executeListTradeRequest(CommandContext<FabricClientCommandSource> context) {
         context.getSource().sendFeedback(Text.translatable("evt.command.list.head"));
         modBase.getTradeRequestContainer().getTradeRequests().forEach(offer ->
-                context.getSource().sendFeedback(Text.translatable("evt.command.list.body", "§e" + offer.enchantment().getName(offer.level()).getString(), "§a" + offer.maxPrice())));
+                context.getSource().sendFeedback(Text.translatable("evt.command.list.body", "§e" + Enchantment.getName(offer.enchantment(), offer.level()).getString(), "§a" + offer.maxPrice())));
         return 1;
     }
 
@@ -117,15 +114,5 @@ public class EasyVillagerTradeCommand implements ClientCommandRegistrationCallba
         context.getSource().sendFeedback(Text.translatable("evt.command.execute"));
         modBase.handleInteractionWithVillager();
         return 1;
-    }
-
-    private <T> T getArgumentOrElse(CommandContext<FabricClientCommandSource> context, String argument, Class<T> argumentClass, T orElse) {
-        T t;
-        try {
-            t = context.getArgument(argument, argumentClass);
-        } catch (IllegalArgumentException e) {
-            return orElse;
-        }
-        return t;
     }
 }

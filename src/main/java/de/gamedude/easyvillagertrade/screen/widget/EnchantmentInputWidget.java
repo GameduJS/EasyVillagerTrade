@@ -7,8 +7,8 @@ import net.minecraft.client.gui.navigation.GuiNavigationPath;
 import net.minecraft.client.gui.navigation.NavigationDirection;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.enchantment.Enchantment;
-import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.ColorHelper;
 import org.apache.commons.lang3.StringUtils;
@@ -19,20 +19,19 @@ import java.util.Arrays;
 import java.util.function.Consumer;
 
 public class EnchantmentInputWidget extends TextFieldWidget {
-
-    private static final Registry<Enchantment> ENCHANTMENT_REGISTRY = Registries.ENCHANTMENT;
     private String suggestion;
 
     public EnchantmentInputWidget(int x, int y, int width, int height) {
         super(MinecraftClient.getInstance().textRenderer, x, y, width, height, Text.empty());
-        setSuggestion("Enchantment");
+        setSuggestion("Input...");
 
         this.setChangedListener(getChangeListener());
     }
 
     private Consumer<String> getChangeListener() {
         return text -> {
-            if (ENCHANTMENT_REGISTRY.stream().map(Enchantment::getTranslationKey).map(Text::translatable).map(Text::getString).anyMatch(text.trim()::equalsIgnoreCase))
+            Registry<Enchantment> enchantmentRegistry = getRegistry();
+            if (enchantmentRegistry.stream().map(Enchantment::description).map(Text::getString).anyMatch(text.trim()::equalsIgnoreCase))
                 this.setEditableColor(ColorHelper.Argb.getArgb(255, 255, 255, 0));
             else
                 this.setEditableColor(0xE0E0E0);
@@ -44,9 +43,9 @@ public class EnchantmentInputWidget extends TextFieldWidget {
 
     private String getPossibleEnchantmentNameOrElse(String input) {
         String enchantmentName = null;
-        for(Enchantment enchantment : ENCHANTMENT_REGISTRY) {
+        for(Enchantment enchantment : getRegistry()) {
             boolean multipleLevels = enchantment.getMaxLevel() == 1;
-            String[] parts = enchantment.getName(1).getString().split(" ");
+            String[] parts = Enchantment.getName(getRegistry().getEntry(enchantment), 1).getString().split(" ");
             String name = Strings.join((multipleLevels) ? parts : Arrays.copyOf(parts, parts.length - 1), " ");
 
             if(name.toLowerCase().startsWith(input.toLowerCase())) {
@@ -55,7 +54,7 @@ public class EnchantmentInputWidget extends TextFieldWidget {
             }
         }
         if (enchantmentName == null)
-            enchantmentName = "";
+            return "";
         return enchantmentName;
     }
 
@@ -78,5 +77,9 @@ public class EnchantmentInputWidget extends TextFieldWidget {
 
     private void setEnchantmentText() {
         setText(StringUtils.capitalize(getText() + ((suggestion == null) ? "": suggestion)));
+    }
+
+    private Registry<Enchantment> getRegistry() {
+        return MinecraftClient.getInstance().world.getRegistryManager().get(RegistryKeys.ENCHANTMENT);
     }
 }

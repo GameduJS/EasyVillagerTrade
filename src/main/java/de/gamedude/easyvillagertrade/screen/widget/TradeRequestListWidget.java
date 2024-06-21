@@ -8,6 +8,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.*;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
+import net.minecraft.enchantment.Enchantment;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.ColorHelper;
@@ -128,8 +129,8 @@ public class TradeRequestListWidget extends AbstractParentElement implements Dra
 
     public static class TradeRequestEntry implements Element {
 
-        private static final Identifier EMERALD_TEXTURE = new Identifier("textures/item/emerald.png");
-        private static final Identifier ENCHANTED_BOOK_TEXTURE = new Identifier("textures/item/enchanted_book.png");
+        private static final Identifier EMERALD_TEXTURE = Identifier.of("textures/item/emerald.png");
+        private static final Identifier ENCHANTED_BOOK_TEXTURE = Identifier.of("textures/item/enchanted_book.png");
         private final TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
         public final TradeRequest tradeRequest;
         private int x,y1,x2,y2;
@@ -151,7 +152,7 @@ public class TradeRequestListWidget extends AbstractParentElement implements Dra
             RenderSystem.setShaderTexture(0, EMERALD_TEXTURE);
             context.drawTexture(EMERALD_TEXTURE, x, y1 + 16,0, 0, 16, 16, 16, 16);
 
-            context.drawText(textRenderer, tradeRequest.enchantment().getName(tradeRequest.level()), x + 20, y1 + 4, 0, false);
+            context.drawText(textRenderer, Enchantment.getName(tradeRequest.enchantment(), tradeRequest.level()), x + 20, y1 + 4, 0, false);
             context.drawText(textRenderer, Text.of("§e" + tradeRequest.maxPrice()), x + 20, y1 + 20, 0, false);
         }
 
