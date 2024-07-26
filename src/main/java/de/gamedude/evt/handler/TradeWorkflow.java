@@ -50,9 +50,4 @@ public class TradeWorkflow implements Handler {
             script.tick();
         }
     }
-
-    @Override
-    public void reloadConfig(Config config) {
-
-    }
 }

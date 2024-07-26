@@ -2,6 +2,7 @@ package de.gamedude.evt;
 
 import de.gamedude.evt.commands.EVTCommand;
 import de.gamedude.evt.commands.ScriptCommand;
+import de.gamedude.evt.commands.TestCommand;
 import de.gamedude.evt.config.Config;
 import de.gamedude.evt.handler.SelectionInterface;
 import de.gamedude.evt.handler.TradeWorkflow;
@@ -11,6 +12,7 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.fabric.api.event.player.UseEntityCallback;
 import net.minecraft.client.MinecraftClient;
@@ -36,7 +38,7 @@ public class EasyVillagerTrade implements ClientModInitializer {
 
         ClientCommandRegistrationCallback.EVENT.register(new ScriptCommand());
         ClientCommandRegistrationCallback.EVENT.register(new EVTCommand(tradeWorkflow));
-
+        CommandRegistrationCallback.EVENT.register(new TestCommand());
         UseBlockCallback.EVENT.register(tradeWorkflow.getHandler(SelectionInterface.class));
         UseEntityCallback.EVENT.register(tradeWorkflow.getHandler(SelectionInterface.class));
     }
