@@ -7,24 +7,39 @@ import net.minecraft.registry.*;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.math.MathHelper;
 
+import java.util.function.Consumer;
+
 public class TradeRequestInputHandler {
 
-    public TradeRequest handleCommandInput(Enchantment enchantment, int inputLevel, int maxPrice) {
-        int level = mapLevel(enchantment, inputLevel);
-        int price = mapPrice(maxPrice);
+    public int handleInputUI(String enchantmentInput, String levelInput, String priceInput, Consumer<TradeRequest> tradeRequestConsumer) {
+        RegistryEntry<Enchantment> enchantmentEntry = getEnchantment(enchantmentInput);
+        if(enchantmentEntry == null)
+            return 1; // no valid enchantment
+        if(!isInteger(priceInput))
+            return 2; // no valid price
+        Enchantment enchantment = enchantmentEntry.value();
+        int price = MathHelper.clamp(Integer.parseInt(priceInput), 1, 64);
 
-        return new TradeRequest(getRegistry().getEntry(enchantment), level, price);
+        if(levelInput.equals("*")) { // add all possible levels
+            for(int levelIterator = 1; levelIterator <= enchantment.getMaxLevel(); levelIterator++) {
+                TradeRequest request = new TradeRequest(enchantmentEntry, levelIterator, price);
+                tradeRequestConsumer.accept(request);
+            }
+            return 0;
+        }
+        if(!isInteger(levelInput))
+            return 3; // no valid level
+        int level = MathHelper.clamp(Integer.parseInt(levelInput), 1, enchantment.getMaxLevel());
+
+        TradeRequest request = new TradeRequest(enchantmentEntry, level, price);
+        tradeRequestConsumer.accept(request);
+        return 0;
     }
 
-    public TradeRequest handleGUIInput(String enchantmentInput, String levelInput, String priceInput) {
-        RegistryEntry<Enchantment> enchantment = getEnchantment(enchantmentInput);
-        if (enchantment == null)
-            return null;
-        int level = isInteger(levelInput) ? mapLevel(enchantment.value(), Integer.parseInt(levelInput)) : -1;
-        int maxPrice = isInteger(priceInput) ? mapPrice(Integer.parseInt(priceInput)) : -1;
-        if (level == -1 || maxPrice == -1)
-            return null;
-        return new TradeRequest(enchantment, level, maxPrice);
+    public TradeRequest parseCommandInput(Enchantment enchantment, int inputLevel, int maxPrice) {
+        int level = mapLevel(enchantment, inputLevel);
+        int price = mapPrice(maxPrice);
+        return new TradeRequest(getRegistry().getEntry(enchantment), level, price);
     }
 
     public RegistryEntry<Enchantment> getEnchantment(String enchantmentInput) {

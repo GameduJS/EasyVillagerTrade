@@ -15,6 +15,7 @@ import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.ColorHelper;
 
+import java.awt.*;
 import java.util.Arrays;
 import java.util.Iterator;
 
@@ -56,16 +57,21 @@ public class TradeSelectScreen extends Screen {
         this.addDrawableChild(priceTextFieldWidget);
 
         ButtonWidget addButton = ButtonWidget.builder(Text.of("Add"), button -> {
-            TradeRequest request = modBase.getTradeRequestInputHandler().handleGUIInput(enchantmentInputWidget.getText(), levelTextFieldWidget.getText(), priceTextFieldWidget.getText());
-            if (request != null) {
-                if (!modBase.getTradeRequestContainer().getTradeRequests().contains(request)) {
-                    tradeRequestListWidget.addEntry(request);
-                    modBase.getTradeRequestContainer().addTradeRequest(request);
-                    clearTextFieldWidgets(enchantmentInputWidget, levelTextFieldWidget, priceTextFieldWidget);
+
+            int result = modBase.getTradeRequestInputHandler().handleInputUI(enchantmentInputWidget.getText(), levelTextFieldWidget.getText(), priceTextFieldWidget.getText(), tradeRequest -> {
+                if(!modBase.getTradeRequestContainer().getTradeRequests().contains(tradeRequest)) {
+                    tradeRequestListWidget.addEntry(tradeRequest);
+                    modBase.getTradeRequestContainer().addTradeRequest(tradeRequest);
                 }
-            } else {
-                enchantmentInputWidget.setEditableColor(ColorHelper.Argb.getArgb(255, 255, 0, 0));
+            });
+
+            switch (result) {
+                case 0 -> clearTextFieldWidgets(enchantmentInputWidget, levelTextFieldWidget, priceTextFieldWidget);
+                case 1 -> enchantmentInputWidget.setEditableColor(Color.RED.getRGB());
+                case 2 -> priceTextFieldWidget.setEditableColor(Color.RED.getRGB());
+                case 3 -> levelTextFieldWidget.setEditableColor(Color.RED.getRGB());
             }
+
         }).position(x + 9, px + 15 + 20 + 5).size(50, 20).build();
 
         ButtonWidget removeButton = ButtonWidget.builder(Text.of("Remove"), button -> {
@@ -74,19 +80,40 @@ public class TradeSelectScreen extends Screen {
                 enchantmentInputWidget.setEditableColor(ColorHelper.Argb.getArgb(255, 255, 0, 0));
                 return;
             }
+
             for (Iterator<TradeRequestListWidget.TradeRequestEntry> it = tradeRequestListWidget.children().iterator(); it.hasNext(); ) {
                 TradeRequestListWidget.TradeRequestEntry entry = it.next();
                 if (TradeRequest.equalEnchantment(enchantment, entry.tradeRequest.enchantment())) {
-                    modBase.getTradeRequestContainer().removeTradeRequest(entry.tradeRequest);
                     it.remove();
-                    clearTextFieldWidgets(enchantmentInputWidget, levelTextFieldWidget, priceTextFieldWidget);
+                    modBase.getTradeRequestContainer().removeTradeRequest(entry.tradeRequest);
                 }
             }
+
+            clearTextFieldWidgets(enchantmentInputWidget, levelTextFieldWidget, priceTextFieldWidget);
+
         }).position(x + 70, px + 40).size(50, 20).build();
 
         this.addDrawableChild(addButton);
         this.addDrawableChild(removeButton);
         this.addDrawableChild(tradeRequestListWidget);
+    }
+
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        children().forEach(element -> {
+            if(element instanceof TextFieldWidget textFieldWidget)
+                textFieldWidget.setEditableColor(0xE0E0E0);
+        });
+        return super.mouseClicked(mouseX, mouseY, button);
+    }
+
+    @Override
+    public boolean charTyped(char chr, int modifiers) {
+        children().forEach(element -> {
+            if(element instanceof TextFieldWidget textFieldWidget)
+                textFieldWidget.setEditableColor(0xE0E0E0);
+        });
+        return super.charTyped(chr, modifiers);
     }
 
     @Override

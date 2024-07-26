@@ -61,7 +61,7 @@ public class EasyVillagerTradeCommand implements ClientCommandRegistrationCallba
             return 0;
         Enchantment enchantment = (Enchantment) reference.value();
 
-        TradeRequest tradeRequest = modBase.getTradeRequestInputHandler().handleCommandInput(enchantment, level, maxPrice);
+        TradeRequest tradeRequest = modBase.getTradeRequestInputHandler().parseCommandInput(enchantment, level, maxPrice);
         modBase.getTradeRequestContainer().addTradeRequest(tradeRequest);
 
         context.getSource().sendFeedback(Text.translatable("evt.command.add", "§e" + Enchantment.getName(tradeRequest.enchantment(), tradeRequest.level()).getString(), "§a" + tradeRequest.maxPrice()));
@@ -111,6 +111,12 @@ public class EasyVillagerTradeCommand implements ClientCommandRegistrationCallba
 
     public int executeVillagerTrade(CommandContext<FabricClientCommandSource> context) {
         this.modBase.setState(TradingState.CHECK_OFFERS);
+
+        if(modBase.getSelectionInterface().getVillager() == null || modBase.getSelectionInterface().getLecternPos() == null) {
+            context.getSource().sendFeedback(Text.translatable("evt.command.not_selected"));
+            return 1;
+        }
+
         context.getSource().sendFeedback(Text.translatable("evt.command.execute"));
         modBase.handleInteractionWithVillager();
         return 1;

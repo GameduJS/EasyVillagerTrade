@@ -1,14 +1,18 @@
 {
   "evt.command.execute":  "§8| §7Performing search request",
-  "evt.command.selecting": "§8| §7Choose the villager and lectern for handling by right-clicking them now.",
+  "evt.command.selecting": "§8| §7Select the villager and his lectern by right-clicking on them.",
   "evt.command.add": "§8| §7Added trade request for %d §7for a maximum of %d §aEmeralds",
   "evt.command.remove": "§8| §7All trade requests for %d §7enchantment have been removed.",
   "evt.command.list.head": "§8| §7List of all search queries: ",
   "evt.command.list.body": "§7- %d §7for a maximum of %d §aEmeralds",
   "evt.command.basic_usage": "§8| §7Use /evt <select/search/execute/stop>",
+  "evt.command.not_selected": "§8| §cPlease select a villager and a lectern first!",
+  "evt.command.selected.villager": "§8| §7Villager selected!",
+  "evt.command.selected.lectern": "§8| §7Lectern selected!",
 
   "evt.logic.axe_durability": "§8|§c The query was interrupted because the axe had low durability.",
   "evt.logic.trade_found": "§8| §7The enchantment %d §7has been found for %d §aEmeralds.",
+  "evt.logic.trade.debug": "§8| §7 %d Emeralds §7for %d",
   "evt.logic.lectern_non": "§8| §cDue to the absence of lecterns, the query was interrupted.",
   "evt.logic.book_drop": "§8| §c§lThe book has been dropped out of your inventory due to lack of space.",
 

@@ -1,6 +1,7 @@
 package de.gamedude.easyvillagertrade;
 
 import de.gamedude.easyvillagertrade.commands.EasyVillagerTradeCommand;
+import de.gamedude.easyvillagertrade.config.Config;
 import de.gamedude.easyvillagertrade.core.EasyVillagerTradeBase;
 import de.gamedude.easyvillagertrade.screen.TradeSelectScreen;
 import de.gamedude.easyvillagertrade.utils.TradingState;
@@ -24,12 +25,12 @@ import org.lwjgl.glfw.GLFW;
 @Environment(EnvType.CLIENT)
 public class EasyVillagerTrade implements ModInitializer {
 
+    public static final Config CONFIG = new Config("easyvillagertrade");
     private static EasyVillagerTradeBase modBase;
-    KeyBinding keyBinding = new KeyBinding("key.custom.openscreen", GLFW.GLFW_KEY_F6, "EasyVillagerTrade");
+    private final KeyBinding keyBinding = new KeyBinding("key.custom.openscreen", GLFW.GLFW_KEY_F6, "EasyVillagerTrade");
 
     @Override
     public void onInitialize() {
-
         modBase = new EasyVillagerTradeBase();
         ClientCommandRegistrationCallback.EVENT.register(new EasyVillagerTradeCommand(modBase));
         registerCallbacks();
@@ -37,14 +38,13 @@ public class EasyVillagerTrade implements ModInitializer {
         KeyBindingHelper.registerKeyBinding(keyBinding);
     }
 
-
     public void registerCallbacks() {
         UseEntityCallback.EVENT.register((player, world, hand, entity, hitResult) -> {
             if (hand == Hand.OFF_HAND || hitResult == null || !world.isClient())
                 return ActionResult.PASS;
             if (hitResult.getEntity() instanceof VillagerEntity villager && modBase.getState() == TradingState.MODE_SELECTION) {
                 modBase.getSelectionInterface().setVillager(villager);
-                player.sendMessage(Text.of("§8| §7Selected villager"));
+                player.sendMessage(Text.translatable("evt.command.selected.villager"));
                 return ActionResult.FAIL;
             }
             return ActionResult.PASS;
@@ -56,7 +56,7 @@ public class EasyVillagerTrade implements ModInitializer {
             BlockPos blockPos = hitResult.getBlockPos();
             if (world.getBlockState(blockPos).getBlock() == Blocks.LECTERN && modBase.getState() == TradingState.MODE_SELECTION) {
                 modBase.getSelectionInterface().setLecternPos(blockPos);
-                player.sendMessage(Text.of("§8| §7Selected lectern"));
+                player.sendMessage(Text.translatable("evt.command.selected.lectern"));
             }
             return ActionResult.PASS;
         });
@@ -64,9 +64,8 @@ public class EasyVillagerTrade implements ModInitializer {
         ClientTickEvents.START_CLIENT_TICK.register(client -> modBase.handle());
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
-            while(keyBinding.wasPressed()) {
+            while(keyBinding.wasPressed())
                 client.setScreen(new TradeSelectScreen());
-            }
         });
     }
 

@@ -1,5 +1,6 @@
 package de.gamedude.easyvillagertrade.core;
 
+import de.gamedude.easyvillagertrade.EasyVillagerTrade;
 import de.gamedude.easyvillagertrade.utils.TradeRequest;
 import de.gamedude.easyvillagertrade.utils.TradingState;
 import net.minecraft.block.Blocks;
@@ -106,11 +107,15 @@ public class EasyVillagerTradeBase {
 
         if (world == null || player == null)
             return;
-        ItemStack axe = player.getMainHandStack();
-        if (axe.getMaxDamage() - axe.getDamage() < 20) {
-            player.sendMessage(Text.translatable("evt.logic.axe_durability"));
-            setState(TradingState.INACTIVE);
-            return;
+
+        int preventionValue = EasyVillagerTrade.CONFIG.getProperty("preventAxeBreakingValue").getAsInt();
+        ItemStack tool = player.getMainHandStack();
+        if(preventionValue != -1) {
+            if (tool.getMaxDamage() - tool.getDamage() <= preventionValue) {
+                player.sendMessage(Text.translatable("evt.logic.axe_durability"));
+                setState(TradingState.INACTIVE);
+                return;
+            }
         }
 
         if (blockPos == null) {
@@ -147,6 +152,10 @@ public class EasyVillagerTradeBase {
         int level = enchantments.getLevel(bookEnchantment);
 
         TradeRequest offer = new TradeRequest(bookEnchantment, level, bookOffer.getDisplayedFirstBuyItem().getCount());
+
+        if(EasyVillagerTrade.CONFIG.getProperty("debugEnchantments").getAsBoolean()) {
+            minecraftClient.player.sendMessage(Text.translatable("evt.logic.trade.debug", "§a" + offer.maxPrice(), "§e" + Enchantment.getName(bookEnchantment, level).getString()));
+        }
 
         if (tradeRequestContainer.matchesAny(offer)) {
             minecraftClient.player.sendMessage(Text.translatable("evt.logic.trade_found", "§e" + Enchantment.getName(bookEnchantment, level).getString(), "§a" + offer.maxPrice()));

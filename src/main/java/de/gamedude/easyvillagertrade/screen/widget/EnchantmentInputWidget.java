@@ -23,8 +23,6 @@ public class EnchantmentInputWidget extends TextFieldWidget {
 
     public EnchantmentInputWidget(int x, int y, int width, int height) {
         super(MinecraftClient.getInstance().textRenderer, x, y, width, height, Text.empty());
-        setSuggestion("Input...");
-
         this.setChangedListener(getChangeListener());
     }
 
