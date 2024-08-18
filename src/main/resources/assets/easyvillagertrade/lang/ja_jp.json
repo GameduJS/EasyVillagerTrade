@@ -1,0 +1,25 @@
+{
+  "evt.command.execute":  "§8| §7検索リクエストを処理しています。",
+  "evt.command.selecting": "§8| §7村人と書見台を右クリックして選択してください。",
+  "evt.command.add": "§8| §7%d の取引リクエストを §7 最大 %d §a個のエメラルドをターゲットとして追加しました。",
+  "evt.command.remove": "§8| §7Aすべての %d §7エンチャントに対するリクエストを削除しました。",
+  "evt.command.list.head": "§8| §7検索クエリリスト: ",
+  "evt.command.list.body": "§7- %d §7を最大%d §a個のエメラルド",
+  "evt.command.basic_usage": "§8| §7使用方法: /evt <select/search/execute/stop>",
+  "evt.command.not_selected": "§8| §c村人と書見台を選択してください！",
+  "evt.command.selected.villager": "§8| §7村人を選択しました！",
+  "evt.command.selected.lectern": "§8| §7書見台を選択しました！",
+
+  "evt.logic.axe_durability": "§8|§c 斧の耐久値が少ないためクエリが中断されました。",
+  "evt.logic.trade_found": "§8| § %d エンチャントは § %d §a個のエメラルドのトレードで発見されました。",
+  "evt.logic.trade.debug": "§8| §7 %d個のエメラルドは §7 %d に対応しています。",
+  "evt.logic.lectern_non": "§8| §c書見台が発見されなかったため、クエリは中断されました。",
+  "evt.logic.book_drop": "§8| §c§lインベントリにスペースがなかったため、エンチャント本はドロップしています。",
+
+  "evt.logic.select.fail_lectern": "§8| §cプレイヤーに近い書見台を見つけることができませんでした。",
+  "evt.logic.select.fail_villager": "§8| §c書見台近くの適切な村人を見つけることができませんでした。",
+  "evt.logic.select.success": "§8| §a最も近い村人と書見台が選択されました。",
+  "evt.logic.pos_not_set": "§8| §c書見台を選択していません！",
+
+  "key.custom.openscreen": "スクリーンを開く"
+}
