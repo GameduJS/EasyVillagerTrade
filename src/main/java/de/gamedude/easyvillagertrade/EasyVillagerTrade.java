@@ -35,7 +35,6 @@ public class EasyVillagerTrade implements ModInitializer {
         ClientCommandRegistrationCallback.EVENT.register(new EasyVillagerTradeCommand(modBase));
         registerCallbacks();
 
-
         KeyBindingHelper.registerKeyBinding(keyBinding);
     }
 
