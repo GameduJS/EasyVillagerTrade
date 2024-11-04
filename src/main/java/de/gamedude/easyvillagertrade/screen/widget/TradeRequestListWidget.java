@@ -1,6 +1,5 @@
 package de.gamedude.easyvillagertrade.screen.widget;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import de.gamedude.easyvillagertrade.EasyVillagerTrade;
 import de.gamedude.easyvillagertrade.core.EasyVillagerTradeBase;
 import de.gamedude.easyvillagertrade.utils.TradeRequest;
@@ -8,6 +7,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.*;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
+import net.minecraft.client.render.RenderLayer;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
@@ -145,12 +145,10 @@ public class TradeRequestListWidget extends AbstractParentElement implements Dra
             this.x2 = x + entryWidth;
             this.y2 = y + ENTRY_HEIGHT * (index + 1) + (5 * index);
 
-            context.fill(x, y1, x2, y2, ColorHelper.Argb.getArgb(240, 7, 7, 7));
+            context.fill(x, y1, x2, y2, ColorHelper.getArgb(240, 7, 7, 7));
 
-            context.drawTexture(ENCHANTED_BOOK_TEXTURE, x, y1, 0, 0, 16, 16, 16, 16);
-
-            RenderSystem.setShaderTexture(0, EMERALD_TEXTURE);
-            context.drawTexture(EMERALD_TEXTURE, x, y1 + 16,0, 0, 16, 16, 16, 16);
+            context.drawTexture(RenderLayer::getGuiTextured, ENCHANTED_BOOK_TEXTURE, x, y1, 0, 0, 16, 16, 16, 16);
+            context.drawTexture(RenderLayer::getGuiTextured, EMERALD_TEXTURE, x, y1 + 16,0, 0, 16, 16, 16, 16);
 
             context.drawText(textRenderer, Enchantment.getName(tradeRequest.enchantment(), tradeRequest.level()), x + 20, y1 + 4, 0, false);
             context.drawText(textRenderer, Text.of("§e" + tradeRequest.maxPrice()), x + 20, y1 + 20, 0, false);

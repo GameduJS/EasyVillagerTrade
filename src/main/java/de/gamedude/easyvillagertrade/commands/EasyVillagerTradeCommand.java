@@ -102,9 +102,9 @@ public class EasyVillagerTradeCommand implements ClientCommandRegistrationCallba
         ClientPlayerEntity player = context.getSource().getPlayer();
         int x = this.modBase.getSelectionInterface().selectClosestToPlayer(player);
         switch (x) {
-            case 1 -> player.sendMessage(Text.translatable("evt.logic.select.fail_lectern"));
-            case 2 -> player.sendMessage(Text.translatable("evt.logic.select.fail_villager"));
-            case 0 -> player.sendMessage(Text.translatable("evt.logic.select.success"));
+            case 1 -> player.sendMessage(Text.translatable("evt.logic.select.fail_lectern"), false);
+            case 2 -> player.sendMessage(Text.translatable("evt.logic.select.fail_villager"), false);
+            case 0 -> player.sendMessage(Text.translatable("evt.logic.select.success"), false);
         }
         return 1;
     }

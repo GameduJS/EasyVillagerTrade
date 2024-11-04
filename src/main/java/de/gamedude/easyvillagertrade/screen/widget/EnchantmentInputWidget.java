@@ -30,7 +30,7 @@ public class EnchantmentInputWidget extends TextFieldWidget {
         return text -> {
             Registry<Enchantment> enchantmentRegistry = getRegistry();
             if (enchantmentRegistry.stream().map(Enchantment::description).map(Text::getString).anyMatch(text.trim()::equalsIgnoreCase))
-                this.setEditableColor(ColorHelper.Argb.getArgb(255, 255, 255, 0));
+                this.setEditableColor(ColorHelper.getArgb(255, 255, 255, 0));
             else
                 this.setEditableColor(0xE0E0E0);
 
@@ -78,6 +78,6 @@ public class EnchantmentInputWidget extends TextFieldWidget {
     }
 
     private Registry<Enchantment> getRegistry() {
-        return MinecraftClient.getInstance().world.getRegistryManager().get(RegistryKeys.ENCHANTMENT);
+        return MinecraftClient.getInstance().world.getRegistryManager().getOrThrow(RegistryKeys.ENCHANTMENT);
     }
 }

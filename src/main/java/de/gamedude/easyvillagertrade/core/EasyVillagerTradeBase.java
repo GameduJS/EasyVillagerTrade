@@ -20,7 +20,6 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.village.TradeOffer;
 import net.minecraft.village.TradeOfferList;
 import net.minecraft.village.VillagerProfession;
@@ -87,15 +86,16 @@ public class EasyVillagerTradeBase {
         BlockPos lecternPos = selectionInterface.getLecternPos();
 
         if (player.getOffHandStack().equals(ItemStack.EMPTY)) {
-            player.sendMessage(Text.translatable("evt.logic.lectern_non"));
+            player.sendMessage(Text.translatable("evt.logic.lectern_non"), false);
             setState(TradingState.INACTIVE);
             return;
         }
 
         // Place block
-        BlockHitResult hitResult = new BlockHitResult(new Vec3d(lecternPos.getX(), lecternPos.getY(), lecternPos.getZ()), Direction.UP, lecternPos, false);
+        BlockHitResult hitResult = new BlockHitResult(lecternPos.toBottomCenterPos().add(0, 1,0), Direction.UP, lecternPos, false);
+
         minecraftClient.interactionManager.interactBlock(player, Hand.OFF_HAND, hitResult);
-        minecraftClient.getNetworkHandler().sendPacket(new HandSwingC2SPacket(Hand.OFF_HAND));
+        player.swingHand(Hand.OFF_HAND);
 
         setState(TradingState.WAIT_PROFESSION);
     }
@@ -112,14 +112,14 @@ public class EasyVillagerTradeBase {
         ItemStack tool = player.getMainHandStack();
         if(preventionValue != -1) {
             if (tool.getMaxDamage() - tool.getDamage() <= preventionValue) {
-                player.sendMessage(Text.translatable("evt.logic.axe_durability"));
+                player.sendMessage(Text.translatable("evt.logic.axe_durability"), false);
                 setState(TradingState.INACTIVE);
                 return;
             }
         }
 
         if (blockPos == null) {
-            player.sendMessage(Text.translatable("evt.logic.pos_not_set"));
+            player.sendMessage(Text.translatable("evt.logic.pos_not_set"), false);
             setState(TradingState.INACTIVE);
             return;
         }
@@ -154,11 +154,11 @@ public class EasyVillagerTradeBase {
         TradeRequest offer = new TradeRequest(bookEnchantment, level, bookOffer.getDisplayedFirstBuyItem().getCount());
 
         if(EasyVillagerTrade.CONFIG.getProperty("debugEnchantments").getAsBoolean()) {
-            minecraftClient.player.sendMessage(Text.translatable("evt.logic.trade.debug", "§a" + offer.maxPrice(), "§e" + Enchantment.getName(bookEnchantment, level).getString()));
+            minecraftClient.player.sendMessage(Text.translatable("evt.logic.trade.debug", "§a" + offer.maxPrice(), "§e" + Enchantment.getName(bookEnchantment, level).getString()), false);
         }
 
         if (tradeRequestContainer.matchesAny(offer)) {
-            minecraftClient.player.sendMessage(Text.translatable("evt.logic.trade_found", "§e" + Enchantment.getName(bookEnchantment, level).getString(), "§a" + offer.maxPrice()));
+            minecraftClient.player.sendMessage(Text.translatable("evt.logic.trade_found", "§e" + Enchantment.getName(bookEnchantment, level).getString(), "§a" + offer.maxPrice()), false);
             minecraftClient.getSoundManager().play(PositionedSoundInstance.master(SoundEvents.BLOCK_AMETHYST_CLUSTER_BREAK, 1f));
 
             tradeRequestContainer.removeTradeRequestByEnchantment(bookEnchantment);

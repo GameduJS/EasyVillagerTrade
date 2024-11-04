@@ -44,7 +44,7 @@ public class EasyVillagerTrade implements ModInitializer {
                 return ActionResult.PASS;
             if (hitResult.getEntity() instanceof VillagerEntity villager && modBase.getState() == TradingState.MODE_SELECTION) {
                 modBase.getSelectionInterface().setVillager(villager);
-                player.sendMessage(Text.translatable("evt.command.selected.villager"));
+                player.sendMessage(Text.translatable("evt.command.selected.villager"), false);
                 return ActionResult.FAIL;
             }
             return ActionResult.PASS;
@@ -56,7 +56,7 @@ public class EasyVillagerTrade implements ModInitializer {
             BlockPos blockPos = hitResult.getBlockPos();
             if (world.getBlockState(blockPos).getBlock() == Blocks.LECTERN && modBase.getState() == TradingState.MODE_SELECTION) {
                 modBase.getSelectionInterface().setLecternPos(blockPos);
-                player.sendMessage(Text.translatable("evt.command.selected.lectern"));
+                player.sendMessage(Text.translatable("evt.command.selected.lectern"), false);
             }
             return ActionResult.PASS;
         });

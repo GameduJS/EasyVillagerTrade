@@ -77,7 +77,7 @@ public class TradeSelectScreen extends Screen {
         ButtonWidget removeButton = ButtonWidget.builder(Text.of("Remove"), button -> {
             RegistryEntry<Enchantment> enchantment = modBase.getTradeRequestInputHandler().getEnchantment(enchantmentInputWidget.getText());
             if (enchantment == null) {
-                enchantmentInputWidget.setEditableColor(ColorHelper.Argb.getArgb(255, 255, 0, 0));
+                enchantmentInputWidget.setEditableColor(ColorHelper.getArgb(255, 255, 0, 0));
                 return;
             }
 
@@ -133,7 +133,7 @@ public class TradeSelectScreen extends Screen {
     public void renderBackground(DrawContext context, int mouseX, int mouseY, float delta) {
         int px = (int) (this.width / 50f);
         int x = this.width - px - widgetWidth;
-        context.fill(x, px, this.width - px, this.height - px, ColorHelper.Argb.getArgb(150, 7, 7, 7));
+        context.fill(x, px, this.width - px, this.height - px, ColorHelper.getArgb(150, 7, 7, 7));
     }
 
     public void clearTextFieldWidgets(TextFieldWidget... textFieldWidgets){
