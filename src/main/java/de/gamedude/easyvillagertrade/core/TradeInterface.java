@@ -33,8 +33,7 @@ public class TradeInterface {
     }
 
     public void applyTrade() {
-        PlayerEntity player = minecraftClient.player;
-        ScreenHandler currentScreenHandler = player.currentScreenHandler;
+        ScreenHandler currentScreenHandler = minecraftClient.player.currentScreenHandler;
         minecraftClient.interactionManager.clickSlot(currentScreenHandler.syncId, 2, 0, SlotActionType.PICKUP, minecraftClient.player);
 
         modBase.setState(TradingState.PICKUP_TRADE);
@@ -50,7 +49,7 @@ public class TradeInterface {
         else if (freeSlot != -999)
             freeSlot -= 6;
         else
-            player.sendMessage(Text.translatable("evt.logic.book_drop"));
+            player.sendMessage(Text.translatable("evt.logic.book_drop"), false);
 
         minecraftClient.interactionManager.clickSlot(currentScreenHandler.syncId, freeSlot, 0, SlotActionType.PICKUP, minecraftClient.player);
         modBase.setState(TradingState.INACTIVE);

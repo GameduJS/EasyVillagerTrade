@@ -15,7 +15,7 @@ public class TradeRequestInputHandler {
         RegistryEntry<Enchantment> enchantmentEntry = getEnchantment(enchantmentInput);
         if(enchantmentEntry == null)
             return 1; // no valid enchantment
-        if(!isInteger(priceInput))
+        if(notInt(priceInput))
             return 2; // no valid price
         Enchantment enchantment = enchantmentEntry.value();
         int price = MathHelper.clamp(Integer.parseInt(priceInput), 1, 64);
@@ -27,7 +27,7 @@ public class TradeRequestInputHandler {
             }
             return 0;
         }
-        if(!isInteger(levelInput))
+        if(notInt(levelInput))
             return 3; // no valid level
         int level = MathHelper.clamp(Integer.parseInt(levelInput), 1, enchantment.getMaxLevel());
 
@@ -55,17 +55,17 @@ public class TradeRequestInputHandler {
         return MathHelper.clamp(inputLevel, 1, enchantment.getMaxLevel());
     }
 
-    private boolean isInteger(String tryParse) {
+    private boolean notInt(String tryParse) {
         try {
             Integer.parseInt(tryParse);
         } catch (NumberFormatException e) {
-            return false;
+            return true;
         }
-        return true;
+        return false;
     }
 
     private Registry<Enchantment> getRegistry() {
-        return MinecraftClient.getInstance().world.getRegistryManager().get(RegistryKeys.ENCHANTMENT);
+        return MinecraftClient.getInstance().world.getRegistryManager().getOrThrow(RegistryKeys.ENCHANTMENT);
     }
 
 }
