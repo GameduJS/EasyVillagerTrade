@@ -23,7 +23,6 @@ public class LookState  extends State {
     @Override
     public void initState() {
         ((ActionInterface) player.get()).easyVillagerTrade$setWalkAction(new ViewAction(pitch.get(), yaw.get()));
-        super.initState();
     }
 
     @Override

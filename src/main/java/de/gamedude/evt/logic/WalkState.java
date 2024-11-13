@@ -15,7 +15,6 @@ public class WalkState  extends State{
     @Override
     public void initState() {
         ((ActionInterface) player.get()).easyVillagerTrade$setWalkAction(new WalkAction(new Vec3d(dx, 0, dz)));
-        super.initState();
     }
 
     @Override

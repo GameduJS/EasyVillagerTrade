@@ -17,6 +17,9 @@ import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.fabric.api.event.player.UseEntityCallback;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
+import net.minecraft.entity.MovementType;
+import net.minecraft.text.Text;
+import net.minecraft.util.math.Vec3d;
 import org.lwjgl.glfw.GLFW;
 
 public class EasyVillagerTrade implements ClientModInitializer {
@@ -32,6 +35,11 @@ public class EasyVillagerTrade implements ClientModInitializer {
             if(SCREEN_KEY_BINDING.wasPressed())
                 client.setScreen(new TradeSelectScreen());
             tradeWorkflow.tickWorkflow();
+        });
+
+        ClientTickEvents.START_WORLD_TICK.register(client -> {
+            //MinecraftClient.getInstance().player.sendMessage(Text.of(MinecraftClient.getInstance().player.getVelocity().toString()));
+            //MinecraftClient.getInstance().player.setVelocity( new Vec3d(0.06, 0 ,0)); // works
         });
 
         ClientLifecycleEvents.CLIENT_STARTED.register(client -> tradeWorkflow.getHandler(ScriptManager.class).copyDefaultToCache());

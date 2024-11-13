@@ -39,6 +39,7 @@ public class OptionWidget extends AlwaysSelectedEntryListWidget.Entry<OptionWidg
         this.valueTypeClass = valueTypeClass;
     }
 
+    // TODO: suggestion completion
     private void parseValue() {
         if(textField.getText().isBlank())
             return;
@@ -134,7 +135,6 @@ public class OptionWidget extends AlwaysSelectedEntryListWidget.Entry<OptionWidg
     @Override
     public void render(DrawContext context, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
         if(textField == null) {
-            TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
             this.textField = new TextFieldWidget(MinecraftClient.getInstance().textRenderer, x, y + entryHeight / 2 , entryWidth, entryHeight / 2, Text.empty());
             this.textField.setMaxLength(50);
             this.textField.setEditableColor(-1);

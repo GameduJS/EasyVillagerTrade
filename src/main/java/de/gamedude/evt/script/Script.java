@@ -20,10 +20,6 @@ public class Script {
         this.typeScriptMap = typeScriptMap;
     }
 
-    public Map<ScriptType, List<State>> getTypeScriptMap() {
-        return typeScriptMap;
-    }
-
     public void tickScriptType(ScriptType type) {
         this.currentIterator = typeScriptMap.get(type).iterator();
     }
