@@ -1,0 +1,26 @@
+LOOK {Yaw} {Pitch}
+WALK {Dx} {Dy}
+
+CHECK
+INTERACT
+SELECT
+BUY
+PLACE
+BREAK
+
+WAIT_PROFESSION {ProfessionType}
+WAIT {Ticks}
+
+
+ProfessionType:
+ - None # Program needs to wait until villager lost his job
+ - Librarian # Wait for villager to accept his job to interact with him
+
+Yaw, Pitch:
+ - (float): [-180;180] # floating point values from -180 to 180
+
+ Dx, Dy:
+ - (float) : All numerical values # walk dx relativ to current x pos; dy relativ to current y pos; (keep the numbers simple won't be that accurate)
+
+ Ticks:
+  - (int): [0;inf] # Wait a certain amount of ticks; practical on some servers

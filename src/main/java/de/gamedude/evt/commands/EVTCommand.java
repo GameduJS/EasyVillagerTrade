@@ -1,6 +1,5 @@
 package de.gamedude.evt.commands;
 
-import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.context.CommandContext;
@@ -9,8 +8,6 @@ import de.gamedude.evt.handler.SelectionInterface;
 import de.gamedude.evt.handler.TradeRequestContainer;
 import de.gamedude.evt.handler.TradeRequestParser;
 import de.gamedude.evt.handler.TradeWorkflow;
-import de.gamedude.evt.script.Script;
-import de.gamedude.evt.script.ScriptManager;
 import de.gamedude.evt.utils.TradeRequest;
 import joptsimple.internal.Strings;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
@@ -66,14 +63,11 @@ public record EVTCommand(TradeWorkflow tradeWorkflow) implements ClientCommandRe
     }
 
     private int executeStart(CommandContext<?> commandContext) {
-        this.tradeWorkflow.getHandler(ScriptManager.class).getScript().tickScriptType(Script.ScriptType.INIT);
-        this.tradeWorkflow.toggle(true);
-        return sendFeedback(commandContext, "Starting the search...");
+        return sendFeedback(commandContext, "TODO");
     }
 
     private int executeStop(CommandContext<?> commandContext) {
-        this.tradeWorkflow.toggle(false);
-        return sendFeedback(commandContext, "Stopping the search...");
+        return sendFeedback(commandContext, "TODO");
     }
 
     private int executeAddSearch(CommandContext<?> commandContext) {

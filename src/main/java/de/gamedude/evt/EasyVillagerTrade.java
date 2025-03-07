@@ -1,8 +1,6 @@
 package de.gamedude.evt;
 
 import de.gamedude.evt.commands.EVTCommand;
-import de.gamedude.evt.commands.ScriptCommand;
-import de.gamedude.evt.commands.TestCommand;
 import de.gamedude.evt.config.Config;
 import de.gamedude.evt.handler.SelectionInterface;
 import de.gamedude.evt.handler.TradeWorkflow;
@@ -17,8 +15,6 @@ import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.fabric.api.event.player.UseEntityCallback;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
-import net.minecraft.entity.MovementType;
-import net.minecraft.text.Text;
 import net.minecraft.util.math.Vec3d;
 import org.lwjgl.glfw.GLFW;
 
@@ -38,15 +34,11 @@ public class EasyVillagerTrade implements ClientModInitializer {
         });
 
         ClientTickEvents.START_WORLD_TICK.register(client -> {
-            //MinecraftClient.getInstance().player.sendMessage(Text.of(MinecraftClient.getInstance().player.getVelocity().toString()));
-            //MinecraftClient.getInstance().player.setVelocity( new Vec3d(0.06, 0 ,0)); // works
+            MinecraftClient.getInstance().player.setVelocity( new Vec3d(0.06, 0 ,0) );
         });
 
-        ClientLifecycleEvents.CLIENT_STARTED.register(client -> tradeWorkflow.getHandler(ScriptManager.class).copyDefaultToCache());
 
-        ClientCommandRegistrationCallback.EVENT.register(new ScriptCommand());
         ClientCommandRegistrationCallback.EVENT.register(new EVTCommand(tradeWorkflow));
-        CommandRegistrationCallback.EVENT.register(new TestCommand());
         UseBlockCallback.EVENT.register(tradeWorkflow.getHandler(SelectionInterface.class));
         UseEntityCallback.EVENT.register(tradeWorkflow.getHandler(SelectionInterface.class));
     }
