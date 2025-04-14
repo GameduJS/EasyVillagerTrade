@@ -8,6 +8,7 @@ import de.gamedude.evt.handler.SelectionInterface;
 import de.gamedude.evt.handler.TradeWorkflow;
 import de.gamedude.evt.screen.TradeSelectScreen;
 import de.gamedude.evt.script.ScriptManager;
+import de.gamedude.test.state.StateTestCommand;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
@@ -46,7 +47,9 @@ public class EasyVillagerTrade implements ClientModInitializer {
 
         ClientCommandRegistrationCallback.EVENT.register(new ScriptCommand());
         ClientCommandRegistrationCallback.EVENT.register(new EVTCommand(tradeWorkflow));
+        ClientCommandRegistrationCallback.EVENT.register(new StateTestCommand());
         CommandRegistrationCallback.EVENT.register(new TestCommand());
+
         UseBlockCallback.EVENT.register(tradeWorkflow.getHandler(SelectionInterface.class));
         UseEntityCallback.EVENT.register(tradeWorkflow.getHandler(SelectionInterface.class));
     }

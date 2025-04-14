@@ -85,6 +85,7 @@ public class Config {
 
     private void loadDefaultProperties() {
         Map<String, Object> defaultProps = new HashMap<>();
+        
         defaultProps.put("distanceX", 2);
         defaultProps.put("distanceZ", 2);
         defaultProps.put("soundPlayed", SoundEvents.BLOCK_AMETHYST_CLUSTER_BREAK.getId().toString());

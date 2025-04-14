@@ -20,6 +20,10 @@ public class BreakState extends State{
         this.lecternPos = tradeWorkflow.getHandler(SelectionInterface.class).getLecternPos();
     }
 
+    public BreakState(BlockPos lecternPos) {
+        this.lecternPos = () -> lecternPos;
+    }
+
     @Override
     public int run() {
         ClientPlayerEntity playerEntity = player.get();

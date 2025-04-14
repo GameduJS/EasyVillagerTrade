@@ -18,6 +18,7 @@ public class Script {
 
     public Script(Map<ScriptType, List<State>> typeScriptMap) {
         this.typeScriptMap = typeScriptMap;
+        System.out.println(this.typeScriptMap);
     }
 
     public void tickScriptType(ScriptType type) {

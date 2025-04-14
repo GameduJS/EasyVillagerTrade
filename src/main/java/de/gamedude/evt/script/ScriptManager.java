@@ -111,6 +111,10 @@ public class ScriptManager implements Handler {
         this.script = new Script(typeScriptMap);
     }
 
+    public void setScript(Script script) {
+        this.script = script;
+    }
+
     public Script getScript() {
         return script;
     }

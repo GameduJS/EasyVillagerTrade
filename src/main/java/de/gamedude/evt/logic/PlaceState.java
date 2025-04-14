@@ -19,6 +19,10 @@ public class PlaceState extends State{
         this.blockPosSupplier = tradeWorkflow.getHandler(SelectionInterface.class).getLecternPos();
     }
 
+    public PlaceState(BlockPos blockPos) {
+        this.blockPosSupplier = () -> blockPos;
+    }
+
     @Override
     public int run() {
 
