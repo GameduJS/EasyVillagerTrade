@@ -61,9 +61,7 @@ public class EasyVillagerTrade implements ModInitializer {
             return ActionResult.PASS;
         });
 
-        ClientTickEvents.START_CLIENT_TICK.register(client -> modBase.handle());
-
-        ClientTickEvents.END_CLIENT_TICK.register(client -> {
+        ClientTickEvents.START_CLIENT_TICK.register(client -> {
             while(keyBinding.wasPressed())
                 client.setScreen(new TradeSelectScreen());
         });

@@ -10,20 +10,24 @@ import net.minecraft.client.sound.PositionedSoundInstance;
 import net.minecraft.component.type.ItemEnchantmentsComponent;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.network.packet.c2s.play.HandSwingC2SPacket;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
+import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.village.TradeOffer;
 import net.minecraft.village.TradeOfferList;
 import net.minecraft.village.VillagerProfession;
 import net.minecraft.world.World;
+import org.apache.commons.logging.LogFactory;
 
 public class EasyVillagerTradeBase {
     private TradingState state;
@@ -74,7 +78,19 @@ public class EasyVillagerTradeBase {
             case SELECT_TRADE -> tradeInterface.selectTrade();
             case APPLY_TRADE -> tradeInterface.applyTrade();
             case PICKUP_TRADE -> tradeInterface.pickupBook();
+            case WAIT_PROFESSION -> { // security check that lectern has been placed
+                World world = minecraftClient.world;
+                if ( world.getBlockState( selectionInterface.getLecternPos() ).getBlock() == Blocks.LECTERN )
+                    return;
+                setState( TradingState.PLACE_WORKSTATION );
+            }
             case WAIT_JOB_LOSS -> {
+                World world = minecraftClient.world;
+                if ( world.getBlockState( selectionInterface.getLecternPos() ).getBlock() == Blocks.LECTERN ) {
+                    setState( TradingState.BREAK_WORKSTATION );
+                    return;
+                }
+
                 if (selectionInterface.getVillager().getVillagerData().getProfession() == VillagerProfession.NONE)
                     setState(TradingState.PLACE_WORKSTATION);
             }
@@ -83,7 +99,7 @@ public class EasyVillagerTradeBase {
 
     private void handlePlacement() {
         ClientPlayerEntity player = minecraftClient.player;
-        BlockPos lecternPos = selectionInterface.getLecternPos();
+        BlockPos blockPos = selectionInterface.getLecternPos();
 
         if (player.getOffHandStack().equals(ItemStack.EMPTY)) {
             player.sendMessage(Text.translatable("evt.logic.lectern_non"), false);
@@ -92,10 +108,18 @@ public class EasyVillagerTradeBase {
         }
 
         // Place block
-        BlockHitResult hitResult = new BlockHitResult(lecternPos.toBottomCenterPos().add(0, 1,0), Direction.UP, lecternPos, false);
+        BlockHitResult lowBlock = new BlockHitResult(blockPos.down().toCenterPos(), Direction.UP, blockPos.down(), false);
+        ActionResult actionResult = minecraftClient.interactionManager.interactBlock(player, Hand.OFF_HAND, lowBlock);
 
-        minecraftClient.interactionManager.interactBlock(player, Hand.OFF_HAND, hitResult);
-        player.swingHand(Hand.OFF_HAND);
+        if ( minecraftClient.world.getBlockState(blockPos).getBlock() == Blocks.AIR ) {
+            return; // KEEP PLACE STATE sometimes it doesn't place for whatever
+        }
+
+        if ( actionResult == ActionResult.SUCCESS) {
+            player.swingHand(Hand.OFF_HAND);
+        } else if ( actionResult == ActionResult.FAIL) {
+            return; // KEEP PLACE STATE
+        }
 
         setState(TradingState.WAIT_PROFESSION);
     }
@@ -170,7 +194,19 @@ public class EasyVillagerTradeBase {
     }
 
     public void handleInteractionWithVillager() {
-        minecraftClient.interactionManager.interactEntity(MinecraftClient.getInstance().player, selectionInterface.getVillager(), Hand.MAIN_HAND);
+        VillagerEntity villagerEntity = selectionInterface.getVillager();
+        EntityHitResult entityHitResult = new EntityHitResult(villagerEntity);
+        MinecraftClient client = MinecraftClient.getInstance();
+
+        ActionResult actionResult = client.interactionManager.interactEntityAtLocation(client.player, villagerEntity, entityHitResult, Hand.MAIN_HAND);
+
+        // This second interaction is necessary. Look at MinecraftClient#doItemUse.
+        if (!actionResult.isAccepted())
+            actionResult = client.interactionManager.interactEntity(client.player, villagerEntity, Hand.MAIN_HAND);
+
+        if (actionResult instanceof ActionResult.Success success)
+            if (success.swingSource() == ActionResult.SwingSource.CLIENT)
+                client.player.swingHand(Hand.MAIN_HAND);
     }
 
 }
