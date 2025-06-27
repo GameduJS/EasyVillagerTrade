@@ -77,7 +77,7 @@ public class TradeSelectScreen extends Screen {
         ButtonWidget removeButton = ButtonWidget.builder(Text.of("Remove"), button -> {
             RegistryEntry<Enchantment> enchantment = modBase.getTradeRequestInputHandler().getEnchantment(enchantmentInputWidget.getText());
             if (enchantment == null) {
-                enchantmentInputWidget.setEditableColor(ColorHelper.getArgb(255, 255, 0, 0));
+                enchantmentInputWidget.setEditableColor(ColorHelper.getArgb(    255, 255, 0, 0));
                 return;
             }
 
@@ -101,8 +101,9 @@ public class TradeSelectScreen extends Screen {
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         children().forEach(element -> {
-            if(element instanceof TextFieldWidget textFieldWidget)
-                textFieldWidget.setEditableColor(0xE0E0E0);
+            if(element instanceof TextFieldWidget textFieldWidget) {
+                textFieldWidget.setEditableColor(-2039584);
+            }
         });
         return super.mouseClicked(mouseX, mouseY, button);
     }
@@ -111,7 +112,7 @@ public class TradeSelectScreen extends Screen {
     public boolean charTyped(char chr, int modifiers) {
         children().forEach(element -> {
             if(element instanceof TextFieldWidget textFieldWidget)
-                textFieldWidget.setEditableColor(0xE0E0E0);
+                textFieldWidget.setEditableColor(-2039584);
         });
         return super.charTyped(chr, modifiers);
     }
@@ -120,13 +121,11 @@ public class TradeSelectScreen extends Screen {
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         this.renderBackground(context, mouseX, mouseY, delta);
         super.render(context, mouseX, mouseY, delta);
-
         int px = (int) (this.width / 50f);
         int x = this.width - px - widgetWidth;
-
-        context.drawText(textRenderer, "Enchantment", x + 10, px + 6, 0xE0E0E0, false);
-        context.drawText(textRenderer, "Level", x + 20 + enchantmentWidth, px + 6, 0xE0E0E0, false);
-        context.drawText(textRenderer, "Price", x + 30 + enchantmentWidth + priceWidth, px + 6, 0xE0E0E0, false);
+        context.drawText(textRenderer, "Enchantment", x + 10, px + 6, -2039584, false);
+        context.drawText(textRenderer, "Level", x + 20 + enchantmentWidth, px + 6, -2039584, false);
+        context.drawText(textRenderer, "Price", x + 30 + enchantmentWidth + priceWidth, px + 6, -2039584, false);
     }
 
     @Override

@@ -5,9 +5,11 @@ import de.gamedude.easyvillagertrade.core.EasyVillagerTradeBase;
 import de.gamedude.easyvillagertrade.utils.TradeRequest;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gui.*;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.render.RenderLayers;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
@@ -147,11 +149,11 @@ public class TradeRequestListWidget extends AbstractParentElement implements Dra
 
             context.fill(x, y1, x2, y2, ColorHelper.getArgb(240, 7, 7, 7));
 
-            context.drawTexture(RenderLayer::getGuiTextured, ENCHANTED_BOOK_TEXTURE, x, y1, 0, 0, 16, 16, 16, 16);
-            context.drawTexture(RenderLayer::getGuiTextured, EMERALD_TEXTURE, x, y1 + 16,0, 0, 16, 16, 16, 16);
+            context.drawTexture(RenderPipelines.GUI_TEXTURED, ENCHANTED_BOOK_TEXTURE, x, y1, 0, 0, 16, 16, 16, 16);
+            context.drawTexture(RenderPipelines.GUI_TEXTURED, EMERALD_TEXTURE, x, y1 + 16,0, 0, 16, 16, 16, 16);
 
-            context.drawText(textRenderer, Enchantment.getName(tradeRequest.enchantment(), tradeRequest.level()), x + 20, y1 + 4, 0, false);
-            context.drawText(textRenderer, Text.of("§e" + tradeRequest.maxPrice()), x + 20, y1 + 20, 0, false);
+            context.drawText(textRenderer, Enchantment.getName(tradeRequest.enchantment(), tradeRequest.level()), x + 20, y1 + 4, -2039584, false);
+            context.drawText(textRenderer, Text.of("§e" + tradeRequest.maxPrice()), x + 20, y1 + 20, -2039584, false);
         }
 
         @Override
