@@ -56,7 +56,7 @@ public class TradeInterface {
     }
 
     private int getFreeSlot() {
-        DefaultedList<ItemStack> list = minecraftClient.player.getInventory().main;
+        DefaultedList<ItemStack> list = minecraftClient.player.getInventory().getMainStacks();
 
         long sumOfEmpty = list.stream().filter(ItemStack::isEmpty).count();
         if (sumOfEmpty <= 2)

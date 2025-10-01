@@ -49,7 +49,7 @@ public class SelectionInterface {
         VillagerEntity entity = null;
         double dist = Double.MAX_VALUE;
 
-        for(VillagerEntity villagerEntity : world.getEntitiesByClass(VillagerEntity.class, new Box(blockPos).expand(3), (villager) -> villager.getVillagerData().getProfession() == VillagerProfession.LIBRARIAN)) {
+        for(VillagerEntity villagerEntity : world.getEntitiesByClass(VillagerEntity.class, new Box(blockPos).expand(3), (villager) -> villager.getVillagerData().profession().getKey().orElse(VillagerProfession.NONE).equals(VillagerProfession.LIBRARIAN))) {
             double distanceSquared = villagerEntity.squaredDistanceTo(blockPos.getX(), blockPos.getY(), blockPos.getZ());
             if(distanceSquared < dist) {
                 dist = distanceSquared;

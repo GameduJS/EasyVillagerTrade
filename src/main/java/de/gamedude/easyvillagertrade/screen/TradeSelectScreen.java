@@ -49,7 +49,8 @@ public class TradeSelectScreen extends Screen {
         TextFieldWidget levelTextFieldWidget = new TextFieldWidget(textRenderer, x + 20 + enchantmentWidth, px + 15, levelWidth, 20, Text.of("Level"));
         TextFieldWidget priceTextFieldWidget = new TextFieldWidget(textRenderer, x + 30 + enchantmentWidth + levelWidth, px + 15, priceWidth, 20, Text.of("Price"));
 
-        TradeRequestListWidget tradeRequestListWidget = new TradeRequestListWidget(x + 10, px + 80, width - x - px - 20, this.height - px - 50);
+        int listHeight = this.height - px - 80 - 30;
+        TradeRequestListWidget tradeRequestListWidget = new TradeRequestListWidget(x + 10, px + 80, widgetWidth - 20, listHeight);
         modBase.getTradeRequestContainer().getTradeRequests().forEach(tradeRequestListWidget::addEntry);
 
         this.addDrawableChild(enchantmentInputWidget);
@@ -77,7 +78,7 @@ public class TradeSelectScreen extends Screen {
         ButtonWidget removeButton = ButtonWidget.builder(Text.of("Remove"), button -> {
             RegistryEntry<Enchantment> enchantment = modBase.getTradeRequestInputHandler().getEnchantment(enchantmentInputWidget.getText());
             if (enchantment == null) {
-                enchantmentInputWidget.setEditableColor(ColorHelper.getArgb(255, 255, 0, 0));
+                enchantmentInputWidget.setEditableColor(ColorHelper.getArgb(    255, 255, 0, 0));
                 return;
             }
 
@@ -96,13 +97,37 @@ public class TradeSelectScreen extends Screen {
         this.addDrawableChild(addButton);
         this.addDrawableChild(removeButton);
         this.addDrawableChild(tradeRequestListWidget);
+
+        int buttonY = this.height - px - 25;
+        int buttonX = x + (widgetWidth - 160) / 2;
+
+        ButtonWidget selectLecternButton = ButtonWidget.builder(Text.of("Select"), button -> {
+            if(this.client != null && this.client.player != null)
+                this.client.player.networkHandler.sendChatCommand("evt select close");
+        }).position(buttonX, buttonY).size(50, 20).build();
+
+        ButtonWidget startButton = ButtonWidget.builder(Text.of("Start"), button -> {
+            if(this.client != null && this.client.player != null)
+                this.client.player.networkHandler.sendChatCommand("evt execute");
+        }).position(buttonX + 55, buttonY).size(50, 20).build();
+
+        ButtonWidget stopButton = ButtonWidget.builder(Text.of("Stop"), button -> {
+            if(this.client != null && this.client.player != null)
+                this.client.player.networkHandler.sendChatCommand("evt stop");
+        }).position(buttonX + 110, buttonY).size(50, 20).build();
+
+
+        this.addDrawableChild(selectLecternButton);
+        this.addDrawableChild(startButton);
+        this.addDrawableChild(stopButton);
     }
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         children().forEach(element -> {
-            if(element instanceof TextFieldWidget textFieldWidget)
-                textFieldWidget.setEditableColor(0xE0E0E0);
+            if(element instanceof TextFieldWidget textFieldWidget) {
+                textFieldWidget.setEditableColor(-2039584);
+            }
         });
         return super.mouseClicked(mouseX, mouseY, button);
     }
@@ -111,7 +136,7 @@ public class TradeSelectScreen extends Screen {
     public boolean charTyped(char chr, int modifiers) {
         children().forEach(element -> {
             if(element instanceof TextFieldWidget textFieldWidget)
-                textFieldWidget.setEditableColor(0xE0E0E0);
+                textFieldWidget.setEditableColor(-2039584);
         });
         return super.charTyped(chr, modifiers);
     }
@@ -120,13 +145,11 @@ public class TradeSelectScreen extends Screen {
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         this.renderBackground(context, mouseX, mouseY, delta);
         super.render(context, mouseX, mouseY, delta);
-
         int px = (int) (this.width / 50f);
         int x = this.width - px - widgetWidth;
-
-        context.drawText(textRenderer, "Enchantment", x + 10, px + 6, 0xE0E0E0, false);
-        context.drawText(textRenderer, "Level", x + 20 + enchantmentWidth, px + 6, 0xE0E0E0, false);
-        context.drawText(textRenderer, "Price", x + 30 + enchantmentWidth + priceWidth, px + 6, 0xE0E0E0, false);
+        context.drawText(textRenderer, "Enchantment", x + 10, px + 6, -2039584, false);
+        context.drawText(textRenderer, "Level", x + 20 + enchantmentWidth, px + 6, -2039584, false);
+        context.drawText(textRenderer, "Price", x + 30 + enchantmentWidth + priceWidth, px + 6, -2039584, false);
     }
 
     @Override

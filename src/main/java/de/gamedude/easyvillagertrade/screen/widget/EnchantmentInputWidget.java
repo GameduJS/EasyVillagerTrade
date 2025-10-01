@@ -32,7 +32,7 @@ public class EnchantmentInputWidget extends TextFieldWidget {
             if (enchantmentRegistry.stream().map(Enchantment::description).map(Text::getString).anyMatch(text.trim()::equalsIgnoreCase))
                 this.setEditableColor(ColorHelper.getArgb(255, 255, 255, 0));
             else
-                this.setEditableColor(0xE0E0E0);
+                this.setEditableColor(-2039584);
 
             suggestion = getPossibleEnchantmentNameOrElse(text).toLowerCase().replaceFirst(text.toLowerCase().replace("+", ""), "");
             setSuggestion(suggestion);

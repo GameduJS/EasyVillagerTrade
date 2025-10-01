@@ -75,7 +75,7 @@ public class EasyVillagerTradeBase {
             case APPLY_TRADE -> tradeInterface.applyTrade();
             case PICKUP_TRADE -> tradeInterface.pickupBook();
             case WAIT_JOB_LOSS -> {
-                if (selectionInterface.getVillager().getVillagerData().getProfession() == VillagerProfession.NONE)
+                if (selectionInterface.getVillager().getVillagerData().profession().getKey().orElse(VillagerProfession.NITWIT).equals(VillagerProfession.NONE))
                     setState(TradingState.PLACE_WORKSTATION);
             }
         }
