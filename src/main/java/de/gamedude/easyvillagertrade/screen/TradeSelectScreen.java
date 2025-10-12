@@ -107,8 +107,10 @@ public class TradeSelectScreen extends Screen {
         }).position(buttonX, buttonY).size(50, 20).build();
 
         ButtonWidget startButton = ButtonWidget.builder(Text.of("Start"), button -> {
-            if(this.client != null && this.client.player != null)
+            if(this.client != null && this.client.player != null) {
+                this.close();
                 this.client.player.networkHandler.sendChatCommand("evt execute");
+            }
         }).position(buttonX + 55, buttonY).size(50, 20).build();
 
         ButtonWidget stopButton = ButtonWidget.builder(Text.of("Stop"), button -> {
