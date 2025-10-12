@@ -21,5 +21,6 @@
   "evt.logic.select.success": "§8| §a最も近い村人と書見台が選択されました。",
   "evt.logic.pos_not_set": "§8| §c書見台を選択していません！",
 
-  "key.custom.openscreen": "スクリーンを開く"
+  "key.custom.openscreen": "スクリーンを開く",
+  "key.category.evt.category": "EasyVillagerTrade"
 }

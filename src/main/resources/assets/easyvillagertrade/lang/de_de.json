@@ -21,5 +21,6 @@
   "evt.logic.select.success": "§8| §aDer nächstgelegene Dorfbewohner und sein Lesepult wurden ausgewählt.",
   "evt.logic.pos_not_set": "§8| §cDu hast kein Lesepult ausgewählt!",
 
-  "key.custom.openscreen": "Menu öffnen"
+  "key.custom.openscreen": "Menu öffnen",
+  "key.category.evt.category": "EasyVillagerTrade"
 }

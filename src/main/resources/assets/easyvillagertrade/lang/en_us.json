@@ -21,5 +21,6 @@
   "evt.logic.select.success": "§8| §aThe closest villager and lectern were selected.",
   "evt.logic.pos_not_set": "§8| §cYou haven't selected the lectern yet!",
 
-  "key.custom.openscreen": "Open screen"
+  "key.custom.openscreen": "Open screen",
+  "key.category.evt.category": "EasyVillagerTrade"
 }

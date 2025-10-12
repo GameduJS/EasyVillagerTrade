@@ -28,7 +28,7 @@ public class EasyVillagerTrade implements ModInitializer {
 
     public static final Config CONFIG = new Config("easyvillagertrade");
     private static EasyVillagerTradeBase modBase;
-    private final KeyBinding.Category evtCategory = KeyBinding.Category.create(Identifier.of("easyvillagertrade", "category"));
+    private final KeyBinding.Category evtCategory = KeyBinding.Category.create(Identifier.of("evt", "category"));
     private final KeyBinding keyBinding = new KeyBinding("key.custom.openscreen", GLFW.GLFW_KEY_F6, evtCategory);
 
     @Override
