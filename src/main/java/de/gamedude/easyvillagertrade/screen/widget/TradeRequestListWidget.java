@@ -8,8 +8,6 @@ import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gui.*;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.render.RenderLayers;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
@@ -116,6 +114,12 @@ public class TradeRequestListWidget extends AbstractParentElement implements Dra
         if(element.isEmpty())
             return bl;
         TradeRequestEntry tradeRequestEntry = (TradeRequestEntry) element.get();
+
+        // #HACK, since the "scrolled" entries "stack on top of each other" => the first would be removed each time
+        int entriesSkipped = Math.ceilDiv( (int) scrollAmount, ENTRY_HEIGHT + 5 );
+        if ( children.indexOf(tradeRequestEntry) == 0 && children.size() > ENTRIES_PER_PAGE )
+            tradeRequestEntry = children.get(entriesSkipped);
+
         children.remove(tradeRequestEntry);
         modBase.getTradeRequestContainer().removeTradeRequest(tradeRequestEntry.tradeRequest);
         return bl;
