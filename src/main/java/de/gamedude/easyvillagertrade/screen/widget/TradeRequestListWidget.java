@@ -8,8 +8,6 @@ import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gui.*;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.render.RenderLayers;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
@@ -110,9 +108,9 @@ public class TradeRequestListWidget extends AbstractParentElement implements Dra
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        boolean bl = super.mouseClicked(mouseX, mouseY, button);
-        Optional<Element> element = this.hoveredElement(mouseX, mouseY);
+    public boolean mouseClicked(Click click, boolean doubled) {
+        boolean bl = super.mouseClicked(click, doubled);
+        Optional<Element> element = this.hoveredElement(click.x(), click.y());
         if(element.isEmpty())
             return bl;
         TradeRequestEntry tradeRequestEntry = (TradeRequestEntry) element.get();

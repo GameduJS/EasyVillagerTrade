@@ -19,6 +19,7 @@ import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import org.lwjgl.glfw.GLFW;
 
@@ -27,7 +28,8 @@ public class EasyVillagerTrade implements ModInitializer {
 
     public static final Config CONFIG = new Config("easyvillagertrade");
     private static EasyVillagerTradeBase modBase;
-    private final KeyBinding keyBinding = new KeyBinding("key.custom.openscreen", GLFW.GLFW_KEY_F6, "EasyVillagerTrade");
+    private final KeyBinding.Category evtCategory = KeyBinding.Category.create(Identifier.of("easyvillagertrade", "category"));
+    private final KeyBinding keyBinding = new KeyBinding("key.custom.openscreen", GLFW.GLFW_KEY_F6, evtCategory);
 
     @Override
     public void onInitialize() {
@@ -51,7 +53,7 @@ public class EasyVillagerTrade implements ModInitializer {
         });
 
         UseBlockCallback.EVENT.register((player, world, hand, hitResult) -> {
-            if (hand == Hand.OFF_HAND || hitResult == null || !world.isClient)
+            if (hand == Hand.OFF_HAND || hitResult == null || !world.isClient())
                 return ActionResult.PASS;
             BlockPos blockPos = hitResult.getBlockPos();
             if (world.getBlockState(blockPos).getBlock() == Blocks.LECTERN && modBase.getState() == TradingState.MODE_SELECTION) {

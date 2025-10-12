@@ -6,10 +6,12 @@ import de.gamedude.easyvillagertrade.screen.widget.EnchantmentInputWidget;
 import de.gamedude.easyvillagertrade.screen.widget.TradeRequestListWidget;
 import de.gamedude.easyvillagertrade.utils.TradeRequest;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
+import net.minecraft.client.input.CharInput;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.text.Text;
@@ -49,7 +51,7 @@ public class TradeSelectScreen extends Screen {
         TextFieldWidget levelTextFieldWidget = new TextFieldWidget(textRenderer, x + 20 + enchantmentWidth, px + 15, levelWidth, 20, Text.of("Level"));
         TextFieldWidget priceTextFieldWidget = new TextFieldWidget(textRenderer, x + 30 + enchantmentWidth + levelWidth, px + 15, priceWidth, 20, Text.of("Price"));
 
-        int listHeight = this.height - px - 80 - 30;
+        int listHeight = this.height - px - 50;
         TradeRequestListWidget tradeRequestListWidget = new TradeRequestListWidget(x + 10, px + 80, widgetWidth - 20, listHeight);
         modBase.getTradeRequestContainer().getTradeRequests().forEach(tradeRequestListWidget::addEntry);
 
@@ -125,22 +127,22 @@ public class TradeSelectScreen extends Screen {
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+    public boolean mouseClicked(Click click, boolean doubled) {
         children().forEach(element -> {
             if(element instanceof TextFieldWidget textFieldWidget) {
                 textFieldWidget.setEditableColor(-2039584);
             }
         });
-        return super.mouseClicked(mouseX, mouseY, button);
+        return super.mouseClicked(click, doubled);
     }
 
     @Override
-    public boolean charTyped(char chr, int modifiers) {
+    public boolean charTyped(CharInput charInput) {
         children().forEach(element -> {
             if(element instanceof TextFieldWidget textFieldWidget)
                 textFieldWidget.setEditableColor(-2039584);
         });
-        return super.charTyped(chr, modifiers);
+        return super.charTyped(charInput);
     }
 
     @Override
