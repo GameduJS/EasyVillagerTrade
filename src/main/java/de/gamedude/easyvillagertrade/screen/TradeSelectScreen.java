@@ -49,7 +49,8 @@ public class TradeSelectScreen extends Screen {
         TextFieldWidget levelTextFieldWidget = new TextFieldWidget(textRenderer, x + 20 + enchantmentWidth, px + 15, levelWidth, 20, Text.of("Level"));
         TextFieldWidget priceTextFieldWidget = new TextFieldWidget(textRenderer, x + 30 + enchantmentWidth + levelWidth, px + 15, priceWidth, 20, Text.of("Price"));
 
-        TradeRequestListWidget tradeRequestListWidget = new TradeRequestListWidget(x + 10, px + 80, width - x - px - 20, this.height - px - 50);
+        int listHeight = this.height - px - 80 - 30;
+        TradeRequestListWidget tradeRequestListWidget = new TradeRequestListWidget(x + 10, px + 80, widgetWidth - 20, listHeight);
         modBase.getTradeRequestContainer().getTradeRequests().forEach(tradeRequestListWidget::addEntry);
 
         this.addDrawableChild(enchantmentInputWidget);
@@ -96,6 +97,29 @@ public class TradeSelectScreen extends Screen {
         this.addDrawableChild(addButton);
         this.addDrawableChild(removeButton);
         this.addDrawableChild(tradeRequestListWidget);
+
+        int buttonY = this.height - px - 25;
+        int buttonX = x + (widgetWidth - 160) / 2;
+
+        ButtonWidget selectLecternButton = ButtonWidget.builder(Text.of("Select"), button -> {
+            if(this.client != null && this.client.player != null)
+                this.client.player.networkHandler.sendChatCommand("evt select close");
+        }).position(buttonX, buttonY).size(50, 20).build();
+
+        ButtonWidget startButton = ButtonWidget.builder(Text.of("Start"), button -> {
+            if(this.client != null && this.client.player != null)
+                this.client.player.networkHandler.sendChatCommand("evt execute");
+        }).position(buttonX + 55, buttonY).size(50, 20).build();
+
+        ButtonWidget stopButton = ButtonWidget.builder(Text.of("Stop"), button -> {
+            if(this.client != null && this.client.player != null)
+                this.client.player.networkHandler.sendChatCommand("evt stop");
+        }).position(buttonX + 110, buttonY).size(50, 20).build();
+
+
+        this.addDrawableChild(selectLecternButton);
+        this.addDrawableChild(startButton);
+        this.addDrawableChild(stopButton);
     }
 
     @Override
