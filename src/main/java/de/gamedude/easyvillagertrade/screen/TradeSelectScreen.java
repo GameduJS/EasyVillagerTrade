@@ -49,7 +49,7 @@ public class TradeSelectScreen extends Screen {
         TextFieldWidget levelTextFieldWidget = new TextFieldWidget(textRenderer, x + 20 + enchantmentWidth, px + 15, levelWidth, 20, Text.of("Level"));
         TextFieldWidget priceTextFieldWidget = new TextFieldWidget(textRenderer, x + 30 + enchantmentWidth + levelWidth, px + 15, priceWidth, 20, Text.of("Price"));
 
-        int listHeight = this.height - px - 80 - 30;
+        int listHeight = this.height - px - 50;
         TradeRequestListWidget tradeRequestListWidget = new TradeRequestListWidget(x + 10, px + 80, widgetWidth - 20, listHeight);
         modBase.getTradeRequestContainer().getTradeRequests().forEach(tradeRequestListWidget::addEntry);
 
