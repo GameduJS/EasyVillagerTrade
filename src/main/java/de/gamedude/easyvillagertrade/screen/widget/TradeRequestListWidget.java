@@ -114,6 +114,12 @@ public class TradeRequestListWidget extends AbstractParentElement implements Dra
         if(element.isEmpty())
             return bl;
         TradeRequestEntry tradeRequestEntry = (TradeRequestEntry) element.get();
+
+        // #HACK, since the "scrolled" entries "stack on top of each other" => the first would be removed each time
+        int entriesSkipped = Math.ceilDiv( (int) scrollAmount, ENTRY_HEIGHT + 5 );
+        if ( children.indexOf(tradeRequestEntry) == 0 && children.size() > ENTRIES_PER_PAGE )
+            tradeRequestEntry = children.get(entriesSkipped);
+
         children.remove(tradeRequestEntry);
         modBase.getTradeRequestContainer().removeTradeRequest(tradeRequestEntry.tradeRequest);
         return bl;
