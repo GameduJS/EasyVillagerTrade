@@ -1,5 +1,6 @@
 package de.gamedude.evt;
 
+import de.gamedude.evt.commands.AutomationTestCommand;
 import de.gamedude.evt.commands.EVTCommand;
 import de.gamedude.evt.config.Config;
 import de.gamedude.evt.handler.SelectionInterface;
@@ -33,12 +34,8 @@ public class EasyVillagerTrade implements ClientModInitializer {
             tradeWorkflow.tickWorkflow();
         });
 
-        ClientTickEvents.START_WORLD_TICK.register(client -> {
-            MinecraftClient.getInstance().player.setVelocity( new Vec3d(0.06, 0 ,0) );
-        });
-
-
         ClientCommandRegistrationCallback.EVENT.register(new EVTCommand(tradeWorkflow));
+        ClientCommandRegistrationCallback.EVENT.register(new AutomationTestCommand());
         UseBlockCallback.EVENT.register(tradeWorkflow.getHandler(SelectionInterface.class));
         UseEntityCallback.EVENT.register(tradeWorkflow.getHandler(SelectionInterface.class));
     }

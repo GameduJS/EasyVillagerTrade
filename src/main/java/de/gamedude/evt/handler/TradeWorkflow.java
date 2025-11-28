@@ -1,5 +1,7 @@
 package de.gamedude.evt.handler;
 
+import de.gamedude.evt.automation.AutomationProcessor;
+import de.gamedude.evt.automation.State;
 import de.gamedude.evt.script.ScriptManager;
 
 import java.util.*;
@@ -10,6 +12,13 @@ public class TradeWorkflow implements Handler {
     private final Map<Class<? extends Handler>, Handler> handlerMap;
     public boolean enableSelection;
 
+
+    /**
+     * TEST STATE
+     */
+    public static State testState;
+    public static List<State> STATES = new LinkedList<>();
+
     public TradeWorkflow() {
         this.handlerMap = new HashMap<>();
         this.handlerMap.put(TradeRequestContainer.class, new TradeRequestContainer());
@@ -17,6 +26,9 @@ public class TradeWorkflow implements Handler {
         this.handlerMap.put(SelectionInterface.class, new SelectionInterface());
         this.handlerMap.put(ScriptManager.class, new ScriptManager());
         this.handlerMap.put(TradeWithVillagerHandler.class, new TradeWithVillagerHandler());
+
+        //Automation
+        this.handlerMap.put(AutomationProcessor.class, new AutomationProcessor());
     }
 
 
@@ -27,6 +39,24 @@ public class TradeWorkflow implements Handler {
     }
 
     public void tickWorkflow() {
+        if ( testState != null ) {
+            if ( testState.isDone() ) {
+                testState = null;
+                return;
+            }
+            testState.run();
+        }
+
+        if ( !STATES.isEmpty() ) {
+            State current = STATES.get(0);
+            System.out.println("[DEBUG] PROCESSING STATE; " + current.getClass().getSimpleName());
+            current.run();
+
+            if(current.isDone()) {
+                System.out.println("[DEBUG] STATE DONE;:" + current.getClass().getSimpleName());
+                STATES.remove(0);
+            }
+        }
 
     }
 }
