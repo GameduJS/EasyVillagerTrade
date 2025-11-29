@@ -42,7 +42,6 @@ public class MoveState extends State {
 
     @Override
     public void initState() {
-        System.out.println("[DEBUG] MoveState.initState");
         this.destinationVec = playerSupplier.get().getPos().add( x, 0, z );
     }
 }

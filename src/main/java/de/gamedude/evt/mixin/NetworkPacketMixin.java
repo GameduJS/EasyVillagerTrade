@@ -1,9 +1,13 @@
 package de.gamedude.evt.mixin;
 
+import de.gamedude.evt.handler.SelectionInterface;
 import de.gamedude.evt.handler.TradeWorkflow;
 import io.netty.channel.ChannelHandlerContext;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.s2c.play.OpenScreenS2CPacket;
@@ -24,7 +28,16 @@ public abstract class NetworkPacketMixin {
     @Inject(method = "channelRead0(Lio/netty/channel/ChannelHandlerContext;Lnet/minecraft/network/packet/Packet;)V", at = @At("HEAD"), cancellable = true)
     private void channelRead0(ChannelHandlerContext context, Packet<?> packet, CallbackInfo ci) {
         if (packet instanceof SetTradeOffersS2CPacket setTradeOffers) {
-
+            ClientPlayerEntity player = MinecraftClient.getInstance().player;
+            if ( player == null )
+                return;
+            if ( player.getWorld() == null )
+                return;
+            VillagerEntity selectingVillager = tradeWorkFlowHandler.getHandler(SelectionInterface.class).getVillager().get();
+            if ( selectingVillager == null )
+                return;
+            selectingVillager.setOffers( setTradeOffers.getOffers() );
+            System.out.println("Setting villager offer!");
         } else if (packet instanceof OpenScreenS2CPacket openScreenS2CPacket) {
         }
     }

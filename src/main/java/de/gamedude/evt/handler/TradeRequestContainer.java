@@ -37,26 +37,8 @@ public class TradeRequestContainer implements Handler {
         return tradeRequests;
     }
 
-    public Optional<Pair<TradeOffer, TradeRequest>> getValidTradeRequest(TradeOfferList tradeOfferList) {
-        Optional<TradeOffer> optionalTradeOffer = tradeOfferList.stream().filter(tradeOffer -> tradeOffer.getSellItem().getItem() == Items.ENCHANTED_BOOK).findFirst();
-        if (optionalTradeOffer.isEmpty())
-            return Optional.empty();
-
-        TradeOffer tradeOffer = optionalTradeOffer.get();
-
-        Map.Entry<Enchantment, Integer> entry0 = EnchantmentHelper.get(tradeOffer.getSellItem()).entrySet().iterator().next();
-        Enchantment enchantment = entry0.getKey();
-        int level = entry0.getValue();
-        int cost = tradeOffer.getAdjustedFirstBuyItem().getCount();
-
-        TradeRequest tradeRequest = new TradeRequest(enchantment, level, cost);
-        System.out.println("[DEBUG] TradeRequestContainer.getValidTradeRequest: " + tradeRequest);
-
-        if(tradeRequests.stream().anyMatch(tradeRequest::matchRequest)) {
-            Pair<TradeOffer, TradeRequest> pair = new Pair<>(tradeOffer, tradeRequest);
-            return Optional.of(pair);
-        }
-        return Optional.empty();
+    public boolean matchesAny(TradeRequest tradeRequest) {
+        return this.tradeRequests.stream().anyMatch(tradeRequest::matchRequest);
     }
 
 }

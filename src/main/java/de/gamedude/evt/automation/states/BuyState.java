@@ -1,22 +1,21 @@
 package de.gamedude.evt.automation.states;
 
 import de.gamedude.evt.automation.State;
-import de.gamedude.evt.handler.SelectionInterface;
+import de.gamedude.evt.handler.TradeWithVillagerHandler;
 import de.gamedude.evt.handler.TradeWorkflow;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.text.Text;
 
-public class SelectState extends State {
-
-    public SelectState() {
+public class BuyState extends State {
+    public BuyState() {
         super(TradeWorkflow.INSTANCE);
     }
 
     @Override
     public int run() {
         ClientPlayerEntity player = playerSupplier.get();
-        int status = getTradeWorkflow().getHandler(SelectionInterface.class).selectClosestToPlayer(player);
-        player.sendMessage(Text.of("TODO: Executed SelectState with status - " + status), false);
+        int status = getTradeWorkflow().getHandler(TradeWithVillagerHandler.class).buy();
+        player.sendMessage(Text.of("TODO: Executed BuyState with status - " + status), false);
         return 0;
     }
 
@@ -27,5 +26,6 @@ public class SelectState extends State {
 
     @Override
     public void initState() {
+
     }
 }

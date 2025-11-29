@@ -57,7 +57,6 @@ public class LookState extends State {
 
     @Override
     public void initState() {
-        System.out.println("[DEBUG] LookState.initState");
         if ( this.pitch == -999F ) {
             this.pitch = playerSupplier.get().getPitch();
         }

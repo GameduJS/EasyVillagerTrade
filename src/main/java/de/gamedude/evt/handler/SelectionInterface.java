@@ -48,16 +48,21 @@ public class SelectionInterface implements Handler, UseBlockCallback, UseEntityC
             return 1;
         this.lecternPos = closestBlockOptional.get();
         this.villager = getClosestVillager(player.getWorld(), this.lecternPos);
-
-        player.sendMessage(Text.of(lecternPos.toString()));
-        player.sendMessage(Text.of(villager.getUuidAsString()));
-
         return (villager == null) ? 2 : 0;
     }
 
     private VillagerEntity getClosestVillager(World world, BlockPos blockPos) {
-        return world.getClosestEntity(VillagerEntity.class, TargetPredicate.DEFAULT.setPredicate(livingEntity -> ((VillagerEntity) livingEntity).getVillagerData().getProfession() == VillagerProfession.LIBRARIAN),
-                null, blockPos.getX(), blockPos.getY(), blockPos.getZ(), new Box(blockPos).expand(1));
+        VillagerEntity entity = null;
+        double dist = Double.MAX_VALUE;
+
+        for(VillagerEntity villagerEntity : world.getEntitiesByClass(VillagerEntity.class, new Box(blockPos).expand(3), (villager) -> villager.getVillagerData().getProfession() == VillagerProfession.LIBRARIAN)) {
+            double distanceSquared = villagerEntity.squaredDistanceTo(blockPos.getX(), blockPos.getY(), blockPos.getZ());
+            if(distanceSquared < dist) {
+                dist = distanceSquared;
+                entity = villagerEntity;
+            }
+        }
+        return entity;
     }
 
     @Override

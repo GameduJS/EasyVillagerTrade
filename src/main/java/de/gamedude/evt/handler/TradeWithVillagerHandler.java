@@ -1,14 +1,12 @@
 package de.gamedude.evt.handler;
 
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.packet.c2s.play.SelectMerchantTradeC2SPacket;
 import net.minecraft.screen.MerchantScreenHandler;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.slot.Slot;
 import net.minecraft.screen.slot.SlotActionType;
-import net.minecraft.text.Text;
 
 import java.util.function.Predicate;
 import java.util.stream.IntStream;
@@ -21,10 +19,10 @@ public class TradeWithVillagerHandler implements Handler {
         this.slotIndex = slotIndex;
     }
 
-    public void buy() {
+    public int buy() {
         ScreenHandler screenHandler = player().currentScreenHandler;
         if(!(screenHandler instanceof MerchantScreenHandler merchantScreen))
-            return;
+            return 1;
         merchantScreen.setRecipeIndex(slotIndex);
         merchantScreen.switchTo(slotIndex);
         player().networkHandler.sendPacket(new SelectMerchantTradeC2SPacket(slotIndex));
@@ -41,10 +39,12 @@ public class TradeWithVillagerHandler implements Handler {
             slotToClick = -999;
 
         if(slotToClick == -999)
-            player().sendMessage(Text.of("§cBook dropped out of inventory"));
+            return 2;
+
         MinecraftClient.getInstance().interactionManager.clickSlot(screenHandler.syncId, slotToClick, 0, SlotActionType.PICKUP, player());
 
         player().closeHandledScreen();
+        return 0;
     }
 
 

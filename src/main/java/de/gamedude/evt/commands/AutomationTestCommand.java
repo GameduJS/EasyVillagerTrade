@@ -2,14 +2,15 @@ package de.gamedude.evt.commands;
 
 import com.mojang.brigadier.CommandDispatcher;
 import de.gamedude.evt.automation.State;
-import de.gamedude.evt.automation.states.LookState;
-import de.gamedude.evt.automation.states.MoveState;
-import de.gamedude.evt.automation.states.SelectState;
+import de.gamedude.evt.automation.states.*;
+import de.gamedude.evt.handler.TradeRequestContainer;
 import de.gamedude.evt.handler.TradeWorkflow;
+import de.gamedude.evt.utils.TradeRequest;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.command.CommandRegistryAccess;
+import net.minecraft.enchantment.Enchantments;
 import net.minecraft.text.Text;
 
 import java.util.List;
@@ -41,6 +42,31 @@ public class AutomationTestCommand implements ClientCommandRegistrationCallback 
                     TradeWorkflow.testState.initState();
                     ClientPlayerEntity player = context.getSource().getPlayer();
                     player.sendMessage(Text.of("Set SelectState"));
+                    return 0;
+                }))
+                .then(literal("selintchebuy").executes(context -> {
+                    TradeWorkflow.INSTANCE.getHandler(TradeRequestContainer.class)
+                            .addRequest(new TradeRequest(Enchantments.MENDING, 1, 30));
+                    SelectState  selectState = new SelectState();
+                    InteractState interactState = new InteractState();
+                    CheckState checkState = new CheckState();
+                    BuyState buyState = new BuyState();
+                    var l = List.of(selectState, interactState, checkState, buyState);
+                    l.forEach(State::initState);
+
+                    TradeWorkflow.STATES.addAll(l);
+
+                    ClientPlayerEntity player = context.getSource().getPlayer();
+                    player.sendMessage(Text.of("SELECTING AND THEN INTERACTING"));
+                    return 0;
+                }))
+                .then(literal("place").executes(context -> {
+                    var l = List.of(new PlaceState());
+                    l.forEach(State::initState);
+
+                    TradeWorkflow.STATES.addAll(l);
+                    ClientPlayerEntity player = context.getSource().getPlayer();
+                    player.sendMessage(Text.of("PLACE"));
                     return 0;
                 }))
                 .then(literal("process").executes(context -> {

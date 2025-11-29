@@ -49,12 +49,17 @@ public class TradeWorkflow implements Handler {
 
         if ( !STATES.isEmpty() ) {
             State current = STATES.get(0);
-            System.out.println("[DEBUG] PROCESSING STATE; " + current.getClass().getSimpleName());
+            System.out.println("[DEBUG] PROCESSING STATE: " + current.getClass().getSimpleName());
             current.run();
 
             if(current.isDone()) {
-                System.out.println("[DEBUG] STATE DONE;:" + current.getClass().getSimpleName());
+                System.out.println("[DEBUG] STATE DONE: " + current.getClass().getSimpleName());
                 STATES.remove(0);
+
+                // INIT NEW STATE
+                if ( !STATES.isEmpty() ) {
+                    STATES.get(0).initState();
+                }
             }
         }
 
