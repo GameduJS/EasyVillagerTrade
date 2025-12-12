@@ -5,6 +5,16 @@ import de.gamedude.evt.handler.TradeWorkflow;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.util.math.MathHelper;
 
+/**
+ *
+ * Represents the "LOOK" command. <br>
+ * Usage: LOOK [VIEW/POS]  [ yaw pitch / dx dy (pitch) ] <br>
+ * Smoothly changes the player yaw and pitch based on the given arguments. <br>
+ *
+ * <h>TODO: smooth linear (or smth else) transition; Current implementation:  Independently moving along each axis </h>
+ *
+ *
+ */
 public class LookState extends State {
 
     private final float yaw;

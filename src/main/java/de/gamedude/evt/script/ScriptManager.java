@@ -53,8 +53,12 @@ public class ScriptManager implements Handler {
             if(line.startsWith("#") || line.isBlank()) continue;
 
             String[] parts = line.split(" ");
-            String command = parts[0];
-            String[] arguments = Arrays.copyOfRange(parts, 1, parts.length, String[].class);
+            String command = parts[0];                                                                                                                              // EXAMPLE:
+            String[] arguments = Arrays.copyOfRange(parts, 1, parts.length, String[].class);      // COMMAND ARG_1 ARG_2 ... ARG_N
+
+            // Create state based on command
+            // parse arguments from string into object
+
         }
     }
 
