@@ -48,7 +48,8 @@ public class ScriptManager implements Handler {
     }
 
     private void parseScript(List<String> rawContent) {
-        for(String line : rawContent) {
+        // process backwards to account for Look relativ
+        for(String line : rawContent.reversed()) {
             // Comment or blank line
             if(line.startsWith("#") || line.isBlank()) continue;
 
@@ -58,6 +59,7 @@ public class ScriptManager implements Handler {
 
             // Create state based on command
             // parse arguments from string into object
+
 
         }
     }
