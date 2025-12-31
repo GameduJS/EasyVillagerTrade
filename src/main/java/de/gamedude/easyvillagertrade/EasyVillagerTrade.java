@@ -53,7 +53,7 @@ public class EasyVillagerTrade implements ModInitializer {
         });
 
         UseBlockCallback.EVENT.register((player, world, hand, hitResult) -> {
-            if (hand == Hand.OFF_HAND || hitResult == null || !world.isClient())
+            if (hand == Hand.OFF_HAND || !world.isClient())
                 return ActionResult.PASS;
             BlockPos blockPos = hitResult.getBlockPos();
             if (world.getBlockState(blockPos).getBlock() == Blocks.LECTERN && modBase.getState() == TradingState.MODE_SELECTION) {

@@ -5,7 +5,6 @@ import de.gamedude.easyvillagertrade.core.EasyVillagerTradeBase;
 import de.gamedude.easyvillagertrade.screen.widget.EnchantmentInputWidget;
 import de.gamedude.easyvillagertrade.screen.widget.TradeRequestListWidget;
 import de.gamedude.easyvillagertrade.utils.TradeRequest;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
@@ -34,7 +33,6 @@ public class TradeSelectScreen extends Screen {
     public TradeSelectScreen() {
         super(Text.empty());
 
-        this.textRenderer = MinecraftClient.getInstance().textRenderer;
         this.enchantmentWidth = textRenderer.getWidth("Enchantment");
         this.levelWidth = textRenderer.getWidth("Level");
         this.priceWidth = textRenderer.getWidth("Price");
