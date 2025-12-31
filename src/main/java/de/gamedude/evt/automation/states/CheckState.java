@@ -5,6 +5,7 @@ import de.gamedude.evt.handler.SelectionInterface;
 import de.gamedude.evt.handler.TradeRequestContainer;
 import de.gamedude.evt.handler.TradeWithVillagerHandler;
 import de.gamedude.evt.handler.TradeWorkflow;
+import de.gamedude.evt.script.ParsingContext;
 import de.gamedude.evt.utils.TradeRequest;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.enchantment.Enchantment;
@@ -80,5 +81,9 @@ public class CheckState extends State {
     @Override
     public void initState() {
 
+    }
+
+    public static State parse(String[] args, ParsingContext ctx) throws Exception {
+        return new CheckState();
     }
 }

@@ -1,6 +1,5 @@
 package de.gamedude.evt.automation;
 
-import de.gamedude.evt.automation.states.SelectState;
 import de.gamedude.evt.handler.TradeWorkflow;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
@@ -51,10 +50,4 @@ public abstract class State {
      * Supplier<ClientPlayerEntity>  - Returns player instance as supplier as soon as its loaded
      */
     protected Supplier<ClientPlayerEntity> playerSupplier = () -> client.player;
-
-
-    public static State getState(String commandName) {
-        //TODO: Implementation via checking string or invoke constructor / static class
-        return new SelectState();
-    }
 }

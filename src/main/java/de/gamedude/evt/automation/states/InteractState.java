@@ -3,6 +3,7 @@ package de.gamedude.evt.automation.states;
 import de.gamedude.evt.automation.State;
 import de.gamedude.evt.handler.SelectionInterface;
 import de.gamedude.evt.handler.TradeWorkflow;
+import de.gamedude.evt.script.ParsingContext;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.text.Text;
@@ -39,5 +40,9 @@ public class InteractState extends State {
     @Override
     public void initState() {
 
+    }
+
+    public static State parse(String[] args, ParsingContext ctx) throws Exception {
+        return new InteractState();
     }
 }

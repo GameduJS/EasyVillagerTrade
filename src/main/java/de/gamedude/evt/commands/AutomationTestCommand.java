@@ -5,6 +5,7 @@ import de.gamedude.evt.automation.State;
 import de.gamedude.evt.automation.states.*;
 import de.gamedude.evt.handler.TradeRequestContainer;
 import de.gamedude.evt.handler.TradeWorkflow;
+import de.gamedude.evt.script.ScriptManager;
 import de.gamedude.evt.utils.TradeRequest;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
@@ -18,6 +19,9 @@ import java.util.List;
 import static net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.*;
 
 public class AutomationTestCommand implements ClientCommandRegistrationCallback {
+
+    private final TradeWorkflow tradeWorkflow = TradeWorkflow.INSTANCE;
+
     @Override
     public void register(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandRegistryAccess registryAccess) {
         dispatcher.register(literal("automation")
@@ -57,7 +61,7 @@ public class AutomationTestCommand implements ClientCommandRegistrationCallback 
                     TradeWorkflow.STATES.addAll(l);
 
                     ClientPlayerEntity player = context.getSource().getPlayer();
-                    player.sendMessage(Text.of("SELECTING AND THEN INTERACTING"));
+                    player.sendMessage(Text.of("SELECTING, INTERACTING, CHECKING and BUYING"));
                     return 0;
                 }))
                 .then(literal("place").executes(context -> {
@@ -67,6 +71,23 @@ public class AutomationTestCommand implements ClientCommandRegistrationCallback 
                     TradeWorkflow.STATES.addAll(l);
                     ClientPlayerEntity player = context.getSource().getPlayer();
                     player.sendMessage(Text.of("PLACE"));
+                    return 0;
+                }))
+                .then(literal("loadscript").executes(context -> {
+                    String skript = """
+                            # Hihi
+                            
+                            LOOK ~
+                            WALK 3 3
+                            LOOK -4.1 28.2
+                            SELECT
+                            """;
+                    List<State> states = tradeWorkflow.getHandler(ScriptManager.class)
+                            .parseScript(skript.lines().toList());
+                    states.forEach(State::initState);
+
+                    TradeWorkflow.STATES.addAll(states);
+
                     return 0;
                 }))
                 .then(literal("process").executes(context -> {

@@ -2,6 +2,7 @@ package de.gamedude.evt.automation.states;
 
 import de.gamedude.evt.automation.State;
 import de.gamedude.evt.handler.TradeWorkflow;
+import de.gamedude.evt.script.ParsingContext;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.util.math.MathHelper;
 
@@ -69,6 +70,48 @@ public class LookState extends State {
     public void initState() {
         if ( this.pitch == -999F ) {
             this.pitch = playerSupplier.get().getPitch();
+        }
+    }
+
+    public static State parse(String[] args, ParsingContext ctx) throws Exception {
+        if (args.length < 1) {
+            throw new Exception("LOOK needs arguments: <yaw> <pitch> or ~");
+        }
+
+        if (args[0].equals("~")) {
+            String nextLine = ctx.next();
+            if (!nextLine.toUpperCase().startsWith("WALK")) {
+                throw new Exception("LOOK ~ only works if there is a WALK <> following");
+            }
+
+
+            String[] parts = nextLine.split(" ");
+            try {
+                double dx = Double.parseDouble(parts[1]);
+                double dz = Double.parseDouble(parts[2]);
+                float pitch = -999;
+
+                if ( parts.length > 3 )
+                    pitch =  Float.parseFloat(parts[3]);
+
+                return new LookState( dx, dz, pitch );
+
+            } catch (Exception e) {
+                throw new Exception("Could not parse values of WALK command in next line");
+            }
+        }
+
+        // Fall 2: Normale Koordinaten
+        if (args.length != 2) {
+            throw new Exception("LOOK needs yaw and pitch.");
+        }
+
+        try {
+            float y = Float.parseFloat(args[0]);
+            float p = Float.parseFloat(args[1]);
+            return new LookState(y, p);
+        } catch (NumberFormatException e) {
+            throw new Exception("Yaw/Pitch have to be floating point numbers");
         }
     }
 }

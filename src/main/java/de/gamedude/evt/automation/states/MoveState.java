@@ -2,6 +2,7 @@ package de.gamedude.evt.automation.states;
 
 import de.gamedude.evt.automation.State;
 import de.gamedude.evt.handler.TradeWorkflow;
+import de.gamedude.evt.script.ParsingContext;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
@@ -44,4 +45,18 @@ public class MoveState extends State {
     public void initState() {
         this.destinationVec = playerSupplier.get().getPos().add( x, 0, z );
     }
+
+    public static State parse(String[] args, ParsingContext ctx) throws Exception {
+        if (args.length != 2) {
+            throw new Exception("MOVE has arguments: dx (double), dz(double) (example: 2.0 1.4)");
+        }
+        try {
+            double dx = Double.parseDouble(args[0]);
+            double dz = Double.parseDouble(args[1]);
+            return new MoveState(dx, dz);
+        } catch (NumberFormatException e) {
+            throw new Exception("dx, dy should be floating point number; Integer should be written as e.g. '2.0'");
+        }
+    }
+
 }

@@ -3,6 +3,7 @@ package de.gamedude.evt.automation.states;
 import de.gamedude.evt.automation.State;
 import de.gamedude.evt.handler.SelectionInterface;
 import de.gamedude.evt.handler.TradeWorkflow;
+import de.gamedude.evt.script.ParsingContext;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.item.Items;
@@ -59,5 +60,12 @@ public class PlaceState extends State {
     @Override
     public void initState() {
 
+    }
+
+    public static State parse(String[] args, ParsingContext ctx) throws Exception {
+        if (args.length > 0) {
+            throw new Exception("PLACE has no arguments (yet?)");
+        }
+        return new PlaceState();
     }
 }

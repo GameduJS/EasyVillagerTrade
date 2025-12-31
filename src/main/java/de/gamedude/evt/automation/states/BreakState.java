@@ -2,6 +2,7 @@ package de.gamedude.evt.automation.states;
 
 import de.gamedude.evt.automation.State;
 import de.gamedude.evt.handler.TradeWorkflow;
+import de.gamedude.evt.script.ParsingContext;
 
 public class BreakState extends State {
 
@@ -22,5 +23,9 @@ public class BreakState extends State {
     @Override
     public void initState() {
 
+    }
+
+    public static State parse(String[] args, ParsingContext ctx) throws Exception {
+        return new BreakState();
     }
 }
