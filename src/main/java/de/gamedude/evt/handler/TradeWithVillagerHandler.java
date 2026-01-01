@@ -13,7 +13,11 @@ import java.util.stream.IntStream;
 
 public class TradeWithVillagerHandler implements Handler {
 
-    private int slotIndex;
+    private int slotIndex = -1;
+
+    public boolean shouldSwitchState() {
+        return slotIndex != -1;
+    }
 
     public void setTradeIndex(int slotIndex) {
         this.slotIndex = slotIndex;
@@ -44,6 +48,7 @@ public class TradeWithVillagerHandler implements Handler {
         MinecraftClient.getInstance().interactionManager.clickSlot(screenHandler.syncId, slotToClick, 0, SlotActionType.PICKUP, player());
 
         player().closeHandledScreen();
+        this.slotIndex = -1;
         return 0;
     }
 

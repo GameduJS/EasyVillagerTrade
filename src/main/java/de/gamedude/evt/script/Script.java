@@ -1,9 +1,11 @@
 package de.gamedude.evt.script;
 
-
 import de.gamedude.evt.automation.State;
+import de.gamedude.evt.handler.TradeWithVillagerHandler;
+import de.gamedude.evt.handler.TradeWorkflow;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -26,7 +28,11 @@ import java.util.Map;
  */
 public class Script {
 
+    private final TradeWithVillagerHandler tradeWithVillagerHandler
+            = TradeWorkflow.INSTANCE.getHandler(TradeWithVillagerHandler.class);
     private ScriptState currentState = ScriptState.INIT;
+
+    private Iterator<State> iterator;
 
     public enum ScriptState {
         INIT,
@@ -36,21 +42,47 @@ public class Script {
 
     private final Map<ScriptState, List<State>> script = new HashMap<>();
 
+    /**
+     * Loads a single subscript into the script based on its "State"
+     * @param state
+     * @param subScript
+     */
     public void loadScript(ScriptState state, List<State> subScript) {
         this.script.put(state, subScript);
     }
 
-    public List<State> getScript() {
+    private List<State> getScript() {
         return this.script.get(currentState);
     }
 
-    public void switchState() {
+    /**
+     * Should be called every tick to check whether a new subscript should be "played".
+     */
+    public void trySwitchState() {
+        if ( iterator == null ) { // begin script
+            this.currentState = ScriptState.INIT;
+            this.iterator = getScript().iterator();
+            return;
+        }
+
+        // Subscripts should not be interrupted
+        if ( iterator.hasNext() )
+            return;
+
+        // Go out of repeat as soon as trade is found and subscript finished
+        if ( tradeWithVillagerHandler.shouldSwitchState() )
+            this.currentState = ScriptState.FOUND;
         if ( this.currentState == ScriptState.INIT )
             this.currentState = ScriptState.REPEAT;
         else if ( this.currentState == ScriptState.FOUND )
             this.currentState = ScriptState.REPEAT;
+        // Repeat state should be repeated
+        this.iterator = getScript().iterator();
     }
 
+    public Iterator<State> getIterator() {
+        return iterator;
+    }
 
     /*
      * NEED TO:

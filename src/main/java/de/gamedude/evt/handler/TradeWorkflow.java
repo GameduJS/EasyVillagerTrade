@@ -2,7 +2,9 @@ package de.gamedude.evt.handler;
 
 import de.gamedude.evt.automation.AutomationProcessor;
 import de.gamedude.evt.automation.State;
+import de.gamedude.evt.script.Script;
 import de.gamedude.evt.script.ScriptManager;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
@@ -12,12 +14,6 @@ public class TradeWorkflow implements Handler {
     private final Map<Class<? extends Handler>, Handler> handlerMap;
     public boolean enableSelection;
 
-
-    /**
-     * TEST STATE
-     */
-    public static State testState;
-    public static List<State> STATES = new LinkedList<>();
 
     public TradeWorkflow() {
         this.handlerMap = new HashMap<>();
@@ -37,6 +33,37 @@ public class TradeWorkflow implements Handler {
     public <T extends Handler> T getHandler(Class<T> clazz) {
         return (T) handlerMap.get(clazz);
     }
+
+
+    @Nullable
+    private Script activeScript;
+    private boolean enabled;
+
+    public void tick() {
+        // Script might be loaded; still we don't want to run it (yet).
+        if ( !enabled )
+            return;
+        // No script has been loaded (should not be the case - default script)
+        if ( activeScript == null )
+            return;
+
+        activeScript.trySwitchState();
+        Iterator<State> iterator = activeScript.getIterator();
+
+        if ( iterator.hasNext() ) { // TODO PeekingIterator Guava? Or save currentState in script or here?
+            State state = iterator.next();
+            //
+        }
+
+    }
+
+
+    /// TESTING STUFF
+    /**
+     * TEST STATE
+     */
+    public static State testState;
+    public static List<State> STATES = new LinkedList<>();
 
     public void tickWorkflow() {
         if ( testState != null ) {
