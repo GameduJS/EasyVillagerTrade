@@ -10,6 +10,7 @@ import net.minecraft.resource.Resource;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.util.Identifier;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -36,9 +37,9 @@ public class ScriptManager implements Handler {
     private final Path destinationPath = Path.of(MinecraftClient.getInstance().runDirectory.getPath(), "/config/evt/scripts/");
 
     public void copyDefaultToCache() {
-        if(!destinationPath.toFile().exists())
+        if (!destinationPath.toFile().exists())
             destinationPath.toFile().mkdirs();
-        if(destinationPath.resolve("defaultscript").toFile().exists())
+        if (destinationPath.resolve("defaultscript").toFile().exists())
             return;
         try {
             ResourceManager resourceManager = MinecraftClient.getInstance().getResourceManager();
@@ -67,10 +68,10 @@ public class ScriptManager implements Handler {
     public List<State> parseScript(List<String> lines) {
         List<State> actions = new ArrayList<>();
 
-        for( int i = 0; i < lines.size(); i++ ) {
+        for (int i = 0; i < lines.size(); i++) {
             String line = lines.get(i).trim();
             // Comment or blank line
-            if(line.startsWith("#") || line.isBlank()) continue;
+            if (line.startsWith("#") || line.isBlank()) continue;
 
             String[] parts = line.split("\\s+");
             String command = parts[0];
@@ -78,7 +79,7 @@ public class ScriptManager implements Handler {
 
             StateFactory factory = StateRegistry.get(command);
 
-            if ( factory == null ) {
+            if (factory == null) {
                 // command does not exist
                 throw new RuntimeException("Unknown command: " + command);
             }
@@ -88,11 +89,37 @@ public class ScriptManager implements Handler {
 
                 State state = factory.create(args, ctx);
                 actions.add(state);
-            } catch ( Exception e ) {
+            } catch (Exception e) {
                 throw new RuntimeException("Fehler in Zeile " + (i + 1) + " (" + command + "): " + e.getMessage());
             }
         }
 
-       return actions;
+        return actions;
     }
+
+    public List<String> getAllScriptNames() {
+        String[] files = destinationPath.toFile().list(
+                (dir, name) -> new File(dir, name).isDirectory());
+
+        if (files == null)
+            return Collections.emptyList();
+
+        return Arrays.stream(files).filter(s -> {
+            boolean b = Set.of( Objects.requireNonNullElse(destinationPath.resolve(s).toFile().list(), new String[0]) )
+                    .equals(Set.of("init.txt", "found.txt", "repeat.txt"));
+            if ( !b )
+                System.out.println("[DEBUG] MAKE SURE TO PROVIDE init, found, repeat (" + s + ")");
+            return b;
+        }).toList();
+    }
+
+    /**
+     * WHAT WE WANT:
+     * - Copy default script to cache if this has not happened
+     * - ON STARTUP:
+     *      * Load script names out of config/evt/script folder
+     * - On COMMAND:
+     *      * -> Parse script, only one should be loaded at the time
+     *      * -> Execute script on another command
+     */
 }

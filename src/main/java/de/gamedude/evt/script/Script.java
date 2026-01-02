@@ -30,37 +30,38 @@ public class Script {
 
     private final TradeWithVillagerHandler tradeWithVillagerHandler
             = TradeWorkflow.INSTANCE.getHandler(TradeWithVillagerHandler.class);
-    private ScriptState currentState = ScriptState.INIT;
+    private ScriptPhase phase = ScriptPhase.INIT;
 
     private Iterator<State> iterator;
+    public State currentState;
 
-    public enum ScriptState {
+    public enum ScriptPhase {
         INIT,
         FOUND,
         REPEAT
     }
 
-    private final Map<ScriptState, List<State>> script = new HashMap<>();
+    private final Map<ScriptPhase, List<State>> script = new HashMap<>();
 
     /**
      * Loads a single subscript into the script based on its "State"
      * @param state
      * @param subScript
      */
-    public void loadScript(ScriptState state, List<State> subScript) {
+    public void loadScript(ScriptPhase state, List<State> subScript) {
         this.script.put(state, subScript);
     }
 
     private List<State> getScript() {
-        return this.script.get(currentState);
+        return this.script.get(phase);
     }
 
     /**
      * Should be called every tick to check whether a new subscript should be "played".
      */
-    public void trySwitchState() {
+    public void trySwitchPhase() {
         if ( iterator == null ) { // begin script
-            this.currentState = ScriptState.INIT;
+            this.phase = ScriptPhase.INIT;
             this.iterator = getScript().iterator();
             return;
         }
@@ -71,11 +72,11 @@ public class Script {
 
         // Go out of repeat as soon as trade is found and subscript finished
         if ( tradeWithVillagerHandler.shouldSwitchState() )
-            this.currentState = ScriptState.FOUND;
-        if ( this.currentState == ScriptState.INIT )
-            this.currentState = ScriptState.REPEAT;
-        else if ( this.currentState == ScriptState.FOUND )
-            this.currentState = ScriptState.REPEAT;
+            this.phase = ScriptPhase.FOUND;
+        if ( this.phase == ScriptPhase.INIT )
+            this.phase = ScriptPhase.REPEAT;
+        else if ( this.phase == ScriptPhase.FOUND )
+            this.phase = ScriptPhase.REPEAT;
         // Repeat state should be repeated
         this.iterator = getScript().iterator();
     }

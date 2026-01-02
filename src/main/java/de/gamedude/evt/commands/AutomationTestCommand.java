@@ -73,7 +73,7 @@ public class AutomationTestCommand implements ClientCommandRegistrationCallback 
                     player.sendMessage(Text.of("PLACE"));
                     return 0;
                 }))
-                .then(literal("loadscript").executes(context -> {
+                .then(literal("testscript").executes(context -> {
                     String skript = """
                             # Hihi
                             
@@ -88,6 +88,12 @@ public class AutomationTestCommand implements ClientCommandRegistrationCallback 
 
                     TradeWorkflow.STATES.addAll(states);
 
+                    return 0;
+                }))
+                .then(literal("loaddefscript").executes(context -> {
+                    List<String> list = tradeWorkflow.getHandler(ScriptManager.class).getAllScriptNames();
+                    ClientPlayerEntity player = context.getSource().getPlayer();
+                    list.forEach(a -> player.sendMessage(Text.of(a)));
                     return 0;
                 }))
                 .then(literal("process").executes(context -> {

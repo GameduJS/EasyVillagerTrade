@@ -1,6 +1,5 @@
 package de.gamedude.evt.handler;
 
-import de.gamedude.evt.automation.AutomationProcessor;
 import de.gamedude.evt.automation.State;
 import de.gamedude.evt.script.Script;
 import de.gamedude.evt.script.ScriptManager;
@@ -22,9 +21,6 @@ public class TradeWorkflow implements Handler {
         this.handlerMap.put(SelectionInterface.class, new SelectionInterface());
         this.handlerMap.put(ScriptManager.class, new ScriptManager());
         this.handlerMap.put(TradeWithVillagerHandler.class, new TradeWithVillagerHandler());
-
-        //Automation
-        this.handlerMap.put(AutomationProcessor.class, new AutomationProcessor());
     }
 
 
@@ -47,12 +43,22 @@ public class TradeWorkflow implements Handler {
         if ( activeScript == null )
             return;
 
-        activeScript.trySwitchState();
+        activeScript.trySwitchPhase();
         Iterator<State> iterator = activeScript.getIterator();
 
-        if ( iterator.hasNext() ) { // TODO PeekingIterator Guava? Or save currentState in script or here?
-            State state = iterator.next();
-            //
+        if ( iterator.hasNext() ) {
+            State current = activeScript.currentState;
+            if ( current == null ) {
+                current = iterator.next();
+                current.initState();
+                System.out.println("[DEBUG] STATE INIT: " + current.getClass().getSimpleName());
+            }
+            current.run();
+            if ( current.isDone() ) {
+                iterator.remove();
+                activeScript.currentState = null;
+                System.out.println("[DEBUG] STATE DONE: " + current.getClass().getSimpleName());
+            }
         }
 
     }
@@ -65,7 +71,7 @@ public class TradeWorkflow implements Handler {
     public static State testState;
     public static List<State> STATES = new LinkedList<>();
 
-    public void tickWorkflow() {
+    public void tickDebug() {
         if ( testState != null ) {
             if ( testState.isDone() ) {
                 testState = null;
