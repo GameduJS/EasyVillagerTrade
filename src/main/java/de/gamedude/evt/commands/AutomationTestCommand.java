@@ -5,6 +5,7 @@ import de.gamedude.evt.automation.State;
 import de.gamedude.evt.automation.states.*;
 import de.gamedude.evt.handler.TradeRequestContainer;
 import de.gamedude.evt.handler.TradeWorkflow;
+import de.gamedude.evt.script.Script;
 import de.gamedude.evt.script.ScriptManager;
 import de.gamedude.evt.utils.TradeRequest;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
@@ -48,6 +49,13 @@ public class AutomationTestCommand implements ClientCommandRegistrationCallback 
                     player.sendMessage(Text.of("Set SelectState"));
                     return 0;
                 }))
+                .then(literal("break").executes(context -> {
+                    TradeWorkflow.testState = new BreakState();
+                    TradeWorkflow.testState.initState();
+                    ClientPlayerEntity player = context.getSource().getPlayer();
+                    player.sendMessage(Text.of("BreakState"));
+                    return 0;
+                }))
                 .then(literal("selintchebuy").executes(context -> {
                     TradeWorkflow.INSTANCE.getHandler(TradeRequestContainer.class)
                             .addRequest(new TradeRequest(Enchantments.MENDING, 1, 30));
@@ -73,6 +81,10 @@ public class AutomationTestCommand implements ClientCommandRegistrationCallback 
                     player.sendMessage(Text.of("PLACE"));
                     return 0;
                 }))
+                .then(literal("stop").executes(context -> {
+                    tradeWorkflow.setEnabled(false);
+                    return 0;
+                }))
                 .then(literal("testscript").executes(context -> {
                     String skript = """
                             # Hihi
@@ -90,8 +102,15 @@ public class AutomationTestCommand implements ClientCommandRegistrationCallback 
 
                     return 0;
                 }))
-                .then(literal("loaddefscript").executes(context -> {
-                    List<String> list = tradeWorkflow.getHandler(ScriptManager.class).getAllScriptNames();
+                .then(literal("executeDefaultScript").executes(context -> {
+                    Script script = tradeWorkflow.getHandler(ScriptManager.class)
+                                    .loadScript("defaultscript");
+                    tradeWorkflow.setActiveScript(script);
+                    tradeWorkflow.setEnabled(true);
+                    return 0;
+                }))
+                .then(literal("scriptnames").executes(context -> {
+                    List<String> list = tradeWorkflow.getHandler(ScriptManager.class).getAvailableScripts();
                     ClientPlayerEntity player = context.getSource().getPlayer();
                     list.forEach(a -> player.sendMessage(Text.of(a)));
                     return 0;

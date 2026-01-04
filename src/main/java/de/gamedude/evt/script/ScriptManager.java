@@ -5,6 +5,8 @@ import de.gamedude.evt.automation.StateFactory;
 import de.gamedude.evt.automation.StateRegistry;
 import de.gamedude.evt.automation.states.*;
 import de.gamedude.evt.handler.Handler;
+import de.gamedude.evt.handler.TradeWorkflow;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.resource.Resource;
 import net.minecraft.resource.ResourceManager;
@@ -20,7 +22,7 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class ScriptManager implements Handler {
+public class ScriptManager implements Handler, ClientLifecycleEvents.ClientStarted {
 
     static {
         StateRegistry.registerState("BREAK", BreakState::parse);
@@ -31,10 +33,12 @@ public class ScriptManager implements Handler {
         StateRegistry.registerState("WALK", MoveState::parse);
         StateRegistry.registerState("PLACE", PlaceState::parse);
         StateRegistry.registerState("SELECT", SelectState::parse);
+        StateRegistry.registerState("WAIT_PROFESSION", WaitProfession::parse);
     }
 
     public static final Logger LOGGER = Logger.getLogger("Script");
     private final Path destinationPath = Path.of(MinecraftClient.getInstance().runDirectory.getPath(), "/config/evt/scripts/");
+    private final TradeWorkflow tradeWorkflow = TradeWorkflow.INSTANCE;
 
     public void copyDefaultToCache() {
         if (!destinationPath.toFile().exists())
@@ -97,10 +101,39 @@ public class ScriptManager implements Handler {
         return actions;
     }
 
-    public List<String> getAllScriptNames() {
+    public Script loadScript(String scriptName) {
+        File scriptDir = destinationPath.resolve(scriptName).toFile();
+        if ( !scriptDir.exists() ) {
+            System.out.println("[DEBUG] Could not find script folder {" +  scriptName + "}");
+            return null;
+        }
+        List<String> filterNames = List.of("init.txt", "found.txt", "repeat.txt");
+        File[] scriptFiles = scriptDir.listFiles((dir, name) -> filterNames.contains(name));
+
+        if ( scriptFiles == null) {
+            System.out.println("[DEBUG] Something went wrong, could not find any script files!");
+            return null;
+        }
+
+        Script script = new Script();
+
+        for (File scriptFile : scriptFiles) {
+            try {
+                List<String> content = Files.readAllLines(scriptFile.toPath());
+                Script.ScriptPhase phase = Script.ScriptPhase.valueOf(
+                        scriptFile.getName().split("\\.")[0].toUpperCase());
+                script.loadScript(phase,
+                        parseScript(content));
+            } catch (IOException e) {
+                return null;
+            }
+        }
+        return script;
+    }
+
+    private List<String> getAllScriptNames() {
         String[] files = destinationPath.toFile().list(
                 (dir, name) -> new File(dir, name).isDirectory());
-
         if (files == null)
             return Collections.emptyList();
 
@@ -111,6 +144,18 @@ public class ScriptManager implements Handler {
                 System.out.println("[DEBUG] MAKE SURE TO PROVIDE init, found, repeat (" + s + ")");
             return b;
         }).toList();
+    }
+
+    private List<String> availableScripts;
+
+    @Override
+    public void onClientStarted(MinecraftClient client) {
+        this.copyDefaultToCache();
+        this.availableScripts = this.getAllScriptNames();
+    }
+
+    public List<String> getAvailableScripts() {
+        return availableScripts;
     }
 
     /**

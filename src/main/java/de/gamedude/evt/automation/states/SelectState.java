@@ -27,8 +27,7 @@ public class SelectState extends State {
     }
 
     @Override
-    public void initState() {
-    }
+    public void initState() { }
 
 
     public static State parse(String[] args, ParsingContext ctx) throws Exception {

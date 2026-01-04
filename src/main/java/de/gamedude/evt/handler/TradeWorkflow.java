@@ -35,6 +35,24 @@ public class TradeWorkflow implements Handler {
     private Script activeScript;
     private boolean enabled;
 
+    public void setActiveScript(@Nullable Script activeScript) {
+        this.activeScript = activeScript;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public Script.ScriptPhase getScriptPhase() {
+        if ( activeScript == null )
+            return Script.ScriptPhase.NONE;
+        return this.activeScript.getPhase();
+    }
+
     public void tick() {
         // Script might be loaded; still we don't want to run it (yet).
         if ( !enabled )
@@ -51,11 +69,11 @@ public class TradeWorkflow implements Handler {
             if ( current == null ) {
                 current = iterator.next();
                 current.initState();
+                activeScript.currentState = current;
                 System.out.println("[DEBUG] STATE INIT: " + current.getClass().getSimpleName());
             }
             current.run();
             if ( current.isDone() ) {
-                iterator.remove();
                 activeScript.currentState = null;
                 System.out.println("[DEBUG] STATE DONE: " + current.getClass().getSimpleName());
             }

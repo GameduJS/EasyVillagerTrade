@@ -4,10 +4,7 @@ import de.gamedude.evt.automation.State;
 import de.gamedude.evt.handler.TradeWithVillagerHandler;
 import de.gamedude.evt.handler.TradeWorkflow;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * <p>Ein Skript ist eine Ansammlung von Abfolgen von 'State's.
@@ -36,6 +33,7 @@ public class Script {
     public State currentState;
 
     public enum ScriptPhase {
+        NONE,
         INIT,
         FOUND,
         REPEAT
@@ -53,7 +51,8 @@ public class Script {
     }
 
     private List<State> getScript() {
-        return this.script.get(phase);
+        return new ArrayList<>(
+                this.script.get(phase));
     }
 
     /**
@@ -66,13 +65,16 @@ public class Script {
             return;
         }
 
+        if ( tradeWithVillagerHandler.shouldSwitchState() && ScriptPhase.FOUND != phase ) {
+            this.phase = ScriptPhase.FOUND;
+            this.iterator = getScript().iterator();
+            return;
+        }
+
         // Subscripts should not be interrupted
         if ( iterator.hasNext() )
             return;
 
-        // Go out of repeat as soon as trade is found and subscript finished
-        if ( tradeWithVillagerHandler.shouldSwitchState() )
-            this.phase = ScriptPhase.FOUND;
         if ( this.phase == ScriptPhase.INIT )
             this.phase = ScriptPhase.REPEAT;
         else if ( this.phase == ScriptPhase.FOUND )
@@ -85,13 +87,7 @@ public class Script {
         return iterator;
     }
 
-    /*
-     * NEED TO:
-     * - Parse script
-     * - Save original content
-     * - depending on STATE copy into temp list
-     * - go through list: executing states
-     */
-
-
+    public ScriptPhase getPhase() {
+        return phase;
+    }
 }

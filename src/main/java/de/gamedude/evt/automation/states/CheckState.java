@@ -42,10 +42,8 @@ public class CheckState extends State {
         int status = checkForOffer(villagerEntity);
         player.sendMessage(Text.of("TODO: Executed CheckState with status - " + status));
         if ( status == 1 ) {
-            // TODO ANIMATE SCRIPT TO REPEAT
             return 1;
         }
-        // TODO ANIMATE SCRIPT TO BUY @onFound
         return 0;
     }
 

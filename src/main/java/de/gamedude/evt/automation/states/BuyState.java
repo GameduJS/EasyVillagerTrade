@@ -26,9 +26,7 @@ public class BuyState extends State {
     }
 
     @Override
-    public void initState() {
-
-    }
+    public void initState() { }
 
     public static State parse(String[] args, ParsingContext ctx) throws Exception {
         return new BuyState();

@@ -35,9 +35,7 @@ public class EasyVillagerTrade implements ClientModInitializer {
             tradeWorkflow.tickDebug();
         });
 
-        ClientLifecycleEvents.CLIENT_STARTED.register(client -> {
-            tradeWorkflow.getHandler(ScriptManager.class).copyDefaultToCache();
-        });
+        ClientLifecycleEvents.CLIENT_STARTED.register(tradeWorkflow.getHandler(ScriptManager.class));
         ClientCommandRegistrationCallback.EVENT.register(new EVTCommand(tradeWorkflow));
         ClientCommandRegistrationCallback.EVENT.register(new AutomationTestCommand());
         UseBlockCallback.EVENT.register(tradeWorkflow.getHandler(SelectionInterface.class));
