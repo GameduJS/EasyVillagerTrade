@@ -20,8 +20,6 @@ import java.util.*;
  *  <p>Hier wenden wir uns an die erste "Methode".
  *  Das Skript kann drei Zustände aufweisen: 'Init', 'Repeat' und 'Found' </p>
  *
- *  TODO: Implementierung des Wechsels zwischen den Zuständen.
- *
  */
 public class Script {
 

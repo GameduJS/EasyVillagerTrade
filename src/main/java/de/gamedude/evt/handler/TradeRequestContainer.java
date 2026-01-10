@@ -2,16 +2,9 @@ package de.gamedude.evt.handler;
 
 import de.gamedude.evt.utils.TradeRequest;
 import net.minecraft.enchantment.Enchantment;
-import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.item.Items;
-import net.minecraft.util.Pair;
-import net.minecraft.village.TradeOffer;
-import net.minecraft.village.TradeOfferList;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 
 public class TradeRequestContainer implements Handler {
 

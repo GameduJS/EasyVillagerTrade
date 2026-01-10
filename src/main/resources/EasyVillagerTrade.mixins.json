@@ -4,11 +4,9 @@
   "package": "de.gamedude.evt.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
-    "ClientPlayerMixin",
     "NetworkPacketMixin"
   ],
   "client": [
-    "ClientPlayerMixin",
     "NetworkPacketMixin"
   ],
   "injectors": {

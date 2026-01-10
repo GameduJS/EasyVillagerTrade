@@ -157,14 +157,4 @@ public class ScriptManager implements Handler, ClientLifecycleEvents.ClientStart
     public List<String> getAvailableScripts() {
         return availableScripts;
     }
-
-    /**
-     * WHAT WE WANT:
-     * - Copy default script to cache if this has not happened
-     * - ON STARTUP:
-     *      * Load script names out of config/evt/script folder
-     * - On COMMAND:
-     *      * -> Parse script, only one should be loaded at the time
-     *      * -> Execute script on another command
-     */
 }
