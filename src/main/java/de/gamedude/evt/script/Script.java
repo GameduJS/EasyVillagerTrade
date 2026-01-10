@@ -65,15 +65,15 @@ public class Script {
             return;
         }
 
-        if ( tradeWithVillagerHandler.shouldSwitchState() && ScriptPhase.FOUND != phase ) {
+        // Subscripts should not be interrupted
+        if ( iterator.hasNext() )
+            return;
+
+        if ( tradeWithVillagerHandler.shouldSwitchState() ) {
             this.phase = ScriptPhase.FOUND;
             this.iterator = getScript().iterator();
             return;
         }
-
-        // Subscripts should not be interrupted
-        if ( iterator.hasNext() )
-            return;
 
         if ( this.phase == ScriptPhase.INIT )
             this.phase = ScriptPhase.REPEAT;
