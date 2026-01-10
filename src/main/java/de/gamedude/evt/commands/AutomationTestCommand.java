@@ -1,6 +1,7 @@
 package de.gamedude.evt.commands;
 
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
 import de.gamedude.evt.automation.State;
 import de.gamedude.evt.automation.states.*;
 import de.gamedude.evt.handler.TradeRequestContainer;
@@ -28,13 +29,25 @@ public class AutomationTestCommand implements ClientCommandRegistrationCallback 
         dispatcher.register(literal("automation")
 
                 .then(literal("walk")
-                        .executes(context -> {
-                            TradeWorkflow.testState = new MoveState(3, -1);
-                            TradeWorkflow.testState.initState();
-                            ClientPlayerEntity player = context.getSource().getPlayer();
-                            player.sendMessage(Text.of("Set MoveState 3, -1"));
-                            return 0;
-                        }))
+                        .then(argument("dx", IntegerArgumentType.integer())
+                                .then(argument("dz", IntegerArgumentType.integer())
+                                        .executes(context -> {
+                                            // Argumente aus dem Kontext auslesen
+                                            int dx = IntegerArgumentType.getInteger(context, "dx");
+                                            int dz = IntegerArgumentType.getInteger(context, "dz");
+
+                                            // Logik ausführen
+                                            TradeWorkflow.testState = new MoveState(dx, dz);
+                                            TradeWorkflow.testState.initState();
+
+                                            // Feedback an den Spieler
+                                            context.getSource().sendFeedback(
+                                                    Text.literal(String.format("MoveState gesetzt auf: DX=%d, DZ=%d", dx, dz))
+                                            );
+
+                                            return 1; // 1 bedeutet Erfolg in Brigadier
+                                        }
+                ))))
                 .then(literal("look").executes(context -> {
                     TradeWorkflow.testState = new LookState(3d, -1d);
                     TradeWorkflow.testState.initState();
@@ -59,7 +72,7 @@ public class AutomationTestCommand implements ClientCommandRegistrationCallback 
                 .then(literal("selintchebuy").executes(context -> {
                     TradeWorkflow.INSTANCE.getHandler(TradeRequestContainer.class)
                             .addRequest(new TradeRequest(Enchantments.MENDING, 1, 30));
-                    SelectState  selectState = new SelectState();
+                    SelectState selectState = new SelectState();
                     InteractState interactState = new InteractState();
                     CheckState checkState = new CheckState();
                     BuyState buyState = new BuyState();
@@ -104,7 +117,7 @@ public class AutomationTestCommand implements ClientCommandRegistrationCallback 
                 }))
                 .then(literal("executeDefaultScript").executes(context -> {
                     Script script = tradeWorkflow.getHandler(ScriptManager.class)
-                                    .loadScript("defaultscript");
+                            .loadScript("defaultscript");
                     tradeWorkflow.setActiveScript(script);
                     tradeWorkflow.setEnabled(true);
                     return 0;
