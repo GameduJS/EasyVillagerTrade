@@ -4,8 +4,6 @@ import de.gamedude.evt.handler.TradeWorkflow;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.function.Supplier;
 
 /**
@@ -17,11 +15,8 @@ public abstract class State {
     private final TradeWorkflow tradeWorkflow;
     protected final MinecraftClient client = MinecraftClient.getInstance();
 
-    protected final List<String> aliases;
-
     public State(TradeWorkflow tradeWorkflow) {
         this.tradeWorkflow = tradeWorkflow;
-        this.aliases = new ArrayList<>();
     }
 
     /**

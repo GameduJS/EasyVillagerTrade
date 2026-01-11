@@ -58,4 +58,38 @@ public class MoveState extends State {
         }
     }
 
+    /*
+     *  public void travel(Vec3d movementInput) {
+*             // NORMALE BEWEGUNG (LAND)
+*                 BlockPos groundPos = this.getVelocityAffectingPos();
+*                 float slipperiness = this.getWorld().getBlockState(groundPos).getBlock().getSlipperiness();
+*
+*                 // Reibung auf dem Boden (Slipperiness) vs. Luftwiderstand (0.91)
+*                 friction = this.isOnGround() ? slipperiness * 0.91F : 0.91F;
+*
+*                 Vec3d appliedInput = this.applyMovementInput(movementInput, slipperiness);
+*                 double velocityY = appliedInput.y;
+*
+*                 // Levitation-Effekt
+*                 if (this.hasStatusEffect(StatusEffects.LEVITATION)) {
+*                     velocityY += (0.05 * (double)(this.getStatusEffect(StatusEffects.LEVITATION).getAmplifier() + 1) - appliedInput.y) * 0.2;
+*                 }
+*                 // Fallschutz bei nicht geladenen Chunks
+*                 else if (this.getWorld().isClient && !this.getWorld().isChunkLoaded(groundPos)) {
+*                     velocityY = (this.getY() > (double)this.getWorld().getBottomY()) ? -0.1 : 0.0;
+*                 }
+*                 // Schwerkraft anwenden
+*                 else if (!this.hasNoGravity()) {
+*                     velocityY -= gravity;
+*                 }
+*
+*                 // Finale Geschwindigkeitsberechnung (Horizontaler Drag + Vertikaler Drag 0.98)
+*                 if (this.hasNoDrag()) {
+*                     this.setVelocity(appliedInput.x, velocityY, appliedInput.z);
+*                 } else {
+*                     this.setVelocity(appliedInput.x * (double)friction, velocityY * 0.9800000190734863, appliedInput.z * (double)friction);
+*                 }
+*         }
+     */
+
 }
