@@ -14,7 +14,6 @@ import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.c2s.play.CloseHandledScreenC2SPacket;
 import net.minecraft.network.packet.s2c.play.OpenScreenS2CPacket;
 import net.minecraft.network.packet.s2c.play.SetTradeOffersS2CPacket;
-import net.minecraft.screen.MerchantScreenHandler;
 import net.minecraft.screen.ScreenHandlerType;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -50,8 +49,7 @@ public abstract class NetworkPacketMixin {
                 return;
             if ( tradeWorkFlowHandler.getScriptPhase() == Script.ScriptPhase.FOUND )
                 return;
-            MinecraftClient.getInstance().execute( () -> MinecraftClient.getInstance().getNetworkHandler()
-                    .sendPacket(new CloseHandledScreenC2SPacket(openScreenS2CPacket.getSyncId() + 1)));
+            MinecraftClient.getInstance().execute( () -> MinecraftClient.getInstance().getNetworkHandler().sendPacket(new CloseHandledScreenC2SPacket(openScreenS2CPacket.getSyncId() + 1)));
             ci.cancel();
         }
     }

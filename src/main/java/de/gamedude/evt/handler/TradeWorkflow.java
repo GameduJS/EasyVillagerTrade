@@ -47,6 +47,14 @@ public class TradeWorkflow implements Handler {
         return enabled;
     }
 
+    public Class<? extends State> getActiveStateClass() {
+        if ( this.activeScript == null )
+            return State.class;
+        if ( this.activeScript.currentState == null )
+            return State.class;
+        return this.activeScript.currentState.getClass();
+    }
+
     public Script.ScriptPhase getScriptPhase() {
         if ( activeScript == null )
             return Script.ScriptPhase.NONE;
