@@ -3,6 +3,8 @@ package de.gamedude.evt.handler;
 import de.gamedude.evt.automation.State;
 import de.gamedude.evt.script.Script;
 import de.gamedude.evt.script.ScriptManager;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.screen.ChatScreen;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -23,36 +25,31 @@ public class TradeWorkflow implements Handler {
         this.handlerMap.put(TradeWithVillagerHandler.class, new TradeWithVillagerHandler());
     }
 
-
     @Override
     @SuppressWarnings("unchecked")
     public <T extends Handler> T getHandler(Class<T> clazz) {
         return (T) handlerMap.get(clazz);
     }
 
-
     @Nullable
     private Script activeScript;
     private boolean enabled;
+    public boolean hadChatOpen;
 
     public void setActiveScript(@Nullable Script activeScript) {
         this.activeScript = activeScript;
     }
 
+    // TODO change "hadChatOpen" currently always true because ChatScreen is open when cmd has been typed
     public void setEnabled(boolean enabled) {
+        if (enabled) {
+            this.hadChatOpen = MinecraftClient.getInstance().currentScreen instanceof ChatScreen;
+        }
         this.enabled = enabled;
     }
 
     public boolean isEnabled() {
         return enabled;
-    }
-
-    public Class<? extends State> getActiveStateClass() {
-        if ( this.activeScript == null )
-            return State.class;
-        if ( this.activeScript.currentState == null )
-            return State.class;
-        return this.activeScript.currentState.getClass();
     }
 
     public Script.ScriptPhase getScriptPhase() {

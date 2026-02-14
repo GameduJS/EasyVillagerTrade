@@ -4,8 +4,6 @@ import de.gamedude.evt.automation.State;
 import de.gamedude.evt.handler.TradeWithVillagerHandler;
 import de.gamedude.evt.handler.TradeWorkflow;
 import de.gamedude.evt.script.ParsingContext;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.ChatScreen;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.text.Text;
 
@@ -24,9 +22,7 @@ public class BuyState extends State {
 
     @Override
     public boolean isDone() {
-        MinecraftClient.getInstance().execute(() -> {
-            MinecraftClient.getInstance().setScreen(new ChatScreen(""));
-        });
+        this.tryOpenChat();
         return true;
     }
 

@@ -47,7 +47,6 @@ public class TradeWithVillagerHandler implements Handler {
 
         MinecraftClient.getInstance().interactionManager.clickSlot(screenHandler.syncId, slotToClick, 0, SlotActionType.PICKUP, player());
 
-        player().closeHandledScreen();
         this.slotIndex = -1;
         return 0;
     }

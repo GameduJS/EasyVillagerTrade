@@ -2,7 +2,9 @@ package de.gamedude.evt.automation;
 
 import de.gamedude.evt.handler.TradeWorkflow;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.screen.ChatScreen;
 import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.screen.PlayerScreenHandler;
 
 import java.util.function.Supplier;
 
@@ -45,4 +47,22 @@ public abstract class State {
      * Supplier<ClientPlayerEntity>  - Returns player instance as supplier as soon as its loaded
      */
     protected Supplier<ClientPlayerEntity> playerSupplier = () -> client.player;
+
+    /**
+     * Tries to open the chat so the program will run it the background without setting F3+P
+     * "hadChatOpen" can be changed anywhere.
+     * automatically closes any other ScreenHandler
+     * This function should be called in the "isDone" method of a state that needed another screen
+     */
+    protected void tryOpenChat() {
+        if (!(playerSupplier.get().currentScreenHandler instanceof PlayerScreenHandler)) {
+            playerSupplier.get().closeHandledScreen();
+        }
+        if ( !tradeWorkflow.hadChatOpen )
+            return;
+        if (client.currentScreen != null)
+            return;
+        client.execute(() ->
+                client.setScreen(new ChatScreen("")));
+    }
 }
