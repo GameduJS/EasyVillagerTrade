@@ -42,10 +42,7 @@ public class CheckState extends State {
 
         status = this.checkForOffer(villagerEntity);
         player.sendMessage(Text.of("TODO: Executed CheckState with status - " + status));
-        if ( status == 1 ) {
-            return 1;
-        }
-        return 0;
+        return status;
     }
 
     private int checkForOffer(VillagerEntity villagerEntity) {
@@ -65,6 +62,7 @@ public class CheckState extends State {
 
         if(tradeRequestContainer.matchesAny(tradeRequest)) {
             int slotId = tradeOfferList.indexOf(tradeOffer);
+            this.tradeWithVillagerHandler.setRequestedTrade(tradeRequest);
             this.tradeWithVillagerHandler.setTradeIndex(slotId);
             System.out.println("TODO: Found suitable TRADE REQUEST slot id: " + slotId);
             return 0;
@@ -76,9 +74,6 @@ public class CheckState extends State {
     @Override
     public boolean isDone() {
         if ( status == 1 ) {
-            //something failed or no trade has been found
-            // "problem" now window pops up for a tick (in found script at the second check)
-            // this could replace the mixin part?
             this.tryOpenChat();
         }
         return true;

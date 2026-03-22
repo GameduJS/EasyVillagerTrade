@@ -55,6 +55,8 @@ public abstract class State {
      * This function should be called in the "isDone" method of a state that needed another screen
      */
     protected void tryOpenChat() {
+        if ( MinecraftClient.getInstance().isWindowFocused() )
+            return;
         if (!(playerSupplier.get().currentScreenHandler instanceof PlayerScreenHandler)) {
             playerSupplier.get().closeHandledScreen();
         }

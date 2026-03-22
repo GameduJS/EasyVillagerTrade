@@ -1,5 +1,7 @@
 package de.gamedude.evt.handler;
 
+import de.gamedude.evt.automation.Feedback;
+import de.gamedude.evt.utils.TradeRequest;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.packet.c2s.play.SelectMerchantTradeC2SPacket;
@@ -14,6 +16,7 @@ import java.util.stream.IntStream;
 public class TradeWithVillagerHandler implements Handler {
 
     private int slotIndex = -1;
+    private TradeRequest requestedTrade;
 
     public boolean shouldSwitchState() {
         return slotIndex != -1;
@@ -23,10 +26,18 @@ public class TradeWithVillagerHandler implements Handler {
         this.slotIndex = slotIndex;
     }
 
-    public int buy() {
+    public void setRequestedTrade(TradeRequest requestedTrade) {
+        this.requestedTrade = requestedTrade;
+    }
+
+    public TradeRequest getRequestedTrade() {
+        return requestedTrade;
+    }
+
+    public Feedback buy() {
         ScreenHandler screenHandler = player().currentScreenHandler;
-        if(!(screenHandler instanceof MerchantScreenHandler merchantScreen))
-            return 1;
+        if(!(screenHandler instanceof MerchantScreenHandler merchantScreen)) // normally this should not pop up
+            return Feedback.FAILURE.with("[No merchantscreenhandler]");
         merchantScreen.setRecipeIndex(slotIndex);
         merchantScreen.switchTo(slotIndex);
         player().networkHandler.sendPacket(new SelectMerchantTradeC2SPacket(slotIndex));
@@ -43,12 +54,12 @@ public class TradeWithVillagerHandler implements Handler {
             slotToClick = -999;
 
         if(slotToClick == -999)
-            return 2;
+            return Feedback.FAILURE.with("{DEV Note:} Inventory is full");
 
         MinecraftClient.getInstance().interactionManager.clickSlot(screenHandler.syncId, slotToClick, 0, SlotActionType.PICKUP, player());
 
         this.slotIndex = -1;
-        return 0;
+        return Feedback.SUCCESS; //TODO can add message here instead of BuyState class
     }
 
 
