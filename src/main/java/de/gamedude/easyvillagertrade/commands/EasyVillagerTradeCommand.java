@@ -7,22 +7,23 @@ import de.gamedude.easyvillagertrade.core.EasyVillagerTradeBase;
 import de.gamedude.easyvillagertrade.utils.TradeRequest;
 import de.gamedude.easyvillagertrade.utils.TradingState;
 import joptsimple.internal.Strings;
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.command.CommandRegistryAccess;
-import net.minecraft.command.argument.RegistryEntryReferenceArgumentType;
-import net.minecraft.enchantment.Enchantment;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.text.Text;
+import net.minecraft.commands.CommandBuildContext;
+import net.minecraft.commands.arguments.ResourceArgument;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.enchantment.Enchantment;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Arrays;
 
-import static net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.*;
+import static net.fabricmc.fabric.api.client.command.v2.ClientCommands.argument;
+import static net.fabricmc.fabric.api.client.command.v2.ClientCommands.literal;
 
-public class EasyVillagerTradeCommand implements ClientCommandRegistrationCallback {
+
+public class EasyVillagerTradeCommand {
 
     private final EasyVillagerTradeBase modBase;
 
@@ -30,81 +31,75 @@ public class EasyVillagerTradeCommand implements ClientCommandRegistrationCallba
         this.modBase = modBase;
     }
 
-    @Override
-    public void register(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandRegistryAccess registryAccess) {
+    public  void register(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandBuildContext commandCtx) {
         String command_base = "evt";
         dispatcher.register(literal(command_base)
                 .then(literal("select").then(literal("close").executes(this::executeSelectionClosest)).executes(this::executeSelection))
                 .then(literal("search")
-                        .then(literal("add").then(argument("maxPrice", IntegerArgumentType.integer(1, 64)).then(argument("enchantment", RegistryEntryReferenceArgumentType.registryEntry(registryAccess, RegistryKeys.ENCHANTMENT))
+
+                .then(literal("add").then(argument("maxPrice", IntegerArgumentType.integer(1, 64)).then(argument("enchantment", ResourceArgument.resource(commandCtx, Registries.ENCHANTMENT))
                                 .executes(context -> executeAddTradeRequest(context, IntegerArgumentType.getInteger(context, "maxPrice"), 1))
                                 .then(argument("level", IntegerArgumentType.integer(1, 5)).executes(context -> executeAddTradeRequest(context, IntegerArgumentType.getInteger(context, "maxPrice"), IntegerArgumentType.getInteger(context, "level")))))))
 
-                        .then(literal("remove").then(argument("enchantment", RegistryEntryReferenceArgumentType.registryEntry(registryAccess, RegistryKeys.ENCHANTMENT))
+                .then(literal("remove").then(argument("enchantment", ResourceArgument.resource(commandCtx, Registries.ENCHANTMENT))
                                 .executes(this::executeRemoveTradeRequest)))
 
-                        .then(literal("list").executes(this::executeListTradeRequest)))
+                .then(literal("list").executes(this::executeListTradeRequest)))
                 .then(literal("execute").executes(this::executeVillagerTrade))
                 .then(literal("stop").executes(ctx -> {
                     modBase.setState(TradingState.INACTIVE);
                     return 1;
                 }))
                 .executes(ctx -> {
-                    ctx.getSource().sendFeedback(Text.translatable("evt.command.basic_usage"));
+                    ctx.getSource().sendFeedback(Component.translatable("evt.command.basic_usage"));
                     return 1;
                 }));
     }
 
-    public int executeAddTradeRequest(CommandContext<FabricClientCommandSource> context, int maxPrice, int level) {
-        RegistryEntry.Reference<?> reference = context.getArgument("enchantment", RegistryEntry.Reference.class);
-        if(!reference.registryKey().isOf(RegistryKeys.ENCHANTMENT))
-            return 0;
-        Enchantment enchantment = (Enchantment) reference.value();
+    private int executeAddTradeRequest(CommandContext<FabricClientCommandSource> context, int maxPrice, int level) {
+        Holder.Reference<Enchantment> enchantmentReference = context.getArgument("enchantment", Holder.Reference.class);
 
-        TradeRequest tradeRequest = modBase.getTradeRequestInputHandler().parseCommandInput(enchantment, level, maxPrice);
+        TradeRequest tradeRequest = modBase.getTradeRequestInputHandler().parseCommandInput(enchantmentReference, level, maxPrice);
         modBase.getTradeRequestContainer().addTradeRequest(tradeRequest);
 
-        context.getSource().sendFeedback(Text.translatable("evt.command.add", "§e" + Enchantment.getName(tradeRequest.enchantment(), tradeRequest.level()).getString(), "§a" + tradeRequest.maxPrice()));
+        context.getSource().sendFeedback(Component.translatable("evt.command.add", "§e" + tradeRequest.getNameEnchantment().getString(), "§a" + tradeRequest.maxPrice()));
         return 1;
     }
 
     @SuppressWarnings("unchecked")
-    public int executeRemoveTradeRequest(CommandContext<FabricClientCommandSource> context) {
-        RegistryEntry.Reference<?> reference = context.getArgument("enchantment", RegistryEntry.Reference.class);
-        if(!(reference.value() instanceof Enchantment enchantment))
-            return 0;
-        RegistryEntry<Enchantment> enchantmentRegistryEntry = (RegistryEntry<Enchantment>) reference;
+    private int executeRemoveTradeRequest(CommandContext<FabricClientCommandSource> context) {
+        Holder.Reference<Enchantment> reference = context.getArgument("enchantment", Holder.Reference.class);
 
-        modBase.getTradeRequestContainer().removeTradeRequestByEnchantment(enchantmentRegistryEntry);
+        modBase.getTradeRequestContainer().removeTradeRequestByEnchantment(reference);
 
-        boolean multipleLevels = enchantment.getMaxLevel() == 1;
-        String[] parts = Enchantment.getName(enchantmentRegistryEntry, 1).getString().split(" ");
+        boolean multipleLevels = reference.value().getMaxLevel() == 1;
+        String[] parts = Enchantment.getFullname(reference, 1).getString().split(" ");
         String name = Strings.join((multipleLevels) ? parts : Arrays.copyOf(parts, parts.length - 1), " ");
 
-        context.getSource().sendFeedback(Text.translatable("evt.command.remove", "§e" + StringUtils.capitalize(name)));
+        context.getSource().sendFeedback(Component.translatable("evt.command.remove", "§e" + StringUtils.capitalize(name)));
         return 1;
     }
 
     public int executeListTradeRequest(CommandContext<FabricClientCommandSource> context) {
-        context.getSource().sendFeedback(Text.translatable("evt.command.list.head"));
+        context.getSource().sendFeedback(Component.translatable("evt.command.list.head"));
         modBase.getTradeRequestContainer().getTradeRequests().forEach(offer ->
-                context.getSource().sendFeedback(Text.translatable("evt.command.list.body", "§e" + Enchantment.getName(offer.enchantment(), offer.level()).getString(), "§a" + offer.maxPrice())));
+                context.getSource().sendFeedback(Component.translatable("evt.command.list.body", "§e" + offer.getNameEnchantment().getString(), "§a" + offer.maxPrice())));
         return 1;
     }
 
     public int executeSelection(CommandContext<FabricClientCommandSource> context) {
         this.modBase.setState(TradingState.MODE_SELECTION);
-        context.getSource().sendFeedback(Text.translatable("evt.command.selecting"));
+        context.getSource().sendFeedback(Component.translatable("evt.command.selecting"));
         return 1;
     }
 
     public int executeSelectionClosest(CommandContext<FabricClientCommandSource> context) {
-        ClientPlayerEntity player = context.getSource().getPlayer();
-        int x = this.modBase.getSelectionInterface().selectClosestToPlayer(player);
+        Player player = context.getSource().getPlayer();
+        int x = modBase.getSelectionInterface().selectClosestToPlayer(player);
         switch (x) {
-            case 1 -> player.sendMessage(Text.translatable("evt.logic.select.fail_lectern"), false);
-            case 2 -> player.sendMessage(Text.translatable("evt.logic.select.fail_villager"), false);
-            case 0 -> player.sendMessage(Text.translatable("evt.logic.select.success"), false);
+            case 1 -> player.sendOverlayMessage(Component.translatable("evt.logic.select.fail_lectern"));
+            case 2 -> player.sendOverlayMessage(Component.translatable("evt.logic.select.fail_villager"));
+            case 0 -> player.sendOverlayMessage(Component.translatable("evt.logic.select.success"));
         }
         return 1;
     }
@@ -113,12 +108,13 @@ public class EasyVillagerTradeCommand implements ClientCommandRegistrationCallba
         this.modBase.setState(TradingState.CHECK_OFFERS);
 
         if(modBase.getSelectionInterface().getVillager() == null || modBase.getSelectionInterface().getLecternPos() == null) {
-            context.getSource().sendFeedback(Text.translatable("evt.command.not_selected"));
+            context.getSource().sendFeedback(Component.translatable("evt.command.not_selected"));
             return 1;
         }
 
-        context.getSource().sendFeedback(Text.translatable("evt.command.execute"));
+        context.getSource().sendFeedback(Component.translatable("evt.command.execute"));
         modBase.handleInteractionWithVillager();
         return 1;
     }
+
 }

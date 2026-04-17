@@ -1,27 +1,26 @@
 package de.gamedude.easyvillagertrade.core;
 
 import de.gamedude.easyvillagertrade.utils.TradeRequest;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.enchantment.Enchantment;
-import net.minecraft.registry.*;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.data.registries.VanillaRegistries;
+import net.minecraft.world.item.enchantment.Enchantment;
 
 import java.util.function.Consumer;
 
 public class TradeRequestInputHandler {
 
     public int handleInputUI(String enchantmentInput, String levelInput, String priceInput, Consumer<TradeRequest> tradeRequestConsumer) {
-        RegistryEntry<Enchantment> enchantmentEntry = getEnchantment(enchantmentInput);
+        Holder<Enchantment> enchantmentEntry = getEnchantment(enchantmentInput);
         if(enchantmentEntry == null)
             return 1; // no valid enchantment
         if(notInt(priceInput))
             return 2; // no valid price
-        Enchantment enchantment = enchantmentEntry.value();
-        int price = MathHelper.clamp(Integer.parseInt(priceInput), 1, 64);
+        int price = Math.clamp(Integer.parseInt(priceInput), 1, 64);
 
         if(levelInput.equals("*")) { // add all possible levels
-            for(int levelIterator = 1; levelIterator <= enchantment.getMaxLevel(); levelIterator++) {
+            for(int levelIterator = 1; levelIterator <= enchantmentEntry.value().getMaxLevel(); levelIterator++) {
                 TradeRequest request = new TradeRequest(enchantmentEntry, levelIterator, price);
                 tradeRequestConsumer.accept(request);
             }
@@ -29,30 +28,32 @@ public class TradeRequestInputHandler {
         }
         if(notInt(levelInput))
             return 3; // no valid level
-        int level = MathHelper.clamp(Integer.parseInt(levelInput), 1, enchantment.getMaxLevel());
+        int level = Math.clamp(Integer.parseInt(levelInput), 1, enchantmentEntry.value().getMaxLevel());
 
         TradeRequest request = new TradeRequest(enchantmentEntry, level, price);
         tradeRequestConsumer.accept(request);
         return 0;
     }
 
-    public TradeRequest parseCommandInput(Enchantment enchantment, int inputLevel, int maxPrice) {
-        int level = mapLevel(enchantment, inputLevel);
+    public TradeRequest parseCommandInput(Holder<Enchantment> enchantment, int inputLevel, int maxPrice) {
+        int level = mapLevel(enchantment.value(), inputLevel);
         int price = mapPrice(maxPrice);
-        return new TradeRequest(getRegistry().getEntry(enchantment), level, price);
+        return new TradeRequest(enchantment, level, price);
     }
 
-    public RegistryEntry<Enchantment> getEnchantment(String enchantmentInput) {
-        Registry<Enchantment> enchantmentRegistry = getRegistry();
-        return enchantmentRegistry.stream().filter(enchantment -> enchantment.description().getString().equalsIgnoreCase(enchantmentInput.trim())).findFirst().map(enchantmentRegistry::getEntry).orElse(null);
+
+    public Holder<Enchantment> getEnchantment(String enchantmentInput) {
+        HolderLookup.RegistryLookup<Enchantment> registry = getRegistry();
+        return registry.listElements().filter(enchantmentReference -> enchantmentReference.value().description().getString()
+                .equalsIgnoreCase(enchantmentInput.trim())).findFirst().orElse(null);
     }
 
     private int mapPrice(int maxPriceInput) {
-        return MathHelper.clamp(maxPriceInput, 1, 64);
+        return Math.clamp(maxPriceInput, 1, 64);
     }
 
     private int mapLevel(Enchantment enchantment, int inputLevel) {
-        return MathHelper.clamp(inputLevel, 1, enchantment.getMaxLevel());
+        return Math.clamp(inputLevel, 1, enchantment.getMaxLevel());
     }
 
     private boolean notInt(String tryParse) {
@@ -64,8 +65,8 @@ public class TradeRequestInputHandler {
         return false;
     }
 
-    private Registry<Enchantment> getRegistry() {
-        return MinecraftClient.getInstance().world.getRegistryManager().getOrThrow(RegistryKeys.ENCHANTMENT);
+    private HolderLookup.RegistryLookup<Enchantment> getRegistry() {
+        return VanillaRegistries.createLookup().lookupOrThrow(Registries.ENCHANTMENT);
     }
 
 }

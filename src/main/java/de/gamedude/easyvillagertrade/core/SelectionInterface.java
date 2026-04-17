@@ -1,13 +1,14 @@
 package de.gamedude.easyvillagertrade.core;
 
 import de.gamedude.easyvillagertrade.utils.TradingState;
-import net.minecraft.block.LecternBlock;
-import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.entity.passive.VillagerEntity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
-import net.minecraft.village.VillagerProfession;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.npc.villager.Villager;
+import net.minecraft.world.entity.npc.villager.VillagerProfession;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.LecternBlock;
+import net.minecraft.world.level.entity.EntityTypeTest;
+import net.minecraft.world.phys.AABB;
 
 import java.util.Optional;
 
@@ -19,24 +20,25 @@ public class SelectionInterface {
         this.modBase = modBase;
     }
 
-    private VillagerEntity villager;
+    private Villager villager;
     private BlockPos lecternPos;
 
-    public VillagerEntity getVillager() { return villager; }
-    public void setVillager(VillagerEntity villager) { this.villager = villager; }
+    public Villager getVillager() { return villager; }
+    public void setVillager(Villager villager) { this.villager = villager; }
 
     public BlockPos getLecternPos() { return lecternPos; }
     public void setLecternPos(BlockPos blockPos) { this.lecternPos = blockPos; }
 
-    public int selectClosestToPlayer(ClientPlayerEntity player) {
-        Optional<BlockPos> closestBlockOptional = BlockPos.findClosest(player.getBlockPos(), 3, 0, blockPos -> player.getEntityWorld().getBlockState(blockPos).getBlock() instanceof LecternBlock);
+    public int selectClosestToPlayer(Player player) {
+
+        Optional<BlockPos> closestBlockOptional = BlockPos.findClosestMatch(player.blockPosition(), 3, 0, blockPos -> player.level().getBlockState(blockPos).getBlock() instanceof LecternBlock);
         if(closestBlockOptional.isEmpty()) {
             modBase.setState(TradingState.INACTIVE);
             return 1;
         }
         this.lecternPos = closestBlockOptional.get();
 
-        this.villager = getClosestEntity(player.getEntityWorld(), this.lecternPos);
+        this.villager = getClosestEntity(player.level(), this.lecternPos);
         if(this.villager == null) {
             modBase.setState(TradingState.INACTIVE);
             return 2;
@@ -45,12 +47,12 @@ public class SelectionInterface {
         return 0;
     }
 
-    private VillagerEntity getClosestEntity(World world, BlockPos blockPos) {
-        VillagerEntity entity = null;
+    private Villager getClosestEntity(Level world, BlockPos blockPos) {
+        Villager entity = null;
         double dist = Double.MAX_VALUE;
-
-        for(VillagerEntity villagerEntity : world.getEntitiesByClass(VillagerEntity.class, new Box(blockPos).expand(3), (villager) -> villager.getVillagerData().profession().getKey().orElse(VillagerProfession.NONE).equals(VillagerProfession.LIBRARIAN))) {
-            double distanceSquared = villagerEntity.squaredDistanceTo(blockPos.getX(), blockPos.getY(), blockPos.getZ());
+        ;
+        for(Villager villagerEntity : world.getEntities(EntityTypeTest.forClass(Villager.class), AABB.ofSize(blockPos.getCenter(), 3, 3, 3), (villager) -> villager.getVillagerData().profession().is(VillagerProfession.LIBRARIAN))) {
+            double distanceSquared = villagerEntity.distanceToSqr(blockPos.getCenter());
             if(distanceSquared < dist) {
                 dist = distanceSquared;
                 entity = villagerEntity;

@@ -3,27 +3,12 @@ package de.gamedude.easyvillagertrade.core;
 import de.gamedude.easyvillagertrade.EasyVillagerTrade;
 import de.gamedude.easyvillagertrade.utils.TradeRequest;
 import de.gamedude.easyvillagertrade.utils.TradingState;
-import net.minecraft.block.Blocks;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.client.sound.PositionedSoundInstance;
-import net.minecraft.component.type.ItemEnchantmentsComponent;
-import net.minecraft.enchantment.Enchantment;
-import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.network.packet.c2s.play.HandSwingC2SPacket;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.Text;
-import net.minecraft.util.Hand;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.village.TradeOffer;
-import net.minecraft.village.TradeOfferList;
-import net.minecraft.village.VillagerProfession;
-import net.minecraft.world.World;
+import net.minecraft.client.Minecraft;
+import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.trading.MerchantOffer;
+import net.minecraft.world.item.trading.MerchantOffers;
 
 public class EasyVillagerTradeBase {
     private TradingState state;
@@ -33,10 +18,10 @@ public class EasyVillagerTradeBase {
     private final TradeRequestInputHandler tradeRequestInputHandler;
     private final TradeInterface tradeInterface;
 
-    private final MinecraftClient minecraftClient;
+    private final Minecraft minecraftClient;
 
     public EasyVillagerTradeBase() {
-        this.minecraftClient = MinecraftClient.getInstance();
+        this.minecraftClient = Minecraft.getInstance();
         this.tradeRequestContainer = new TradeRequestContainer();
         this.selectionInterface = new SelectionInterface(this);
         this.tradeRequestInputHandler = new TradeRequestInputHandler();
@@ -133,10 +118,10 @@ public class EasyVillagerTradeBase {
         }
     }
 
-    public void checkVillagerOffers(TradeOfferList tradeOffers) {
-        TradeOffer bookOffer = null;
-        for (TradeOffer offers : tradeOffers)
-            if (offers.getSellItem().getItem() == Items.ENCHANTED_BOOK) {
+    public void checkVillagerOffers(MerchantOffers tradeOffers) {
+        MerchantOffer bookOffer = null;
+        for (MerchantOffer offers : tradeOffers)
+            if (offers.getResult().getItem() == net.minecraft.world.item.Items.ENCHANTED_BOOK) {
                 bookOffer = offers;
                 break;
             }
@@ -147,11 +132,10 @@ public class EasyVillagerTradeBase {
         }
 
 
-        ItemEnchantmentsComponent enchantments = EnchantmentHelper.getEnchantments(bookOffer.getSellItem());
-        RegistryEntry<Enchantment> bookEnchantment = enchantments.getEnchantments().iterator().next();
-        int level = enchantments.getLevel(bookEnchantment);
+        Holder<Enchantment>  enchantmentHolder = bookOffer.getResult().get(DataComponents.ENCHANTMENTS).keySet().iterator().next();
+        int level = bookOffer.getResult().get(DataComponents.ENCHANTMENTS).getLevel(enchantmentHolder)
 
-        TradeRequest offer = new TradeRequest(bookEnchantment, level, bookOffer.getDisplayedFirstBuyItem().getCount());
+        TradeRequest offer = new TradeRequest(enchantmentHolder.value(), level, bookOffer.getCostA().getCount());
 
         if(EasyVillagerTrade.CONFIG.getProperty("debugEnchantments").getAsBoolean()) {
             minecraftClient.player.sendMessage(Text.translatable("evt.logic.trade.debug", "§a" + offer.maxPrice(), "§e" + Enchantment.getName(bookEnchantment, level).getString()), false);

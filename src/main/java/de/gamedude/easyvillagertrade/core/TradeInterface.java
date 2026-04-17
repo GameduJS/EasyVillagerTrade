@@ -1,6 +1,7 @@
 package de.gamedude.easyvillagertrade.core;
 
 import de.gamedude.easyvillagertrade.utils.TradingState;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
@@ -13,12 +14,12 @@ import net.minecraft.util.collection.DefaultedList;
 public class TradeInterface {
 
     private final EasyVillagerTradeBase modBase;
-    private final MinecraftClient minecraftClient;
+    private final Minecraft minecraftClient;
     private int tradeSlotID;
 
     public TradeInterface(EasyVillagerTradeBase modBase) {
         this.modBase = modBase;
-        this.minecraftClient = MinecraftClient.getInstance();
+        this.minecraftClient = Minecraft.getInstance();
     }
 
     public void setTradeSlotID(int tradeSlotID) {
@@ -27,7 +28,7 @@ public class TradeInterface {
 
     public void selectTrade() {
         modBase.handleInteractionWithVillager();
-        minecraftClient.getNetworkHandler().sendPacket(new SelectMerchantTradeC2SPacket(tradeSlotID));
+        minecraftClient.getConnection().send(new SelectMerchantTradeC2SPacket(tradeSlotID));
 
         modBase.setState(TradingState.APPLY_TRADE);
     }

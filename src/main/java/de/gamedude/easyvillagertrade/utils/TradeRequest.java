@@ -1,22 +1,28 @@
 package de.gamedude.easyvillagertrade.utils;
 
-import net.minecraft.enchantment.Enchantment;
-import net.minecraft.registry.entry.RegistryEntry;
 
-public record TradeRequest(RegistryEntry<Enchantment> enchantment, int level, int maxPrice) {
+import net.minecraft.core.Holder;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.enchantment.Enchantment;
+
+public record TradeRequest(Holder<Enchantment> enchantmentHolder, int level, int maxPrice) {
 
     public boolean matches(TradeRequest request) {
-        return level == request.level && request.maxPrice >= maxPrice && equalEnchantment(enchantment, request.enchantment);
+        return level == request.level && request.maxPrice >= maxPrice && equalEnchantment(enchantmentHolder, request.enchantmentHolder);
     }
 
-    public static boolean equalEnchantment(RegistryEntry<Enchantment> ench1, RegistryEntry<Enchantment> ench2) {
-        return  ench1.getIdAsString().equals(ench2.getIdAsString());
+    public Component getNameEnchantment() {
+        return Enchantment.getFullname(enchantmentHolder, level);
+    }
+
+    public static boolean equalEnchantment(Holder<Enchantment> ench1, Holder<Enchantment> ench2) {
+        return  ench1.value().description().equals(ench2.value().description());
     }
 
     @Override
     public String toString() {
         return "TradeRequest{" +
-                "enchantment=" + enchantment +
+                "enchantment=" + enchantmentHolder +
                 ", level=" + level +
                 ", maxPrice=" + maxPrice +
                 '}';

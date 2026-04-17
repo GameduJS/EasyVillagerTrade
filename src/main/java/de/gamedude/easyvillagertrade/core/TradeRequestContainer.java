@@ -1,8 +1,8 @@
 package de.gamedude.easyvillagertrade.core;
 
 import de.gamedude.easyvillagertrade.utils.TradeRequest;
-import net.minecraft.enchantment.Enchantment;
-import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.core.Holder;
+import net.minecraft.world.item.enchantment.Enchantment;
 
 import java.util.*;
 
@@ -19,8 +19,8 @@ public class TradeRequestContainer {
             this.tradeRequestSet.add(tradeRequest);
     }
 
-    public void removeTradeRequestByEnchantment(RegistryEntry<Enchantment> enchantment) {
-        this.tradeRequestSet.removeIf(request -> request.enchantment().getIdAsString().equalsIgnoreCase(enchantment.getIdAsString()));
+    public void removeTradeRequestByEnchantment(Holder<Enchantment> enchantment) {
+        this.tradeRequestSet.removeIf(request -> request.enchantmentHolder().equals(enchantment));
     }
 
     public void removeTradeRequest(TradeRequest request) {
