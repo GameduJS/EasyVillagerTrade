@@ -4,11 +4,18 @@ import de.gamedude.easyvillagertrade.EasyVillagerTrade;
 import de.gamedude.easyvillagertrade.utils.TradeRequest;
 import de.gamedude.easyvillagertrade.utils.TradingState;
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.trading.MerchantOffer;
 import net.minecraft.world.item.trading.MerchantOffers;
+import net.minecraft.world.level.Level;
 
 public class EasyVillagerTradeBase {
     private TradingState state;
@@ -67,27 +74,27 @@ public class EasyVillagerTradeBase {
     }
 
     private void handlePlacement() {
-        ClientPlayerEntity player = minecraftClient.player;
+        Player player = minecraftClient.player;
         BlockPos lecternPos = selectionInterface.getLecternPos();
 
-        if (player.getOffHandStack().equals(ItemStack.EMPTY)) {
-            player.sendMessage(Text.translatable("evt.logic.lectern_non"), false);
+        if (player.getOffhandItem().equals(ItemStack.EMPTY)) {
+            player.sendOverlayMessage(Component.translatable("evt.logic.lectern_non"));
             setState(TradingState.INACTIVE);
             return;
         }
 
         // Place block
-        BlockHitResult hitResult = new BlockHitResult(lecternPos.toBottomCenterPos().add(0, 1,0), Direction.UP, lecternPos, false);
+        // BlockHitResult hitResult = new BlockHitResult(lecternPos.getBottomCenter().add(0, 1,0), Direction.UP, lecternPos, false);
 
-        minecraftClient.interactionManager.interactBlock(player, Hand.OFF_HAND, hitResult);
-        player.swingHand(Hand.OFF_HAND);
+        minecraftClient.player.interactOn(player, InteractionHand.OFF_HAND, lecternPos.getBottomCenter().add(0, 1, 0));
+        player.swing(InteractionHand.OFF_HAND);
 
         setState(TradingState.WAIT_PROFESSION);
     }
 
     private void handleBreak() {
-        World world = minecraftClient.world;
-        ClientPlayerEntity player = minecraftClient.player;
+        Level world = minecraftClient.level;
+        Player player = minecraftClient.player;
         BlockPos blockPos = getSelectionInterface().getLecternPos();
 
         if (world == null || player == null)
@@ -133,16 +140,16 @@ public class EasyVillagerTradeBase {
 
 
         Holder<Enchantment>  enchantmentHolder = bookOffer.getResult().get(DataComponents.ENCHANTMENTS).keySet().iterator().next();
-        int level = bookOffer.getResult().get(DataComponents.ENCHANTMENTS).getLevel(enchantmentHolder)
+        int level = bookOffer.getResult().get(DataComponents.ENCHANTMENTS).getLevel(enchantmentHolder);
 
-        TradeRequest offer = new TradeRequest(enchantmentHolder.value(), level, bookOffer.getCostA().getCount());
+        TradeRequest offer = new TradeRequest(enchantmentHolder, level, bookOffer.getCostA().getCount());
 
         if(EasyVillagerTrade.CONFIG.getProperty("debugEnchantments").getAsBoolean()) {
-            minecraftClient.player.sendMessage(Text.translatable("evt.logic.trade.debug", "§a" + offer.maxPrice(), "§e" + Enchantment.getName(bookEnchantment, level).getString()), false);
+            minecraftClient.player.sendOverlayMessage(Component.translatable("evt.logic.trade.debug", "§a" + offer.maxPrice(), "§e" + offer.getNameEnchantment().getString()));
         }
 
         if (tradeRequestContainer.matchesAny(offer)) {
-            minecraftClient.player.sendMessage(Text.translatable("evt.logic.trade_found", "§e" + Enchantment.getName(bookEnchantment, level).getString(), "§a" + offer.maxPrice()), false);
+            minecraftClient.player.sendOverlayMessage(Component.translatable("evt.logic.trade_found", "§e" + Enchantment.getName(bookEnchantment, level).getString(), "§a" + offer.maxPrice()));
             minecraftClient.getSoundManager().play(PositionedSoundInstance.master(SoundEvents.BLOCK_AMETHYST_CLUSTER_BREAK, 1f));
 
             tradeRequestContainer.removeTradeRequestByEnchantment(bookEnchantment);

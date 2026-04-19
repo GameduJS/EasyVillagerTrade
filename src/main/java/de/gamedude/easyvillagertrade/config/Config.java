@@ -5,7 +5,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.logging.LogUtils;
-import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.Minecraft;
 
 import java.io.File;
 import java.io.FileReader;
@@ -67,7 +67,7 @@ public class Config {
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     private File getOrCreateFile(String fileName) {
-        File file = new File(MinecraftClient.getInstance().runDirectory, "config/" + fileName + ".json");
+        File file = new File(Minecraft.getInstance().gameDirectory, "config/" + fileName + ".json");
         file.getParentFile().mkdirs();
         if(!file.exists()) {
             try {

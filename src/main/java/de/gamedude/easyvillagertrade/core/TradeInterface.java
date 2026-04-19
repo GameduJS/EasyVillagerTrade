@@ -2,14 +2,11 @@ package de.gamedude.easyvillagertrade.core;
 
 import de.gamedude.easyvillagertrade.utils.TradingState;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.network.packet.c2s.play.SelectMerchantTradeC2SPacket;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.screen.slot.SlotActionType;
-import net.minecraft.text.Text;
-import net.minecraft.util.collection.DefaultedList;
+import net.minecraft.core.NonNullList;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.ContainerInput;
+import net.minecraft.world.item.ItemStack;
 
 public class TradeInterface {
 
@@ -34,15 +31,12 @@ public class TradeInterface {
     }
 
     public void applyTrade() {
-        ScreenHandler currentScreenHandler = minecraftClient.player.currentScreenHandler;
-        minecraftClient.interactionManager.clickSlot(currentScreenHandler.syncId, 2, 0, SlotActionType.PICKUP, minecraftClient.player);
-
+        minecraftClient.player.containerMenu.clicked(2, 0, ContainerInput.PICKUP, minecraftClient.player);
         modBase.setState(TradingState.PICKUP_TRADE);
     }
 
     public void pickupBook() {
-        PlayerEntity player = minecraftClient.player;
-        ScreenHandler currentScreenHandler = player.currentScreenHandler;
+        Player player = minecraftClient.player;
         int freeSlot = getFreeSlot();
 
         if (0 <= freeSlot && freeSlot <= 8)
@@ -50,14 +44,14 @@ public class TradeInterface {
         else if (freeSlot != -999)
             freeSlot -= 6;
         else
-            player.sendMessage(Text.translatable("evt.logic.book_drop"), false);
+            player.sendOverlayMessage(Component.translatable("evt.logic.book_drop"));
 
-        minecraftClient.interactionManager.clickSlot(currentScreenHandler.syncId, freeSlot, 0, SlotActionType.PICKUP, minecraftClient.player);
+        minecraftClient.player.containerMenu.clicked(freeSlot, 0, ContainerInput.PICKUP, minecraftClient.player);
         modBase.setState(TradingState.INACTIVE);
     }
 
     private int getFreeSlot() {
-        DefaultedList<ItemStack> list = minecraftClient.player.getInventory().getMainStacks();
+        NonNullList<ItemStack> list = minecraftClient.player.getInventory().getNonEquipmentItems();
 
         long sumOfEmpty = list.stream().filter(ItemStack::isEmpty).count();
         if (sumOfEmpty <= 2)
