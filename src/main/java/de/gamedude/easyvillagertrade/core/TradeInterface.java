@@ -4,6 +4,7 @@ import de.gamedude.easyvillagertrade.utils.TradingState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.game.ServerboundSelectTradePacket;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.item.ItemStack;
@@ -25,8 +26,7 @@ public class TradeInterface {
 
     public void selectTrade() {
         modBase.handleInteractionWithVillager();
-        minecraftClient.getConnection().send(new SelectMerchantTradeC2SPacket(tradeSlotID));
-
+        minecraftClient.getConnection().send(new ServerboundSelectTradePacket(tradeSlotID));
         modBase.setState(TradingState.APPLY_TRADE);
     }
 

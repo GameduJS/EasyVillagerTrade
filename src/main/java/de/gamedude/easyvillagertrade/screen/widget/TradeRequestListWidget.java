@@ -3,22 +3,13 @@ package de.gamedude.easyvillagertrade.screen.widget;
 import de.gamedude.easyvillagertrade.EasyVillagerTrade;
 import de.gamedude.easyvillagertrade.core.EasyVillagerTradeBase;
 import de.gamedude.easyvillagertrade.utils.TradeRequest;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gui.*;
-import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
-import net.minecraft.enchantment.Enchantment;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.ColorHelper;
-import net.minecraft.util.math.MathHelper;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class TradeRequestListWidget extends AbstractParentElement implements Drawable, Selectable {
+/*public class TradeRequestListWidget extends AbstractParentElement implements Drawable, Selectable {
 
     private static final int ENTRY_HEIGHT = 32;
     private static int ENTRIES_PER_PAGE;
@@ -176,3 +167,5 @@ public class TradeRequestListWidget extends AbstractParentElement implements Dra
         }
     }
 }
+
+ */

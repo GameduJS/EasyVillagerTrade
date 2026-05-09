@@ -2,23 +2,16 @@ package de.gamedude.easyvillagertrade.screen;
 
 import de.gamedude.easyvillagertrade.EasyVillagerTrade;
 import de.gamedude.easyvillagertrade.core.EasyVillagerTradeBase;
-import de.gamedude.easyvillagertrade.screen.widget.EnchantmentInputWidget;
-import de.gamedude.easyvillagertrade.screen.widget.TradeRequestListWidget;
 import de.gamedude.easyvillagertrade.utils.TradeRequest;
-import net.minecraft.client.gui.Click;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.gui.widget.TextFieldWidget;
-import net.minecraft.client.input.CharInput;
-import net.minecraft.enchantment.Enchantment;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.text.Text;
-import net.minecraft.util.math.ColorHelper;
+import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.components.StringWidget;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.Component;
 
 import java.awt.*;
 import java.util.Arrays;
 import java.util.Iterator;
+
 
 public class TradeSelectScreen extends Screen {
 
@@ -31,11 +24,11 @@ public class TradeSelectScreen extends Screen {
     public final int widgetWidth;
 
     public TradeSelectScreen() {
-        super(Text.empty());
+        super(Component.empty());
 
-        this.enchantmentWidth = textRenderer.getWidth("Enchantment");
-        this.levelWidth = textRenderer.getWidth("Level");
-        this.priceWidth = textRenderer.getWidth("Price");
+        this.enchantmentWidth = getFont().width("Enchantment");
+        this.levelWidth = getFont().width("Level");
+        this.priceWidth = getFont().width("Price");
         this.widgetWidth = priceWidth + levelWidth + enchantmentWidth + 50;
     }
 
@@ -45,17 +38,16 @@ public class TradeSelectScreen extends Screen {
         int x = this.width - widgetWidth - px;
 
         EnchantmentInputWidget enchantmentInputWidget = new EnchantmentInputWidget(x + 10, px + 15, enchantmentWidth, 20);
-
-        TextFieldWidget levelTextFieldWidget = new TextFieldWidget(textRenderer, x + 20 + enchantmentWidth, px + 15, levelWidth, 20, Text.of("Level"));
-        TextFieldWidget priceTextFieldWidget = new TextFieldWidget(textRenderer, x + 30 + enchantmentWidth + levelWidth, px + 15, priceWidth, 20, Text.of("Price"));
+        EditBox levelTextFieldWidget = new EditBox(font, x + 20 + enchantmentWidth, px + 15, levelWidth, 20, Component.literal("Level") );
+        EditBox priceTextFieldWidget = new EditBox(font, x + 30 + enchantmentWidth + levelWidth, px + 15, priceWidth, 20, Component.literal("Price") );
 
         int listHeight = this.height - px - 50;
         TradeRequestListWidget tradeRequestListWidget = new TradeRequestListWidget(x + 10, px + 80, widgetWidth - 20, listHeight);
         modBase.getTradeRequestContainer().getTradeRequests().forEach(tradeRequestListWidget::addEntry);
 
-        this.addDrawableChild(enchantmentInputWidget);
-        this.addDrawableChild(levelTextFieldWidget);
-        this.addDrawableChild(priceTextFieldWidget);
+        this.addRenderableWidget(enchantmentInputWidget);
+        this.addRenderableWidget(levelTextFieldWidget);
+        this.addRenderableWidget(priceTextFieldWidget);
 
         ButtonWidget addButton = ButtonWidget.builder(Text.of("Add"), button -> {
 

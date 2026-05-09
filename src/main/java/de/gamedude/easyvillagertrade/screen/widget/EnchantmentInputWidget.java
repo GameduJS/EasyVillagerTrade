@@ -1,17 +1,14 @@
 package de.gamedude.easyvillagertrade.screen.widget;
 
 import joptsimple.internal.Strings;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.navigation.GuiNavigation;
-import net.minecraft.client.gui.navigation.GuiNavigationPath;
-import net.minecraft.client.gui.navigation.NavigationDirection;
-import net.minecraft.client.gui.widget.TextFieldWidget;
-import net.minecraft.client.input.KeyInput;
-import net.minecraft.enchantment.Enchantment;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.text.Text;
-import net.minecraft.util.math.ColorHelper;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.data.registries.VanillaRegistries;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.enchantment.Enchantment;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
@@ -19,21 +16,23 @@ import org.lwjgl.glfw.GLFW;
 import java.util.Arrays;
 import java.util.function.Consumer;
 
-public class EnchantmentInputWidget extends TextFieldWidget {
+public class EnchantmentInputWidget extends EditBox {
     private String suggestion;
 
     public EnchantmentInputWidget(int x, int y, int width, int height) {
-        super(MinecraftClient.getInstance().textRenderer, x, y, width, height, Text.empty());
-        this.setChangedListener(getChangeListener());
+        super(Minecraft.getInstance().font, x, y, width, height, Component.empty());
+        this.setResponder( getChangeListener() );
     }
 
     private Consumer<String> getChangeListener() {
         return text -> {
-            Registry<Enchantment> enchantmentRegistry = getRegistry();
-            if (enchantmentRegistry.stream().map(Enchantment::description).map(Text::getString).anyMatch(text.trim()::equalsIgnoreCase))
-                this.setEditableColor(ColorHelper.getArgb(255, 255, 255, 0));
+            HolderLookup.RegistryLookup<Enchantment> registryLookup = getRegistry();
+
+            boolean match = registryLookup.listElements().map(Holder.Reference::value).map(Enchantment::description).map(Component::getString).anyMatch(text.trim()::equalsIgnoreCase);
+            if ( match )
+                this.setTextColor(.getArgb(255, 255, 255, 0));
             else
-                this.setEditableColor(-2039584);
+                this.setTextColor(-2039584);
 
             suggestion = getPossibleEnchantmentNameOrElse(text).toLowerCase().replaceFirst(text.toLowerCase().replace("+", ""), "");
             setSuggestion(suggestion);
@@ -79,7 +78,7 @@ public class EnchantmentInputWidget extends TextFieldWidget {
         setText(StringUtils.capitalize(getText() + ((suggestion == null) ? "": suggestion)));
     }
 
-    private Registry<Enchantment> getRegistry() {
-        return MinecraftClient.getInstance().world.getRegistryManager().getOrThrow(RegistryKeys.ENCHANTMENT);
+    private HolderLookup.RegistryLookup<Enchantment> getRegistry() {
+        return VanillaRegistries.createLookup().lookupOrThrow(Registries.ENCHANTMENT);
     }
 }

@@ -4,7 +4,6 @@ import com.mojang.brigadier.CommandDispatcher;
 import de.gamedude.easyvillagertrade.commands.EasyVillagerTradeCommand;
 import de.gamedude.easyvillagertrade.config.Config;
 import de.gamedude.easyvillagertrade.core.EasyVillagerTradeBase;
-import de.gamedude.easyvillagertrade.screen.TradeSelectScreen;
 import de.gamedude.easyvillagertrade.utils.TradingState;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -72,7 +71,8 @@ public class EasyVillagerTrade implements ModInitializer {
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             while(keyBinding.isDown())
-                client.setScreen(new TradeSelectScreen());
+                return;
+                //client.setScreen(new TradeSelectScreen());
         });
     }
 

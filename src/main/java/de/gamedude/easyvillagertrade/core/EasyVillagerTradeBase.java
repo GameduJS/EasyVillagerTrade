@@ -4,11 +4,14 @@ import de.gamedude.easyvillagertrade.EasyVillagerTrade;
 import de.gamedude.easyvillagertrade.utils.TradeRequest;
 import de.gamedude.easyvillagertrade.utils.TradingState;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.game.ServerboundSwingPacket;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -16,6 +19,8 @@ import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.trading.MerchantOffer;
 import net.minecraft.world.item.trading.MerchantOffers;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.phys.EntityHitResult;
 
 public class EasyVillagerTradeBase {
     private TradingState state;
@@ -67,8 +72,8 @@ public class EasyVillagerTradeBase {
             case APPLY_TRADE -> tradeInterface.applyTrade();
             case PICKUP_TRADE -> tradeInterface.pickupBook();
             case WAIT_JOB_LOSS -> {
-                if (selectionInterface.getVillager().getVillagerData().profession().getKey().orElse(VillagerProfession.NITWIT).equals(VillagerProfession.NONE))
-                    setState(TradingState.PLACE_WORKSTATION);
+                //if (selectionInterface.getVillager().getVillagerData().profession().)
+                    //setState(TradingState.PLACE_WORKSTATION);
             }
         }
     }
@@ -101,25 +106,25 @@ public class EasyVillagerTradeBase {
             return;
 
         int preventionValue = EasyVillagerTrade.CONFIG.getProperty("preventAxeBreakingValue").getAsInt();
-        ItemStack tool = player.getMainHandStack();
+        ItemStack tool = player.getItemInHand(InteractionHand.MAIN_HAND);
         if(preventionValue != -1) {
-            if (tool.getMaxDamage() - tool.getDamage() <= preventionValue) {
-                player.sendMessage(Text.translatable("evt.logic.axe_durability"), false);
+            if (tool.getMaxDamage() - tool.getDamageValue() <= preventionValue) {
+                player.sendOverlayMessage(Component.translatable("evt.logic.axe_durability"));
                 setState(TradingState.INACTIVE);
                 return;
             }
         }
 
         if (blockPos == null) {
-            player.sendMessage(Text.translatable("evt.logic.pos_not_set"), false);
+            player.sendOverlayMessage(Component.translatable("evt.logic.pos_not_set"));
             setState(TradingState.INACTIVE);
             return;
         }
 
         if (world.getBlockState(getSelectionInterface().getLecternPos()).getBlock() == Blocks.LECTERN) {
-            minecraftClient.interactionManager.updateBlockBreakingProgress(getSelectionInterface().getLecternPos(), Direction.UP);
-            player.swingHand(Hand.MAIN_HAND, true);
-            player.networkHandler.sendPacket(new HandSwingC2SPacket(Hand.MAIN_HAND));
+            minecraftClient.gameMode.continueDestroyBlock(getSelectionInterface().getLecternPos(), Direction.UP);
+            player.swing(InteractionHand.MAIN_HAND, true);
+            minecraftClient.getConnection().send(new ServerboundSwingPacket(InteractionHand.MAIN_HAND));
         } else {
             state = TradingState.WAIT_JOB_LOSS;
         }
@@ -149,10 +154,10 @@ public class EasyVillagerTradeBase {
         }
 
         if (tradeRequestContainer.matchesAny(offer)) {
-            minecraftClient.player.sendOverlayMessage(Component.translatable("evt.logic.trade_found", "§e" + Enchantment.getName(bookEnchantment, level).getString(), "§a" + offer.maxPrice()));
-            minecraftClient.getSoundManager().play(PositionedSoundInstance.master(SoundEvents.BLOCK_AMETHYST_CLUSTER_BREAK, 1f));
+            minecraftClient.player.sendOverlayMessage(Component.translatable("evt.logic.trade_found", "§e" + offer.getNameEnchantment().getString(), "§a" + offer.maxPrice()));
+            minecraftClient.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.AMETHYST_CLUSTER_BREAK, 1f));
 
-            tradeRequestContainer.removeTradeRequestByEnchantment(bookEnchantment);
+            tradeRequestContainer.removeTradeRequestByEnchantment(offer.enchantmentHolder());
             tradeInterface.setTradeSlotID(tradeOffers.indexOf(bookOffer));
             setState(TradingState.SELECT_TRADE);
         } else {
@@ -161,7 +166,10 @@ public class EasyVillagerTradeBase {
     }
 
     public void handleInteractionWithVillager() {
-        minecraftClient.interactionManager.interactEntity(MinecraftClient.getInstance().player, selectionInterface.getVillager(), Hand.MAIN_HAND);
+        Minecraft.getInstance().gameMode.interact(minecraftClient.player,
+                getSelectionInterface().getVillager(),
+                new EntityHitResult(getSelectionInterface().getVillager()),
+                InteractionHand.MAIN_HAND);
     }
 
 }
