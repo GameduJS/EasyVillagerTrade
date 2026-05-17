@@ -4,6 +4,7 @@ import de.gamedude.easyvillagertrade.EasyVillagerTrade;
 import de.gamedude.easyvillagertrade.utils.TradeRequest;
 import de.gamedude.easyvillagertrade.utils.TradingState;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -13,13 +14,17 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ServerboundSwingPacket;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.npc.villager.VillagerProfession;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.trading.MerchantOffer;
 import net.minecraft.world.item.trading.MerchantOffers;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 
 public class EasyVillagerTradeBase {
@@ -72,26 +77,24 @@ public class EasyVillagerTradeBase {
             case APPLY_TRADE -> tradeInterface.applyTrade();
             case PICKUP_TRADE -> tradeInterface.pickupBook();
             case WAIT_JOB_LOSS -> {
-                //if (selectionInterface.getVillager().getVillagerData().profession().)
-                    //setState(TradingState.PLACE_WORKSTATION);
+                if (selectionInterface.getVillager().getVillagerData().profession().is(VillagerProfession.NONE))
+                    setState(TradingState.PLACE_WORKSTATION);
             }
         }
     }
 
     private void handlePlacement() {
-        Player player = minecraftClient.player;
+        LocalPlayer player = minecraftClient.player;
         BlockPos lecternPos = selectionInterface.getLecternPos();
 
         if (player.getOffhandItem().equals(ItemStack.EMPTY)) {
-            player.sendOverlayMessage(Component.translatable("evt.logic.lectern_non"));
+            player.sendSystemMessage(Component.translatable("evt.logic.lectern_non"));
             setState(TradingState.INACTIVE);
             return;
         }
 
-        // Place block
-        // BlockHitResult hitResult = new BlockHitResult(lecternPos.getBottomCenter().add(0, 1,0), Direction.UP, lecternPos, false);
-
-        minecraftClient.player.interactOn(player, InteractionHand.OFF_HAND, lecternPos.getBottomCenter().add(0, 1, 0));
+        BlockHitResult hitResult = new BlockHitResult(lecternPos.getBottomCenter().add(0, 0,0), Direction.UP, lecternPos, false);
+        minecraftClient.gameMode.useItemOn(player, InteractionHand.OFF_HAND, hitResult);
         player.swing(InteractionHand.OFF_HAND);
 
         setState(TradingState.WAIT_PROFESSION);
@@ -109,14 +112,14 @@ public class EasyVillagerTradeBase {
         ItemStack tool = player.getItemInHand(InteractionHand.MAIN_HAND);
         if(preventionValue != -1) {
             if (tool.getMaxDamage() - tool.getDamageValue() <= preventionValue) {
-                player.sendOverlayMessage(Component.translatable("evt.logic.axe_durability"));
+                player.sendSystemMessage(Component.translatable("evt.logic.axe_durability"));
                 setState(TradingState.INACTIVE);
                 return;
             }
         }
 
         if (blockPos == null) {
-            player.sendOverlayMessage(Component.translatable("evt.logic.pos_not_set"));
+            player.sendSystemMessage(Component.translatable("evt.logic.pos_not_set"));
             setState(TradingState.INACTIVE);
             return;
         }
@@ -133,7 +136,7 @@ public class EasyVillagerTradeBase {
     public void checkVillagerOffers(MerchantOffers tradeOffers) {
         MerchantOffer bookOffer = null;
         for (MerchantOffer offers : tradeOffers)
-            if (offers.getResult().getItem() == net.minecraft.world.item.Items.ENCHANTED_BOOK) {
+            if (offers.getResult().getItem() == Items.ENCHANTED_BOOK) {
                 bookOffer = offers;
                 break;
             }
@@ -143,18 +146,17 @@ public class EasyVillagerTradeBase {
             return;
         }
 
-
-        Holder<Enchantment>  enchantmentHolder = bookOffer.getResult().get(DataComponents.ENCHANTMENTS).keySet().iterator().next();
-        int level = bookOffer.getResult().get(DataComponents.ENCHANTMENTS).getLevel(enchantmentHolder);
+        Holder<Enchantment>  enchantmentHolder = bookOffer.getResult().get(DataComponents.STORED_ENCHANTMENTS).keySet().iterator().next();
+        int level = bookOffer.getResult().get(DataComponents.STORED_ENCHANTMENTS).getLevel(enchantmentHolder);
 
         TradeRequest offer = new TradeRequest(enchantmentHolder, level, bookOffer.getCostA().getCount());
 
         if(EasyVillagerTrade.CONFIG.getProperty("debugEnchantments").getAsBoolean()) {
-            minecraftClient.player.sendOverlayMessage(Component.translatable("evt.logic.trade.debug", "§a" + offer.maxPrice(), "§e" + offer.getNameEnchantment().getString()));
+            minecraftClient.player.sendSystemMessage(Component.translatable("evt.logic.trade.debug", "§a" + offer.maxPrice(), "§e" + offer.getNameEnchantment().getString()));
         }
 
         if (tradeRequestContainer.matchesAny(offer)) {
-            minecraftClient.player.sendOverlayMessage(Component.translatable("evt.logic.trade_found", "§e" + offer.getNameEnchantment().getString(), "§a" + offer.maxPrice()));
+            minecraftClient.player.sendSystemMessage(Component.translatable("evt.logic.trade_found", "§e" + offer.getNameEnchantment().getString(), "§a" + offer.maxPrice()));
             minecraftClient.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.AMETHYST_CLUSTER_BREAK, 1f));
 
             tradeRequestContainer.removeTradeRequestByEnchantment(offer.enchantmentHolder());
@@ -166,7 +168,7 @@ public class EasyVillagerTradeBase {
     }
 
     public void handleInteractionWithVillager() {
-        Minecraft.getInstance().gameMode.interact(minecraftClient.player,
+        InteractionResult result = Minecraft.getInstance().gameMode.interact(minecraftClient.player,
                 getSelectionInterface().getVillager(),
                 new EntityHitResult(getSelectionInterface().getVillager()),
                 InteractionHand.MAIN_HAND);

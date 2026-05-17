@@ -4,6 +4,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import de.gamedude.easyvillagertrade.commands.EasyVillagerTradeCommand;
 import de.gamedude.easyvillagertrade.config.Config;
 import de.gamedude.easyvillagertrade.core.EasyVillagerTradeBase;
+import de.gamedude.easyvillagertrade.screen.TradeSelectScreen;
 import de.gamedude.easyvillagertrade.utils.TradingState;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -14,6 +15,7 @@ import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.fabric.api.event.player.UseEntityCallback;
 import net.minecraft.client.KeyMapping;
+import net.minecraft.client.Minecraft;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.core.BlockPos;
@@ -23,6 +25,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.npc.villager.Villager;
+import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.level.block.Blocks;
 import org.lwjgl.glfw.GLFW;
 
@@ -50,7 +53,7 @@ public class EasyVillagerTrade implements ModInitializer {
                 return InteractionResult.PASS;
             if (hitResult.getEntity() instanceof Villager villager && modBase.getState() == TradingState.MODE_SELECTION) {
                 modBase.getSelectionInterface().setVillager(villager);
-                player.sendOverlayMessage(Component.translatable("evt.command.selected.villager"));
+                player.sendSystemMessage(Component.translatable("evt.command.selected.villager"));
                 return InteractionResult.FAIL;
             }
             return InteractionResult.PASS;
@@ -62,17 +65,18 @@ public class EasyVillagerTrade implements ModInitializer {
             BlockPos blockPos = hitResult.getBlockPos();
             if (world.getBlockState(blockPos).getBlock() == Blocks.LECTERN && modBase.getState() == TradingState.MODE_SELECTION) {
                 modBase.getSelectionInterface().setLecternPos(blockPos);
-                player.sendOverlayMessage(Component.translatable("evt.command.selected.lectern"));
+                player.sendSystemMessage(Component.translatable("evt.command.selected.lectern"));
             }
             return InteractionResult.PASS;
         });
 
-        ClientTickEvents.START_CLIENT_TICK.register(client -> modBase.handle());
+        ClientTickEvents.START_CLIENT_TICK.register(client -> {
+            Minecraft.getInstance().execute(() -> modBase.handle());
+        });
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             while(keyBinding.isDown())
-                return;
-                //client.setScreen(new TradeSelectScreen());
+                client.setScreen(new TradeSelectScreen());
         });
     }
 

@@ -101,15 +101,15 @@ public class EasyVillagerTradeCommand {
         Player player = context.getSource().getPlayer();
         int x = modBase.getSelectionInterface().selectClosestToPlayer(player);
         switch (x) {
-            case 1 -> player.sendOverlayMessage(Component.translatable("evt.logic.select.fail_lectern"));
-            case 2 -> player.sendOverlayMessage(Component.translatable("evt.logic.select.fail_villager"));
-            case 0 -> player.sendOverlayMessage(Component.translatable("evt.logic.select.success"));
+            case 1 -> player.sendSystemMessage(Component.translatable("evt.logic.select.fail_lectern"));
+            case 2 -> player.sendSystemMessage(Component.translatable("evt.logic.select.fail_villager"));
+            case 0 -> player.sendSystemMessage(Component.translatable("evt.logic.select.success"));
         }
         return 1;
     }
 
     public int executeVillagerTrade(CommandContext<FabricClientCommandSource> context) {
-        /*this.modBase.setState(TradingState.CHECK_OFFERS);
+        this.modBase.setState(TradingState.CHECK_OFFERS);
 
         if(modBase.getSelectionInterface().getVillager() == null || modBase.getSelectionInterface().getLecternPos() == null) {
             context.getSource().sendFeedback(Component.translatable("evt.command.not_selected"));
@@ -118,9 +118,6 @@ public class EasyVillagerTradeCommand {
 
         context.getSource().sendFeedback(Component.translatable("evt.command.execute"));
         modBase.handleInteractionWithVillager();
-        return 1;
-
-         */
         return 1;
     }
 

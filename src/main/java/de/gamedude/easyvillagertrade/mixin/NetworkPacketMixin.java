@@ -31,7 +31,7 @@ public abstract class NetworkPacketMixin {
     private final EasyVillagerTradeBase modBase = EasyVillagerTrade.getModBase();
 
     private final List<String> deny = List.of(
-            "world", "chunk", "look", "input", "pos", "Rotate", "Motion", "tick", "rot", "entityevent", "time", "sound", "remove", "entitydata", "bundle"
+            "world", "chunk", "look", "input", "pos", "Rotate", "Motion", "tick", "rot", "entityevent", "time", "sound", "remove", "entitydata", "bundle", "swing", "use"
     );
 
     @Inject(method = "channelRead0(Lio/netty/channel/ChannelHandlerContext;Lnet/minecraft/network/protocol/Packet;)V", at = @At("HEAD"), cancellable = true)
@@ -42,30 +42,33 @@ public abstract class NetworkPacketMixin {
             System.out.println(packetName);
         }
 
-        if ( packet instanceof ClientboundEntityEventPacket cEEp) {
-            Level level = Minecraft.getInstance().level;
-            if ( level == null )
-                return;
-            if(modBase.getState() != TradingState.WAIT_PROFESSION)
-                return;
-            if(!(cEEp.getEntity(level) instanceof Villager villager))
-                return;
-            if(!villager.equals(modBase.getSelectionInterface().getVillager()))
-                return;
-            modBase.setState(TradingState.CHECK_OFFERS);
-            modBase.handleInteractionWithVillager();
-        } else if ( packet instanceof ClientboundMerchantOffersPacket setTradeOffers) {
-            if (modBase.getState() != TradingState.CHECK_OFFERS)
-                return;
-            modBase.checkVillagerOffers(setTradeOffers.getOffers());
-        } else if ( packet instanceof ClientboundOpenScreenPacket screenPacket && screenPacket.getType() == MenuType.MERCHANT) {
-            if (modBase.getState() != TradingState.CHECK_OFFERS)
-                return;
-            Minecraft.getInstance().execute(() ->
-                    Minecraft.getInstance().getConnection().send(new ServerboundContainerClosePacket( screenPacket.getContainerId() )));
+        Minecraft mc = Minecraft.getInstance();
+
+        if (packet instanceof ClientboundEntityEventPacket cEEp) {
+            mc.execute(() -> {
+                Level level = mc.level;
+                if (level == null) return;
+                if (modBase.getState() != TradingState.WAIT_PROFESSION) return;
+                if (!(cEEp.getEntity(level) instanceof Villager villager)) return;
+                if (!villager.equals(modBase.getSelectionInterface().getVillager())) return;
+
+                modBase.setState(TradingState.CHECK_OFFERS);
+                modBase.handleInteractionWithVillager();
+            });
+        }
+        else if (packet instanceof ClientboundMerchantOffersPacket setTradeOffers) {
+            if (modBase.getState() != TradingState.CHECK_OFFERS) return;
+            mc.execute(() -> modBase.checkVillagerOffers(setTradeOffers.getOffers()));
+        }
+        else if (packet instanceof ClientboundOpenScreenPacket screenPacket && screenPacket.getType() == MenuType.MERCHANT) {
+            if (modBase.getState() != TradingState.CHECK_OFFERS) return;
+
+            mc.execute(() -> {
+                if (mc.getConnection() != null) {
+                    mc.getConnection().send(new ServerboundContainerClosePacket(screenPacket.getContainerId()));
+                }
+            });
             ci.cancel();
         }
-
     }
-
 }

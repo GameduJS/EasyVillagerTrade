@@ -1,6 +1,7 @@
 package de.gamedude.easyvillagertrade.core;
 
 import de.gamedude.easyvillagertrade.utils.TradeRequest;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
@@ -66,7 +67,7 @@ public class TradeRequestInputHandler {
     }
 
     private HolderLookup.RegistryLookup<Enchantment> getRegistry() {
-        return VanillaRegistries.createLookup().lookupOrThrow(Registries.ENCHANTMENT);
+        return Minecraft.getInstance().level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT);
     }
 
 }

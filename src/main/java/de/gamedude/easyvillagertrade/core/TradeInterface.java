@@ -44,7 +44,7 @@ public class TradeInterface {
         else if (freeSlot != -999)
             freeSlot -= 6;
         else
-            player.sendOverlayMessage(Component.translatable("evt.logic.book_drop"));
+            player.sendSystemMessage(Component.translatable("evt.logic.book_drop"));
 
         minecraftClient.player.containerMenu.clicked(freeSlot, 0, ContainerInput.PICKUP, minecraftClient.player);
         modBase.setState(TradingState.INACTIVE);

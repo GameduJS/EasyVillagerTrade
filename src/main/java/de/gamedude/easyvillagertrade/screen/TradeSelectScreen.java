@@ -2,16 +2,22 @@ package de.gamedude.easyvillagertrade.screen;
 
 import de.gamedude.easyvillagertrade.EasyVillagerTrade;
 import de.gamedude.easyvillagertrade.core.EasyVillagerTradeBase;
+import de.gamedude.easyvillagertrade.screen.widget.EnchantmentInputWidget;
+import de.gamedude.easyvillagertrade.screen.widget.TradeRequestListWidget;
 import de.gamedude.easyvillagertrade.utils.TradeRequest;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
-import net.minecraft.client.gui.components.StringWidget;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.CharacterEvent;
+import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.ARGB;
+import net.minecraft.world.item.enchantment.Enchantment;
 
 import java.awt.*;
 import java.util.Arrays;
-import java.util.Iterator;
-
 
 public class TradeSelectScreen extends Screen {
 
@@ -49,9 +55,10 @@ public class TradeSelectScreen extends Screen {
         this.addRenderableWidget(levelTextFieldWidget);
         this.addRenderableWidget(priceTextFieldWidget);
 
-        ButtonWidget addButton = ButtonWidget.builder(Text.of("Add"), button -> {
+        Button addButton = Button.builder(Component.literal("Add"), button -> {
 
-            int result = modBase.getTradeRequestInputHandler().handleInputUI(enchantmentInputWidget.getText(), levelTextFieldWidget.getText(), priceTextFieldWidget.getText(), tradeRequest -> {
+            int result = modBase.getTradeRequestInputHandler().handleInputUI(
+                    enchantmentInputWidget.getValue(), levelTextFieldWidget.getValue(), priceTextFieldWidget.getValue(), tradeRequest -> {
                 if(!modBase.getTradeRequestContainer().getTradeRequests().contains(tradeRequest)) {
                     tradeRequestListWidget.addEntry(tradeRequest);
                     modBase.getTradeRequestContainer().addTradeRequest(tradeRequest);
@@ -60,101 +67,100 @@ public class TradeSelectScreen extends Screen {
 
             switch (result) {
                 case 0 -> clearTextFieldWidgets(enchantmentInputWidget, levelTextFieldWidget, priceTextFieldWidget);
-                case 1 -> enchantmentInputWidget.setEditableColor(Color.RED.getRGB());
-                case 2 -> priceTextFieldWidget.setEditableColor(Color.RED.getRGB());
-                case 3 -> levelTextFieldWidget.setEditableColor(Color.RED.getRGB());
+                case 1 -> enchantmentInputWidget.setTextColor(Color.RED.getRGB());
+                case 2 -> priceTextFieldWidget.setTextColor(Color.RED.getRGB());
+                case 3 -> levelTextFieldWidget.setTextColor(Color.RED.getRGB());
             }
 
-        }).position(x + 9, px + 15 + 20 + 5).size(50, 20).build();
+        }).pos(x + 9, px + 15 + 20 + 5).size(50, 20).build();
 
-        ButtonWidget removeButton = ButtonWidget.builder(Text.of("Remove"), button -> {
-            RegistryEntry<Enchantment> enchantment = modBase.getTradeRequestInputHandler().getEnchantment(enchantmentInputWidget.getText());
-            if (enchantment == null) {
-                enchantmentInputWidget.setEditableColor(ColorHelper.getArgb(    255, 255, 0, 0));
+        Button removeButton = Button.builder(Component.literal("Remove"), button -> {
+            Holder<Enchantment> enchHolder = modBase.getTradeRequestInputHandler().getEnchantment(enchantmentInputWidget.getValue());
+            if (enchHolder == null) {
+                enchantmentInputWidget.setTextColor(ARGB.color(255, 255, 0, 0));
                 return;
             }
 
-            for (Iterator<TradeRequestListWidget.TradeRequestEntry> it = tradeRequestListWidget.children().iterator(); it.hasNext(); ) {
-                TradeRequestListWidget.TradeRequestEntry entry = it.next();
-                if (TradeRequest.equalEnchantment(enchantment, entry.tradeRequest.enchantment())) {
-                    it.remove();
-                    modBase.getTradeRequestContainer().removeTradeRequest(entry.tradeRequest);
-                }
-            }
+            tradeRequestListWidget.removeEntry(request ->
+                    TradeRequest.equalEnchantment(request.enchantmentHolder(), enchHolder))
+                    .forEach(request ->
+                            modBase.getTradeRequestContainer().removeTradeRequestByEnchantment(request.enchantmentHolder()));
 
             clearTextFieldWidgets(enchantmentInputWidget, levelTextFieldWidget, priceTextFieldWidget);
 
-        }).position(x + 70, px + 40).size(50, 20).build();
+        }).pos(x + 70, px + 40).size(50, 20).build();
 
-        this.addDrawableChild(addButton);
-        this.addDrawableChild(removeButton);
-        this.addDrawableChild(tradeRequestListWidget);
+        this.addRenderableWidget(addButton);
+        this.addRenderableWidget(removeButton);
+        this.addRenderableWidget(tradeRequestListWidget);
 
         int buttonY = this.height - px - 25;
         int buttonX = x + (widgetWidth - 160) / 2;
 
-        ButtonWidget selectLecternButton = ButtonWidget.builder(Text.of("Select"), button -> {
-            if(this.client != null && this.client.player != null)
-                this.client.player.networkHandler.sendChatCommand("evt select close");
-        }).position(buttonX, buttonY).size(50, 20).build();
+        Button selectLecternButton = Button.builder(Component.literal("Select"), button -> {
+            if(this.minecraft.player != null)
+                this.minecraft.player.connection.sendCommand("evt select close");
+        }).pos(buttonX, buttonY).size(50, 20).build();
 
-        ButtonWidget startButton = ButtonWidget.builder(Text.of("Start"), button -> {
-            if(this.client != null && this.client.player != null) {
-                this.close();
-                this.client.player.networkHandler.sendChatCommand("evt execute");
+        Button startButton = Button.builder(Component.literal("Start"), button -> {
+            if(this.minecraft.player != null) {
+                this.onClose();
+                this.minecraft.player.connection.sendCommand("evt execute");
             }
-        }).position(buttonX + 55, buttonY).size(50, 20).build();
+        }).pos(buttonX + 55, buttonY).size(50, 20).build();
 
-        ButtonWidget stopButton = ButtonWidget.builder(Text.of("Stop"), button -> {
-            if(this.client != null && this.client.player != null)
-                this.client.player.networkHandler.sendChatCommand("evt stop");
-        }).position(buttonX + 110, buttonY).size(50, 20).build();
+        Button stopButton = Button.builder(Component.literal("Stop"), button -> {
+            if(this.minecraft.player != null)
+                this.minecraft.player.connection.sendCommand("evt stop");
+        }).pos(buttonX + 110, buttonY).size(50, 20).build();
 
 
-        this.addDrawableChild(selectLecternButton);
-        this.addDrawableChild(startButton);
-        this.addDrawableChild(stopButton);
+        this.addRenderableWidget(selectLecternButton);
+        this.addRenderableWidget(startButton);
+        this.addRenderableWidget(stopButton);
     }
 
     @Override
-    public boolean mouseClicked(Click click, boolean doubled) {
+    public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
         children().forEach(element -> {
-            if(element instanceof TextFieldWidget textFieldWidget) {
-                textFieldWidget.setEditableColor(-2039584);
+            if(element instanceof EditBox textFieldWidget) {
+                textFieldWidget.setTextColor(-2039584);
             }
         });
-        return super.mouseClicked(click, doubled);
+        return super.mouseClicked(event, doubleClick);
     }
 
     @Override
-    public boolean charTyped(CharInput charInput) {
+    public boolean charTyped(CharacterEvent event) {
         children().forEach(element -> {
-            if(element instanceof TextFieldWidget textFieldWidget)
-                textFieldWidget.setEditableColor(-2039584);
+            if(element instanceof EditBox textFieldWidget)
+                textFieldWidget.setTextColor(-2039584);
         });
-        return super.charTyped(charInput);
+        return super.charTyped(event);
+    }
+
+
+    @Override
+    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
+        this.extractBackground(graphics, mouseX, mouseY, a);
+        super.extractRenderState(graphics, mouseX, mouseY, a);
+        int px = (int) (this.width / 50f);
+        int x = this.width - px - widgetWidth;
+        graphics.text(this.font, "Enchantment", x + 10, px + 6, -2039584, false);
+        graphics.text(this.font, "Level", x + 20 + enchantmentWidth, px + 6, -2039584, false);
+        graphics.text(this.font, "Price", x + 30 + enchantmentWidth + priceWidth, px + 6, -2039584, false);
     }
 
     @Override
-    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        this.renderBackground(context, mouseX, mouseY, delta);
-        super.render(context, mouseX, mouseY, delta);
+    public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
         int px = (int) (this.width / 50f);
         int x = this.width - px - widgetWidth;
-        context.drawText(textRenderer, "Enchantment", x + 10, px + 6, -2039584, false);
-        context.drawText(textRenderer, "Level", x + 20 + enchantmentWidth, px + 6, -2039584, false);
-        context.drawText(textRenderer, "Price", x + 30 + enchantmentWidth + priceWidth, px + 6, -2039584, false);
+        graphics.fill(x, px, this.width - px, this.height - px, ARGB.color(150, 7, 7, 7));
     }
 
-    @Override
-    public void renderBackground(DrawContext context, int mouseX, int mouseY, float delta) {
-        int px = (int) (this.width / 50f);
-        int x = this.width - px - widgetWidth;
-        context.fill(x, px, this.width - px, this.height - px, ColorHelper.getArgb(150, 7, 7, 7));
-    }
 
-    public void clearTextFieldWidgets(TextFieldWidget... textFieldWidgets){
-        Arrays.stream(textFieldWidgets).forEach(textFieldWidget -> textFieldWidget.setText(""));
+    public void clearTextFieldWidgets(EditBox... textFieldWidgets){
+        Arrays.stream(textFieldWidgets).forEach(textFieldWidget -> textFieldWidget.setValue(""));
     }
 
 }

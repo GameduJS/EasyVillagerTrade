@@ -3,13 +3,23 @@ package de.gamedude.easyvillagertrade.screen.widget;
 import de.gamedude.easyvillagertrade.EasyVillagerTrade;
 import de.gamedude.easyvillagertrade.core.EasyVillagerTradeBase;
 import de.gamedude.easyvillagertrade.utils.TradeRequest;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.*;
+import net.minecraft.client.gui.components.AbstractSelectionList;
+import net.minecraft.client.gui.components.Renderable;
+import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.ARGB;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
+import java.util.function.Predicate;
 
-/*public class TradeRequestListWidget extends AbstractParentElement implements Drawable, Selectable {
+
+public class TradeRequestListWidget extends AbstractSelectionList<TradeRequestListWidget.TradeRequestEntry> implements Renderable, GuiEventListener {
 
     private static final int ENTRY_HEIGHT = 32;
     private static int ENTRIES_PER_PAGE;
@@ -20,39 +30,38 @@ import java.util.Optional;
     private final int width;
     private final int height;
 
-    private final List<TradeRequestEntry> children;
     private final EasyVillagerTradeBase modBase;
 
     public TradeRequestListWidget(int x, int y, int width, int height) {
+        super(Minecraft.getInstance(), width, height, y, 5);
         this.x = x;
         this.y = y;
         this.width = width;
         this.height = height;
 
-        this.children = new ArrayList<>();
         this.modBase = EasyVillagerTrade.getModBase();
     }
 
     public int getEntryCount() {
-        return children.size();
+        return children().size();
     }
 
     public TradeRequestEntry getEntry(int index) {
-        return this.children.get(index);
+        return this.children().get(index);
     }
 
     @Override
-    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+    public void extractWidgetRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
         ENTRIES_PER_PAGE = (int) Math.ceil((height - y + 5) / (ENTRY_HEIGHT + 5f) - 1);
         if (ENTRIES_PER_PAGE == 0)
             return;
-
-        this.renderBackground(context);
+        this.renderBackground(graphics);
 
         for (int index = 0; index < Math.min(getEntryCount(), ENTRIES_PER_PAGE); ++index) {
-            getEntry(index + getOffset()).render(context, index, x, y + 1, width);
+            getEntry(index + getOffset()).render(graphics, index, x, y + 1, width);
         }
     }
+
 
     private int getOffset() {
         int maxScroll = getMaxScroll();
@@ -69,13 +78,8 @@ import java.util.Optional;
     }
 
     @Override
-    public List<TradeRequestEntry> children() {
-        return children;
-    }
-
-    @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double horizontal, double vertical) {
-        this.scrollAmount = MathHelper.clamp(
+        this.scrollAmount = Math.clamp(
                 scrollAmount - (vertical * (ENTRY_HEIGHT + 5)),
                 0.0,
                 this.getMaxScroll());
@@ -87,7 +91,10 @@ import java.util.Optional;
         return x <= mouseX && mouseX <= (x + width) && y <= mouseY && mouseY <= height;
     }
 
-    private void renderBackground(DrawContext context) {
+    @Override
+    protected void updateWidgetNarration(NarrationElementOutput output) { }
+
+    private void renderBackground(GuiGraphicsExtractor context) {
         context.fill(x - 1, y, x + width + 1, y + 1, -1); // horizontal
         context.fill(x - 2, height, x + width + 2, height + 1, -1);
         context.fill(x - 2, y, x - 1, height, -1); // vertical
@@ -95,42 +102,41 @@ import java.util.Optional;
     }
 
     public void addEntry(TradeRequest entry) {
-        children.add(new TradeRequestEntry(entry));
+        this.addEntry(new TradeRequestEntry(entry));
+    }
+
+    public List<TradeRequest> removeEntry(Predicate<TradeRequest> predicate) {
+        return children().stream()
+                .filter(tradeRequestEntry -> predicate.test(tradeRequestEntry.tradeRequest))
+                .peek(this::removeEntry)
+                .map(tradeRequestEntry -> tradeRequestEntry.tradeRequest)
+                .toList();
     }
 
     @Override
-    public boolean mouseClicked(Click click, boolean doubled) {
-        boolean bl = super.mouseClicked(click, doubled);
-        Optional<Element> element = this.hoveredElement(click.x(), click.y());
-        if(element.isEmpty())
+    public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+        boolean bl = super.mouseClicked(event, doubleClick);
+        TradeRequestEntry element = this.getHovered();
+        if ( element == null )
             return bl;
-        TradeRequestEntry tradeRequestEntry = (TradeRequestEntry) element.get();
 
         // #HACK, since the "scrolled" entries "stack on top of each other" => the first would be removed each time
         int entriesSkipped = Math.ceilDiv( (int) scrollAmount, ENTRY_HEIGHT + 5 );
-        if ( children.indexOf(tradeRequestEntry) == 0 && children.size() > ENTRIES_PER_PAGE ) {
+        if ( children().indexOf(element) == 0 && children().size() > ENTRIES_PER_PAGE ) {
             scrollAmount-=(ENTRY_HEIGHT + 5);
-            tradeRequestEntry = children.get(entriesSkipped);
+            element = children().get(entriesSkipped);
         }
 
-        children.remove(tradeRequestEntry);
-        modBase.getTradeRequestContainer().removeTradeRequest(tradeRequestEntry.tradeRequest);
+        children().remove(element);
+        modBase.getTradeRequestContainer().removeTradeRequest(element.tradeRequest);
         return bl;
     }
 
-    @Override
-    public void appendNarrations(NarrationMessageBuilder builder) { }
+    public static class TradeRequestEntry extends Entry<TradeRequestEntry> implements GuiEventListener {
 
-    @Override
-    public SelectionType getType() {
-        return SelectionType.NONE;
-    }
-
-    public static class TradeRequestEntry implements Element {
-
-        private static final Identifier EMERALD_TEXTURE = Identifier.of("textures/item/emerald.png");
-        private static final Identifier ENCHANTED_BOOK_TEXTURE = Identifier.of("textures/item/enchanted_book.png");
-        private final TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
+        private static final Identifier EMERALD_TEXTURE = Identifier.parse("textures/item/emerald.png");
+        private static final Identifier ENCHANTED_BOOK_TEXTURE = Identifier.withDefaultNamespace("textures/item/enchanted_book.png");
+        private final Font textRenderer = Minecraft.getInstance().font;
         public final TradeRequest tradeRequest;
         private int x,y1,x2,y2;
 
@@ -138,19 +144,19 @@ import java.util.Optional;
             this.tradeRequest = request;
         }
 
-        private void render(DrawContext context, int index, int x, int y, int entryWidth) {
+        private void render(GuiGraphicsExtractor context, int index, int x, int y, int entryWidth) {
             this.x = x;
             this.y1 = y + (index * ENTRY_HEIGHT) + (5 * index);
             this.x2 = x + entryWidth;
             this.y2 = y + ENTRY_HEIGHT * (index + 1) + (5 * index);
 
-            context.fill(x, y1, x2, y2, ColorHelper.getArgb(240, 7, 7, 7));
+            context.fill(x, y1, x2, y2, ARGB.color(240, 7, 7, 7));
 
-            context.drawTexture(RenderPipelines.GUI_TEXTURED, ENCHANTED_BOOK_TEXTURE, x, y1, 0, 0, 16, 16, 16, 16);
-            context.drawTexture(RenderPipelines.GUI_TEXTURED, EMERALD_TEXTURE, x, y1 + 16,0, 0, 16, 16, 16, 16);
+            context.blit(RenderPipelines.GUI_TEXTURED, ENCHANTED_BOOK_TEXTURE, x, y1, 0, 0, 16, 16, 16, 16);
+            context.blit(RenderPipelines.GUI_TEXTURED, EMERALD_TEXTURE, x, y1 + 16,0, 0, 16, 16, 16, 16);
 
-            context.drawText(textRenderer, Enchantment.getName(tradeRequest.enchantment(), tradeRequest.level()), x + 20, y1 + 4, -2039584, false);
-            context.drawText(textRenderer, Text.of("§e" + tradeRequest.maxPrice()), x + 20, y1 + 20, -2039584, false);
+            context.text(textRenderer, tradeRequest.getNameEnchantment(), x + 20, y1 + 4, -2039584, false);
+            context.text(textRenderer, Component.literal("§e" + tradeRequest.maxPrice()), x + 20, y1 + 20, -2039584, false);
         }
 
         @Override
@@ -165,7 +171,9 @@ import java.util.Optional;
         public boolean isFocused() {
             return false;
         }
+
+        @Override
+        public void extractContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float a) {
+        }
     }
 }
-
- */
