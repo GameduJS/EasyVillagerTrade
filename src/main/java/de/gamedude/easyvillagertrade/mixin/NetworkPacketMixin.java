@@ -31,7 +31,7 @@ public abstract class NetworkPacketMixin {
     private final EasyVillagerTradeBase modBase = EasyVillagerTrade.getModBase();
 
     private final List<String> deny = List.of(
-            "world", "chunk", "look", "input", "pos", "Rotate", "Motion", "tick", "rot", "entityevent", "time", "sound", "remove", "entitydata", "bundle", "swing", "use"
+            "world", "chunk", "look", "input", "pos", "Rotate", "Motion", "tick", "rot", "entityevent", "time", "sound", "remove", "entitydata", "bundle", "swing", "use", "Section", "Attributes", "Blockupdates"
     );
 
     @Inject(method = "channelRead0(Lio/netty/channel/ChannelHandlerContext;Lnet/minecraft/network/protocol/Packet;)V", at = @At("HEAD"), cancellable = true)

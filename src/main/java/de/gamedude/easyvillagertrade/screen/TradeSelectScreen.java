@@ -21,8 +21,11 @@ import java.util.Arrays;
 
 public class TradeSelectScreen extends Screen {
 
-    private final EasyVillagerTradeBase modBase = EasyVillagerTrade.getModBase();
+    private  final int COLOR_TEXT = 0xFF_E0E0E0;
+    private final int COLOR_ERROR = ARGB.color(255, 255, 0, 0);
+    private final int COLOR_BG = ARGB.color(37, 7, 7, 7);
 
+    private final EasyVillagerTradeBase modBase = EasyVillagerTrade.getModBase();
     private final int enchantmentWidth;
     private final int levelWidth;
     private final int priceWidth;
@@ -47,8 +50,8 @@ public class TradeSelectScreen extends Screen {
         EditBox levelTextFieldWidget = new EditBox(font, x + 20 + enchantmentWidth, px + 15, levelWidth, 20, Component.literal("Level") );
         EditBox priceTextFieldWidget = new EditBox(font, x + 30 + enchantmentWidth + levelWidth, px + 15, priceWidth, 20, Component.literal("Price") );
 
-        int listHeight = this.height - px - 50;
-        TradeRequestListWidget tradeRequestListWidget = new TradeRequestListWidget(x + 10, px + 80, widgetWidth - 20, listHeight);
+        int listHeight = this.height - px - 85 - px - 24 - 10;
+        TradeRequestListWidget tradeRequestListWidget = new TradeRequestListWidget(x + 10, px + 85, widgetWidth - 20, listHeight);
         modBase.getTradeRequestContainer().getTradeRequests().forEach(tradeRequestListWidget::addEntry);
 
         this.addRenderableWidget(enchantmentInputWidget);
@@ -67,9 +70,9 @@ public class TradeSelectScreen extends Screen {
 
             switch (result) {
                 case 0 -> clearTextFieldWidgets(enchantmentInputWidget, levelTextFieldWidget, priceTextFieldWidget);
-                case 1 -> enchantmentInputWidget.setTextColor(Color.RED.getRGB());
-                case 2 -> priceTextFieldWidget.setTextColor(Color.RED.getRGB());
-                case 3 -> levelTextFieldWidget.setTextColor(Color.RED.getRGB());
+                case 1 -> enchantmentInputWidget.setTextColor(COLOR_ERROR);
+                case 2 -> priceTextFieldWidget.setTextColor(COLOR_ERROR);
+                case 3 -> levelTextFieldWidget.setTextColor(COLOR_ERROR);
             }
 
         }).pos(x + 9, px + 15 + 20 + 5).size(50, 20).build();
@@ -77,7 +80,7 @@ public class TradeSelectScreen extends Screen {
         Button removeButton = Button.builder(Component.literal("Remove"), button -> {
             Holder<Enchantment> enchHolder = modBase.getTradeRequestInputHandler().getEnchantment(enchantmentInputWidget.getValue());
             if (enchHolder == null) {
-                enchantmentInputWidget.setTextColor(ARGB.color(255, 255, 0, 0));
+                enchantmentInputWidget.setTextColor(COLOR_ERROR);
                 return;
             }
 
@@ -124,7 +127,7 @@ public class TradeSelectScreen extends Screen {
     public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
         children().forEach(element -> {
             if(element instanceof EditBox textFieldWidget) {
-                textFieldWidget.setTextColor(-2039584);
+                textFieldWidget.setTextColor(COLOR_TEXT);
             }
         });
         return super.mouseClicked(event, doubleClick);
@@ -134,7 +137,7 @@ public class TradeSelectScreen extends Screen {
     public boolean charTyped(CharacterEvent event) {
         children().forEach(element -> {
             if(element instanceof EditBox textFieldWidget)
-                textFieldWidget.setTextColor(-2039584);
+                textFieldWidget.setTextColor(COLOR_TEXT);
         });
         return super.charTyped(event);
     }
@@ -146,16 +149,16 @@ public class TradeSelectScreen extends Screen {
         super.extractRenderState(graphics, mouseX, mouseY, a);
         int px = (int) (this.width / 50f);
         int x = this.width - px - widgetWidth;
-        graphics.text(this.font, "Enchantment", x + 10, px + 6, -2039584, false);
-        graphics.text(this.font, "Level", x + 20 + enchantmentWidth, px + 6, -2039584, false);
-        graphics.text(this.font, "Price", x + 30 + enchantmentWidth + priceWidth, px + 6, -2039584, false);
+        graphics.text(this.font, "Enchantment", x + 10, px + 6, COLOR_TEXT, false);
+        graphics.text(this.font, "Level", x + 20 + enchantmentWidth, px + 6, COLOR_TEXT, false);
+        graphics.text(this.font, "Price", x + 30 + enchantmentWidth + priceWidth, px + 6, COLOR_TEXT, false);
     }
 
     @Override
     public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
         int px = (int) (this.width / 50f);
         int x = this.width - px - widgetWidth;
-        graphics.fill(x, px, this.width - px, this.height - px, ARGB.color(150, 7, 7, 7));
+        graphics.fill(x, px, this.width - px, this.height - px, COLOR_BG);
     }
 
 

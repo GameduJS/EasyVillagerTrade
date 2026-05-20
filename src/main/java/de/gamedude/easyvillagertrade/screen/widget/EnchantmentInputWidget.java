@@ -1,18 +1,19 @@
 package de.gamedude.easyvillagertrade.screen.widget;
 
-import joptsimple.internal.Strings;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.ComponentPath;
 import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.navigation.FocusNavigationEvent;
+import net.minecraft.client.gui.navigation.ScreenDirection;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.data.registries.VanillaRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.ARGB;
 import net.minecraft.world.item.enchantment.Enchantment;
-import net.minecraft.world.item.enchantment.Enchantments;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.HashMap;
@@ -21,80 +22,80 @@ import java.util.function.Consumer;
 import java.util.regex.Pattern;
 
 public class EnchantmentInputWidget extends EditBox {
-    private String suggestion;
+
+    private static final int COLOR_VALID = ARGB.color(255, 255, 255, 0);
+    private static final int COLOR_DEFAULT = 0xFF_E0E0E0;
+
+    private String suggestion = "";
 
     private final Map<String, Holder.Reference<Enchantment>> cachedEnchantments = new HashMap<>();
 
     public EnchantmentInputWidget(int x, int y, int width, int height) {
         super(Minecraft.getInstance().font, x, y, width, height, Component.empty());
-        this.setResponder( getChangeListener() );
-
-        getRegistry().listElements().forEach(enchantmentReference -> {
-            String key = enchantmentReference.value().description().getString().toLowerCase();
-            this.cachedEnchantments.put(key, enchantmentReference);
-        });
-
-        System.out.println(
-                Enchantment.getFullname(getRegistry().get(Enchantments.AQUA_AFFINITY).get(), 1)
-        );
+        buildEnchantmentCache();
+        setResponder(buildChangeListener());
     }
 
-    private Consumer<String> getChangeListener() {
+    private void buildEnchantmentCache() {
+        getEnchantmentRegistry().listElements().forEach(ref -> {
+            String key = ref.value().description().getString().toLowerCase();
+            cachedEnchantments.put(key, ref);
+        });
+    }
+
+    private Consumer<String> buildChangeListener() {
         return text -> {
-            String searchInput = text.trim().toLowerCase();
+            String input = text.trim().toLowerCase();
+            String cleanInput = text.toLowerCase().replace("+", "");
 
-            boolean match = this.cachedEnchantments.containsKey(searchInput);
-            if (match)
-                this.setTextColor(ARGB.color(255, 255, 255, 0));
-            else
-                this.setTextColor(-2039584);
+            setTextColor(cachedEnchantments.containsKey(input) ? COLOR_VALID : COLOR_DEFAULT);
 
-            String cleanInputForReplace = text.toLowerCase().replace("+", "");
-            suggestion = getPossibleEnchantmentNameOrElse(searchInput)
-                    .toLowerCase().replaceFirst(Pattern.quote(cleanInputForReplace), "");
+            String match = findFirstMatchingName(input);
+            suggestion = match.toLowerCase().replaceFirst(Pattern.quote(cleanInput), "");
             setSuggestion(suggestion);
         };
     }
 
-    private String getPossibleEnchantmentNameOrElse(String input) {
-        if ( input == null || input.isBlank() )
-            return "";
-
-        return this.cachedEnchantments.keySet().stream()
-                .filter(cleanName -> cleanName.startsWith(input.toLowerCase()))
-                .findFirst()
-                .orElse("");
-    }
-
     @Override
     public boolean keyPressed(KeyEvent event) {
-        int keyCode = event.key();
-        if ( keyCode == GLFW.GLFW_KEY_ENTER ) {
-            setEnchantmentText();
+        if (event.key() == GLFW.GLFW_KEY_ENTER) {
+            applyCurrentSuggestion();
             return true;
         }
         return super.keyPressed(event);
     }
 
-    /*
-    @Nullable
     @Override
-    public GuiNavigationPath getNavigationPath(GuiNavigation navigation) {
-        if (navigation.getDirection() == ScreenDirection.DOWN)
-            FocusNavigationEvent
-            setEnchantmentText();
-        return super.getNavigationPath(navigation);
-    }
-     */
-
-    private void setEnchantmentText() {
-        setMessage(Component.literal(
-                StringUtils.capitalize(getMessage().getString() + ((suggestion == null) ? "" : suggestion))
-        ));
+    public @Nullable ComponentPath nextFocusPath(FocusNavigationEvent navigationEvent) {
+        if (navigationEvent.getVerticalDirectionForInitialFocus() == ScreenDirection.DOWN)
+            applyCurrentSuggestion();
+        return super.nextFocusPath(navigationEvent);
     }
 
-    private HolderLookup.RegistryLookup<Enchantment> getRegistry() {
-        return Minecraft.getInstance().level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT);
-        //return VanillaRegistries.createLookup().lookupOrThrow(Registries.ENCHANTMENT);
+    private void applyCurrentSuggestion() {
+        if (suggestion == null || suggestion.isBlank()) return;
+
+        String completed = getValue() + suggestion;
+        setValue(StringUtils.capitalize(completed));
+        setSuggestion("");
+        suggestion = "";
+
+        setTextColor(cachedEnchantments.containsKey(completed.toLowerCase())
+                ? COLOR_VALID : COLOR_DEFAULT);
+    }
+
+    private String findFirstMatchingName(String input) {
+        if (input == null || input.isBlank()) return "";
+
+        return cachedEnchantments.keySet().stream()
+                .filter(name -> name.startsWith(input))
+                .findFirst()
+                .orElse("");
+    }
+
+    private HolderLookup.RegistryLookup<Enchantment> getEnchantmentRegistry() {
+        return Minecraft.getInstance().level
+                .registryAccess()
+                .lookupOrThrow(Registries.ENCHANTMENT);
     }
 }

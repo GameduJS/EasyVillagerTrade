@@ -31,7 +31,7 @@ public class TradeInterface {
     }
 
     public void applyTrade() {
-        minecraftClient.player.containerMenu.clicked(2, 0, ContainerInput.PICKUP, minecraftClient.player);
+        minecraftClient.gameMode.handleContainerInput(minecraftClient.player.containerMenu.containerId, 2, 0, ContainerInput.PICKUP, minecraftClient.player);
         modBase.setState(TradingState.PICKUP_TRADE);
     }
 
@@ -46,7 +46,7 @@ public class TradeInterface {
         else
             player.sendSystemMessage(Component.translatable("evt.logic.book_drop"));
 
-        minecraftClient.player.containerMenu.clicked(freeSlot, 0, ContainerInput.PICKUP, minecraftClient.player);
+        minecraftClient.gameMode.handleContainerInput(minecraftClient.player.containerMenu.containerId, freeSlot, 0, ContainerInput.PICKUP, minecraftClient.player);
         modBase.setState(TradingState.INACTIVE);
     }
 
