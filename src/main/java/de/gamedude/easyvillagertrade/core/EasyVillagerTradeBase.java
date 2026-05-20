@@ -1,6 +1,7 @@
 package de.gamedude.easyvillagertrade.core;
 
 import de.gamedude.easyvillagertrade.EasyVillagerTrade;
+import de.gamedude.easyvillagertrade.core.interventions.NoJobIntervention;
 import de.gamedude.easyvillagertrade.utils.TradeRequest;
 import de.gamedude.easyvillagertrade.utils.TradingState;
 import net.minecraft.client.Minecraft;
@@ -37,12 +38,16 @@ public class EasyVillagerTradeBase {
 
     private final Minecraft minecraftClient;
 
+    private NoJobIntervention noJobIntervention;
+
     public EasyVillagerTradeBase() {
         this.minecraftClient = Minecraft.getInstance();
         this.tradeRequestContainer = new TradeRequestContainer();
         this.selectionInterface = new SelectionInterface(this);
         this.tradeRequestInputHandler = new TradeRequestInputHandler();
         this.tradeInterface = new TradeInterface(this);
+
+        this.noJobIntervention = new NoJobIntervention(this);
 
         this.state = TradingState.INACTIVE;
     }
@@ -81,6 +86,7 @@ public class EasyVillagerTradeBase {
                     setState(TradingState.PLACE_WORKSTATION);
             }
         }
+        this.noJobIntervention.checkSystem(state);
     }
 
     private void handlePlacement() {
