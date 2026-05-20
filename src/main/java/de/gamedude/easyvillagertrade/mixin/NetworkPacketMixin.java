@@ -30,18 +30,8 @@ public abstract class NetworkPacketMixin {
     @Unique
     private final EasyVillagerTradeBase modBase = EasyVillagerTrade.getModBase();
 
-    private final List<String> deny = List.of(
-            "world", "chunk", "look", "input", "pos", "Rotate", "Motion", "tick", "rot", "entityevent", "time", "sound", "remove", "entitydata", "bundle", "swing", "use", "Section", "Attributes", "Blockupdates"
-    );
-
     @Inject(method = "channelRead0(Lio/netty/channel/ChannelHandlerContext;Lnet/minecraft/network/protocol/Packet;)V", at = @At("HEAD"), cancellable = true)
     private void channelRead(ChannelHandlerContext ctx, Packet<?> packet, CallbackInfo ci) {
-        String packetName = packet.getClass().getSimpleName();
-
-        if (deny.stream().map(String::toLowerCase).noneMatch(packetName.toLowerCase()::contains)) {
-            System.out.println(packetName);
-        }
-
         Minecraft mc = Minecraft.getInstance();
 
         if (packet instanceof ClientboundEntityEventPacket cEEp) {
