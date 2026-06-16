@@ -1,94 +1,224 @@
 package de.gamedude.evt.screen.chunk;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.LecternBlock;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.render.*;
+import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.client.render.LightmapTextureManager;
+import net.minecraft.client.render.OverlayTexture;
+import net.minecraft.client.render.VertexConsumerProvider;
+import net.minecraft.client.render.block.BlockRenderManager;
+import net.minecraft.client.render.entity.EntityRenderDispatcher;
+import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.text.Text;
-import org.joml.Matrix4f;
-import org.joml.Quaternionf;
+import net.minecraft.util.math.*;
+import net.minecraft.world.World;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class ChunkScreen extends Screen {
-    private float rotationX = 0;
-    private float rotationY = 0;
 
-    // Adjust these to change the look
-    private final float sphereRadius = 60f;
-    private final int segments = 32;
+    private float rotationX = 30f;
+    private float rotationY = 45f;
+    private float zoom = 20f;
+    private boolean isDragging;
+
+    private List<BlockPos> cachedBlocks;
+    private List<BlockPos> cachedLecterns;
+    private List<VillagerEntity> cachedVillagers;
+    private BlockPos playerPos;
+
+    private VertexConsumerProvider.Immediate vertexConsumers;
 
     public ChunkScreen() {
-        super(Text.literal("3D Centered Sphere"));
+        super(Text.empty());
+    }
+
+    private VertexConsumerProvider.Immediate getVertexConsumers() {
+        if (vertexConsumers == null) {
+            vertexConsumers = MinecraftClient.getInstance()
+                    .getBufferBuilders()
+                    .getEntityVertexConsumers();
+        }
+        return vertexConsumers;
+    }
+
+    @Override
+    protected void init() {
+        ClientPlayerEntity player = MinecraftClient.getInstance().player;
+        if (player == null) return;
+
+        this.playerPos = player.getBlockPos();
+        this.cachedBlocks = new ArrayList<>();
+        this.cachedLecterns = new ArrayList<>();
+
+        World world = player.getEntityWorld();
+        Direction forward = player.getHorizontalFacing();
+        Direction right = forward.rotateYClockwise();
+
+        for (int delY = -1; delY <= 2; delY++) {
+            for (int delSide = -3; delSide <= 3; delSide++) {
+                for (int delFront = -1; delFront <= 2; delFront++) {
+                    BlockPos pos = playerPos
+                            .offset(forward, delFront)
+                            .offset(right, delSide)
+                            .up(delY);
+
+                    BlockState state = world.getBlockState(pos);
+
+                    if (state.isAir()) continue;
+
+                    if (state.getBlock() instanceof LecternBlock) {
+                        cachedLecterns.add(pos);
+                    } else if (!state.hasBlockEntity()) {
+                        cachedBlocks.add(pos);
+                    }
+                }
+            }
+        }
+
+        this.cachedVillagers = world.getEntitiesByClass(
+                VillagerEntity.class,
+                new Box(playerPos).expand(6),
+                v -> true
+        );
     }
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        // Draw the default dark background
-        // Update rotations for a "floating" feel
-        rotationY += delta * 0.8f;
-        rotationX += delta * 0.3f;
-
-        renderCenteredSphere(context);
-
+        this.renderBackground(context);
+        renderPreview(context);
         super.render(context, mouseX, mouseY, delta);
     }
 
-    private void renderCenteredSphere(DrawContext context) {
-        // 1. Move the "origin" to the center of the window
-        context.getMatrices().push();
-        context.getMatrices().translate(this.width / 2f, this.height / 2f, 200);
+    private void renderPreview(DrawContext context) {
+        MinecraftClient client = MinecraftClient.getInstance();
+        World world = client.world;
+        if (world == null || cachedBlocks == null) return;
 
-        // 2. Apply the rotation based on mouse or auto-timer
-        context.getMatrices().multiply(new Quaternionf().rotationXYZ(
-                (float) Math.toRadians(rotationX),
-                (float) Math.toRadians(rotationY),
-                0
-        ));
+        BlockRenderManager blockRenderer = client.getBlockRenderManager();
+        EntityRenderDispatcher entityRenderer = client.getEntityRenderDispatcher();
 
-        // 3. Setup the Shader
-        RenderSystem.setShader(GameRenderer::getPositionColorProgram);
-        RenderSystem.enableDepthTest(); // Ensures the back of the sphere stays behind the front
+        int centerX = this.width / 4;
+        int centerY = this.height / 2;
 
-        Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder bufferBuilder = tessellator.getBuffer();
-        Matrix4f matrix = context.getMatrices().peek().getPositionMatrix();
+        MatrixStack matrices = context.getMatrices();
+        matrices.push();
 
-        bufferBuilder.begin(VertexFormat.DrawMode.TRIANGLE_STRIP, VertexFormats.POSITION_COLOR);
+        matrices.translate(centerX, centerY, 100);
+        matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(rotationX));
+        matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(rotationY));
+        matrices.scale(zoom, -zoom, zoom);
 
-        // 4. Generate the Sphere Geometry
-        for (int i = 0; i <= segments; i++) {
-            float lat0 = (float) Math.PI * (-0.5f + (float) (i - 1) / segments);
-            float z0 = (float) Math.sin(lat0);
-            float zr0 = (float) Math.cos(lat0);
+        RenderSystem.enableDepthTest();
+        RenderSystem.enableBlend();
 
-            float lat1 = (float) Math.PI * (-0.5f + (float) i / segments);
-            float z1 = (float) Math.sin(lat1);
-            float zr1 = (float) Math.cos(lat1);
+        // --- Normale Blöcke ---
+        for (BlockPos pos : cachedBlocks) {
+            BlockState state = world.getBlockState(pos);
 
-            for (int j = 0; j <= segments; j++) {
-                float lng = (float) (2 * Math.PI * (float) (j - 1) / segments);
-                float x = (float) Math.cos(lng);
-                float y = (float) Math.sin(lng);
+            double relX = pos.getX() - playerPos.getX();
+            double relY = pos.getY() - playerPos.getY();
+            double relZ = pos.getZ() - playerPos.getZ();
 
-                // Add vertices with a color gradient to show 3D form
-                bufferBuilder.vertex(matrix, x * zr0 * sphereRadius, y * zr0 * sphereRadius, z0 * sphereRadius)
-                        .color(0.3f, 0.5f, 1.0f, 1.0f).next();
-                bufferBuilder.vertex(matrix, x * zr1 * sphereRadius, y * zr1 * sphereRadius, z1 * sphereRadius)
-                        .color(0.1f, 0.2f, 0.5f, 1.0f).next();
-            }
+            matrices.push();
+            matrices.translate(relX, relY, relZ);
+            blockRenderer.renderBlockAsEntity(
+                    state,
+                    matrices,
+                    getVertexConsumers(),
+                    LightmapTextureManager.MAX_LIGHT_COORDINATE,
+                    OverlayTexture.DEFAULT_UV
+            );
+            matrices.pop();
         }
 
-        tessellator.draw();
+        getVertexConsumers().draw();
 
-        // 5. Clean up
-        context.getMatrices().pop();
+        // --- Lecterns ---
+        for (BlockPos pos : cachedLecterns) {
+            BlockState state = world.getBlockState(pos);
+
+            double relX = pos.getX() - playerPos.getX();
+            double relY = pos.getY() - playerPos.getY();
+            double relZ = pos.getZ() - playerPos.getZ();
+
+            matrices.push();
+            matrices.translate(relX, relY, relZ);
+            blockRenderer.renderBlockAsEntity(
+                    state,
+                    matrices,
+                    getVertexConsumers(),
+                    LightmapTextureManager.MAX_LIGHT_COORDINATE,
+                    OverlayTexture.DEFAULT_UV
+            );
+            matrices.pop();
+        }
+
+        getVertexConsumers().draw();
+
+        // --- Villager ---
+        for (VillagerEntity villager : cachedVillagers) {
+            double relX = villager.getX() - playerPos.getX();
+            double relY = villager.getY() - playerPos.getY();
+            double relZ = villager.getZ() - playerPos.getZ();
+
+            matrices.push();
+            matrices.translate(relX, relY, relZ);
+            entityRenderer.render(
+                    villager,
+                    0, 0, 0,
+                    villager.getYaw(),
+                    client.getTickDelta(),
+                    matrices,
+                    getVertexConsumers(),
+                    LightmapTextureManager.MAX_LIGHT_COORDINATE);
+            matrices.pop();
+        }
+
+        getVertexConsumers().draw();
+
         RenderSystem.disableDepthTest();
+        RenderSystem.disableBlend();
+
+        matrices.pop();
+    }
+
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (button == 0) isDragging = true;
+        return super.mouseClicked(mouseX, mouseY, button);
+    }
+
+    @Override
+    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        if (button == 0) isDragging = false;
+        return super.mouseReleased(mouseX, mouseY, button);
     }
 
     @Override
     public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
-        // Allows user to spin the sphere with the mouse
-        rotationY += deltaX;
-        rotationX += deltaY;
+        if (isDragging) {
+            rotationY += (float) deltaX * 0.5f;
+            rotationX += (float) deltaY * 0.5f;
+            rotationX = MathHelper.clamp(rotationX, -89f, 89f);
+        }
         return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
+    }
+
+    @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
+        zoom = MathHelper.clamp(zoom + (float) amount * 2f, 5f, 60f);
+        return true;
+    }
+
+    @Override
+    public void renderBackground(DrawContext context) {
+        context.fill(0, 0, this.width, this.height, ColorHelper.Argb.getArgb(150, 7, 7, 7));
     }
 }

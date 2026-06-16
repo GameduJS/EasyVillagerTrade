@@ -28,6 +28,7 @@ public class BuyState extends State {
             TradeRequest request = tWVH.getRequestedTrade();
             tRC.removeRequestByEnchantment(request.enchantment());
             feedback.with(String.format("{DEV Note}: Successfully bought: %s for %s emeralds", request.enchantment().toString(), request.cost()));
+            player.closeScreen();
         }
 
         player.sendMessage(Text.of("TODO: Executed BuyState with status - " + feedback.getStatus()), false);
