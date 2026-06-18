@@ -99,7 +99,7 @@ public class EasyVillagerTradeBase {
             return;
         }
 
-        BlockHitResult hitResult = new BlockHitResult(lecternPos.getBottomCenter().add(0, 0,0), Direction.UP, lecternPos, false);
+        BlockHitResult hitResult = new BlockHitResult(lecternPos.below().getCenter().add(0, 0.5, 0), Direction.UP, lecternPos.below(), false);
         minecraftClient.gameMode.useItemOn(player, InteractionHand.OFF_HAND, hitResult);
         player.swing(InteractionHand.OFF_HAND);
 
