@@ -25,7 +25,6 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.npc.villager.Villager;
-import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.level.block.Blocks;
 import org.lwjgl.glfw.GLFW;
 
@@ -49,7 +48,7 @@ public class EasyVillagerTrade implements ModInitializer {
 
     public void registerCallbacks() {
         UseEntityCallback.EVENT.register((player, world, hand, entity, hitResult) -> {
-            if (hand == InteractionHand.OFF_HAND || hitResult == null || !world.isClientSide())
+            if (hand == InteractionHand.OFF_HAND || !world.isClientSide())
                 return InteractionResult.PASS;
             if (hitResult.getEntity() instanceof Villager villager && modBase.getState() == TradingState.MODE_SELECTION) {
                 modBase.getSelectionInterface().setVillager(villager);
@@ -76,7 +75,7 @@ public class EasyVillagerTrade implements ModInitializer {
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             while(keyBinding.isDown())
-                client.setScreen(new TradeSelectScreen());
+                client.setScreenAndShow(new TradeSelectScreen());
         });
     }
 

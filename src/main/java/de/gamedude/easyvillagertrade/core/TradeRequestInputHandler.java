@@ -5,7 +5,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.data.registries.VanillaRegistries;
 import net.minecraft.world.item.enchantment.Enchantment;
 
 import java.util.function.Consumer;

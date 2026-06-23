@@ -8,17 +8,13 @@ import de.gamedude.easyvillagertrade.utils.TradeRequest;
 import de.gamedude.easyvillagertrade.utils.TradingState;
 import joptsimple.internal.Strings;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.minecraft.client.Minecraft;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.arguments.ResourceArgument;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.enchantment.Enchantment;
-import net.minecraft.world.phys.EntityHitResult;
-import net.minecraft.world.phys.HitResult;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Arrays;

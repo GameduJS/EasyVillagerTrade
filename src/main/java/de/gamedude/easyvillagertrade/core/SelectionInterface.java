@@ -9,6 +9,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.LecternBlock;
 import net.minecraft.world.level.entity.EntityTypeTest;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.Optional;
 
@@ -50,9 +51,9 @@ public class SelectionInterface {
     private Villager getClosestEntity(Level world, BlockPos blockPos) {
         Villager entity = null;
         double dist = Double.MAX_VALUE;
-        ;
-        for(Villager villagerEntity : world.getEntities(EntityTypeTest.forClass(Villager.class), AABB.ofSize(blockPos.getCenter(), 3, 3, 3), (villager) -> villager.getVillagerData().profession().is(VillagerProfession.LIBRARIAN))) {
-            double distanceSquared = villagerEntity.distanceToSqr(blockPos.getCenter());
+
+        for(Villager villagerEntity : world.getEntities(EntityTypeTest.forClass(Villager.class), AABB.ofSize(Vec3.atCenterOf(blockPos), 3, 3, 3), (villager) -> villager.getVillagerData().profession().is(VillagerProfession.LIBRARIAN))) {
+            double distanceSquared = villagerEntity.distanceToSqr(Vec3.atCenterOf(blockPos));
             if(distanceSquared < dist) {
                 dist = distanceSquared;
                 entity = villagerEntity;

@@ -27,6 +27,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.Vec3;
 
 public class EasyVillagerTradeBase {
     private TradingState state;
@@ -38,7 +39,7 @@ public class EasyVillagerTradeBase {
 
     private final Minecraft minecraftClient;
 
-    private NoJobIntervention noJobIntervention;
+    private final NoJobIntervention noJobIntervention;
 
     public EasyVillagerTradeBase() {
         this.minecraftClient = Minecraft.getInstance();
@@ -99,7 +100,7 @@ public class EasyVillagerTradeBase {
             return;
         }
 
-        BlockHitResult hitResult = new BlockHitResult(lecternPos.below().getCenter().add(0, 0.5, 0), Direction.UP, lecternPos.below(), false);
+        BlockHitResult hitResult = new BlockHitResult(Vec3.atCenterOf(lecternPos.below()).add(0, 0.5, 0), Direction.UP, lecternPos.below(), false);
         minecraftClient.gameMode.useItemOn(player, InteractionHand.OFF_HAND, hitResult);
         player.swing(InteractionHand.OFF_HAND);
 
