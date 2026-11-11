@@ -2,6 +2,7 @@
   "evt.command.execute":  "§8| §7Performing search request",
   "evt.command.selecting": "§8| §7Select the villager and his lectern by right-clicking on them.",
   "evt.command.add": "§8| §7Added trade request for %d §7for a maximum of %d §aEmeralds",
+  "evt.command.add.all": "§8| §7Added trade requests for %d §7(any level) §7for a maximum of %d §aEmeralds",
   "evt.command.remove": "§8| §7All trade requests for %d §7enchantment have been removed.",
   "evt.command.list.head": "§8| §7List of all search queries: ",
   "evt.command.list.body": "§7- %d §7for a maximum of %d §aEmeralds",

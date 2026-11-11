@@ -14,7 +14,6 @@ import net.minecraft.util.ARGB;
 import net.minecraft.world.item.enchantment.Enchantment;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
-import org.lwjgl.glfw.GLFW;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -58,7 +57,7 @@ public class EnchantmentInputWidget extends EditBox {
 
     @Override
     public boolean keyPressed(KeyEvent event) {
-        if (event.key() == GLFW.GLFW_KEY_ENTER) {
+        if (event.isConfirmation()) {
             applyCurrentSuggestion();
             return true;
         }

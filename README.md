@@ -9,7 +9,7 @@ EasyVillagerTrade, or EVT for short, is a client-side mod that allows semi-autom
 ### Usage
 Firstly take any axe into your main hand and some lecterns into your offhand.
 
-- Use ``/evt search add <maxPrice> <enchantment> [<level>]`` to add any enchantment books to the queue
+- Use ``/evt search add <maxPrice> <enchantment> [<level>|*]`` to add any enchantment books to the queue (``*`` adds a request for every possible level)
 - Press ``F6`` (default key) to open a screen, there you also add any books. (You may press TAB to switch input or to autocomplete enchantment input)
 - Use ``/evt select`` and select any villager and his workstation
 

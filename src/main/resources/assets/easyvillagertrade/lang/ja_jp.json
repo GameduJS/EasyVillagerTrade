@@ -2,6 +2,7 @@
   "evt.command.execute":  "§8| §7検索リクエストを処理しています。",
   "evt.command.selecting": "§8| §7村人と書見台を右クリックして選択してください。",
   "evt.command.add": "§8| §7%d の取引リクエストを §7 最大 %d §a個のエメラルドをターゲットとして追加しました。",
+  "evt.command.add.all": "§8| §7%d の取引リクエストを §7(全レベル) §7 最大 %d §a個のエメラルドをターゲットとして追加しました。",
   "evt.command.remove": "§8| §7Aすべての %d §7エンチャントに対するリクエストを削除しました。",
   "evt.command.list.head": "§8| §7検索クエリリスト: ",
   "evt.command.list.body": "§7- %d §7を最大%d §a個のエメラルド",

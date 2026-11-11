@@ -39,7 +39,8 @@ public class EasyVillagerTradeCommand {
 
                 .then(literal("add").then(argument("maxPrice", IntegerArgumentType.integer(1, 64)).then(argument("enchantment", ResourceArgument.resource(commandCtx, Registries.ENCHANTMENT))
                                 .executes(context -> executeAddTradeRequest(context, IntegerArgumentType.getInteger(context, "maxPrice"), 1))
-                                .then(argument("level", IntegerArgumentType.integer(1, 5)).executes(context -> executeAddTradeRequest(context, IntegerArgumentType.getInteger(context, "maxPrice"), IntegerArgumentType.getInteger(context, "level")))))))
+                                .then(argument("level", IntegerArgumentType.integer(1, 5)).executes(context -> executeAddTradeRequest(context, IntegerArgumentType.getInteger(context, "maxPrice"), IntegerArgumentType.getInteger(context, "level"))))
+                                .then(literal("*").executes(context -> executeAddTradeRequestAnyLevel(context, IntegerArgumentType.getInteger(context, "maxPrice")))))))
 
                 .then(literal("remove").then(argument("enchantment", ResourceArgument.resource(commandCtx, Registries.ENCHANTMENT))
                                 .executes(this::executeRemoveTradeRequest)))
@@ -63,6 +64,17 @@ public class EasyVillagerTradeCommand {
         modBase.getTradeRequestContainer().addTradeRequest(tradeRequest);
 
         context.getSource().sendFeedback(Component.translatable("evt.command.add", "§e" + tradeRequest.getNameEnchantment().getString(), "§a" + tradeRequest.maxPrice()));
+        return 1;
+    }
+
+    private int executeAddTradeRequestAnyLevel(CommandContext<FabricClientCommandSource> context, int maxPrice) {
+        Holder.Reference<Enchantment> enchantmentReference = context.getArgument("enchantment", Holder.Reference.class);
+
+        modBase.getTradeRequestInputHandler().addAllLevelTradeRequests(enchantmentReference, maxPrice,
+                modBase.getTradeRequestContainer()::addTradeRequest);
+
+        context.getSource().sendFeedback(Component.translatable("evt.command.add.all",
+                "§e" + Enchantment.getFullname(enchantmentReference, 1).getString(), "§a" + modBase.getTradeRequestInputHandler().mapPrice(maxPrice)));
         return 1;
     }
 

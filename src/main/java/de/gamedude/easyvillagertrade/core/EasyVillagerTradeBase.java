@@ -12,7 +12,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.protocol.game.ServerboundSwingPacket;
+import net.minecraft.network.protocol.game.ServerboundPunchPacket;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -20,6 +20,7 @@ import net.minecraft.world.entity.npc.villager.VillagerProfession;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.trading.MerchantOffer;
 import net.minecraft.world.item.trading.MerchantOffers;
@@ -102,7 +103,7 @@ public class EasyVillagerTradeBase {
 
         BlockHitResult hitResult = new BlockHitResult(Vec3.atCenterOf(lecternPos.below()).add(0, 0.5, 0), Direction.UP, lecternPos.below(), false);
         minecraftClient.gameMode.useItemOn(player, InteractionHand.OFF_HAND, hitResult);
-        player.swing(InteractionHand.OFF_HAND);
+        player.swing(InteractionHand.OFF_HAND, SwingAnimation.DEFAULT, false);
 
         setState(TradingState.WAIT_PROFESSION);
     }
@@ -133,8 +134,8 @@ public class EasyVillagerTradeBase {
 
         if (world.getBlockState(getSelectionInterface().getLecternPos()).getBlock() == Blocks.LECTERN) {
             minecraftClient.gameMode.continueDestroyBlock(getSelectionInterface().getLecternPos(), Direction.UP);
-            player.swing(InteractionHand.MAIN_HAND, true);
-            minecraftClient.getConnection().send(new ServerboundSwingPacket(InteractionHand.MAIN_HAND));
+            player.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, true);
+            minecraftClient.getConnection().send(ServerboundPunchPacket.INSTANCE);
         } else {
             state = TradingState.WAIT_JOB_LOSS;
         }
