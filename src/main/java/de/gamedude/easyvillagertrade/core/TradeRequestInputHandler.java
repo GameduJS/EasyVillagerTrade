@@ -19,11 +19,8 @@ public class TradeRequestInputHandler {
             return 2; // no valid price
         int price = Math.clamp(Integer.parseInt(priceInput), 1, 64);
 
-        if(levelInput.equals("*")) { // add all possible levels
-            for(int levelIterator = 1; levelIterator <= enchantmentEntry.value().getMaxLevel(); levelIterator++) {
-                TradeRequest request = new TradeRequest(enchantmentEntry, levelIterator, price);
-                tradeRequestConsumer.accept(request);
-            }
+        if(isAnyLevelInput(levelInput)) { // add all possible levels
+            addAllLevelTradeRequests(enchantmentEntry, price, tradeRequestConsumer);
             return 0;
         }
         if(notInt(levelInput))
@@ -42,13 +39,23 @@ public class TradeRequestInputHandler {
     }
 
 
+    public void addAllLevelTradeRequests(Holder<Enchantment> enchantment, int maxPrice, Consumer<TradeRequest> tradeRequestConsumer) {
+        int price = mapPrice(maxPrice);
+        for(int level = 1; level <= enchantment.value().getMaxLevel(); level++)
+            tradeRequestConsumer.accept(new TradeRequest(enchantment, level, price));
+    }
+
+    public boolean isAnyLevelInput(String levelInput) {
+        return levelInput.trim().equals("*");
+    }
+
     public Holder<Enchantment> getEnchantment(String enchantmentInput) {
         HolderLookup.RegistryLookup<Enchantment> registry = getRegistry();
         return registry.listElements().filter(enchantmentReference -> enchantmentReference.value().description().getString()
                 .equalsIgnoreCase(enchantmentInput.trim())).findFirst().orElse(null);
     }
 
-    private int mapPrice(int maxPriceInput) {
+    public int mapPrice(int maxPriceInput) {
         return Math.clamp(maxPriceInput, 1, 64);
     }
 

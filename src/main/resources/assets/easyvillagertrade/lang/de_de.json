@@ -2,6 +2,7 @@
   "evt.command.execute": "§8| §7Führe Suchanfrage aus",
   "evt.command.selecting": "§8| §7Wähle den Dorfbewohner und sein Lesepult jeweils durch Rechtsklick aus.",
   "evt.command.add": "§8| §7Suchanfrage für %d §7 für ein Maximum von %d §aSmaragden hinzugefügt",
+  "evt.command.add.all": "§8| §7Suchanfragen für %d §7(beliebiges Level) §7 für ein Maximum von %d §aSmaragden hinzugefügt",
   "evt.command.remove": "§8| §7Alle Suchanfragen für %d §7 wurden entfernt.",
   "evt.command.list.head": "§8| §7Liste aller Suchanfragen: ",
   "evt.command.list.body": "§7- %d §7für ein Maximum von %d §aSmaragden",

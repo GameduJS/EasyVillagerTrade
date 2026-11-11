@@ -32,7 +32,7 @@ public class SelectionInterface {
 
     public int selectClosestToPlayer(Player player) {
 
-        Optional<BlockPos> closestBlockOptional = BlockPos.findClosestMatch(player.blockPosition(), 3, 0, blockPos -> player.level().getBlockState(blockPos).getBlock() instanceof LecternBlock);
+        Optional<BlockPos> closestBlockOptional = player.level().findBlocksInBoxByManhattanDistance(player.blockPosition(), 3, 0).filterState(state -> state.getBlock() instanceof LecternBlock).findFirst();
         if(closestBlockOptional.isEmpty()) {
             modBase.setState(TradingState.INACTIVE);
             return 1;

@@ -26,7 +26,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.npc.villager.Villager;
 import net.minecraft.world.level.block.Blocks;
-import org.lwjgl.glfw.GLFW;
+import com.mojang.blaze3d.platform.InputConstants;
 
 @Environment(EnvType.CLIENT)
 public class EasyVillagerTrade implements ModInitializer {
@@ -34,7 +34,7 @@ public class EasyVillagerTrade implements ModInitializer {
     public static final Config CONFIG = new Config("easyvillagertrade");
     private static EasyVillagerTradeBase modBase;
     private final KeyMapping.Category evtCategory = KeyMapping.Category.register(Identifier.fromNamespaceAndPath("evt", "category"));
-    private final KeyMapping keyBinding = new KeyMapping("key.custom.openscreen", GLFW.GLFW_KEY_F6, evtCategory);
+    private final KeyMapping keyBinding = new KeyMapping("key.custom.openscreen", InputConstants.KEY_F6, evtCategory);
 
     @Override
     public void onInitialize() {
@@ -42,7 +42,7 @@ public class EasyVillagerTrade implements ModInitializer {
         ClientCommandRegistrationCallback.EVENT.register((dispatcher, buildContext) -> new EasyVillagerTradeCommand(modBase).register(dispatcher, buildContext));
         registerCallbacks();
 
-        CommandDispatcher<CommandSourceStack> dispatcher = new Commands(Commands.CommandSelection.ALL, Commands.createValidationContext(Commands.createValidationContext(VanillaRegistries.createLookup()))).getDispatcher();
+        CommandDispatcher<CommandSourceStack> dispatcher = new Commands(Commands.CommandSelection.ALL, Commands.createValidationContext(VanillaRegistries.createWorldLookup())).getDispatcher();
         KeyMappingHelper.registerKeyMapping(keyBinding);
     }
 
