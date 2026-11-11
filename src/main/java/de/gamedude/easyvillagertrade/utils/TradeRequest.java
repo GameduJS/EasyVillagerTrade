@@ -7,7 +7,7 @@ import net.minecraft.world.item.enchantment.Enchantment;
 
 public record TradeRequest(Holder<Enchantment> enchantmentHolder, int level, int maxPrice) {
 
-    public boolean matches(TradeRequest request) {y
+    public boolean matches(TradeRequest request) {
         return level == request.level && request.maxPrice >= maxPrice && equalEnchantment(enchantmentHolder, request.enchantmentHolder);
     }
 
